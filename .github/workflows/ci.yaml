@@ -2,55 +2,25 @@ name: CI
 
 on:
   push:
-    branches: [ main, actions ]
+    branches: [ main, actions, bazel ]
   pull_request:
-    branches: [ main, actions ]
+    branches: [ main, actions, bazel ]
 
 env:
-  RUSTFLAGS: -D warnings
-  CARGO_TERM_COLOR: always
   TEST_STATS_DELAY: 5000
 
 jobs:
-  lint:
-    name: Lint
+  test:
+    name: Test
     runs-on: ubuntu-latest
-
+    services:
+      rabbitmq:
+        image: pivotalrabbitmq/rabbitmq:main-otp-max-bazel
+        ports:
+        - 15672
     steps:
-      - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt, clippy
-
-      - name: Lint (clippy)
-        run: cargo clippy
-
-      - name: Lint (rustfmt)
-        run: cargo fmt --all --check
-
-  build:
-    name: Build and test
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        rust-version: [ stable ]
-      fail-fast: false
-
-    steps:
-      - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: ${{ matrix.rust-version }}
-
-      - name: Start RabbitMQ
-        uses: mkuratczyk/rabbitmq-github-action@v1
-        with:
-          version: 'latest'
-          ports: '15672:15672'
-          plugins: 'rabbitmq_management'
-          advanced_config: ${{ github.workspace }}/.github/workflows/ci-rabbitmq.config
-
-      - name: Run cargo test
-        run: |
-          sleep 5
-          cargo test --workspace --no-fail-fast
+    - name: CHECKOUT
+      uses: actions/checkout@v3
+    - name: TEST
+      run: |
+        bazel test //...
