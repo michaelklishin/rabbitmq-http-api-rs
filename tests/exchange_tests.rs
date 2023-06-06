@@ -1,7 +1,8 @@
+extern crate rabbitmq_http_client;
 use rabbitmq_http_client::{blocking::Client, requests::ExchangeParams};
 use serde_json::{json, Map, Value};
 
-mod common;
+extern crate common;
 use crate::common::{endpoint, PASSWORD, USERNAME};
 
 #[test]

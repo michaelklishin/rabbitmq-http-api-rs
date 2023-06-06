@@ -1,6 +1,7 @@
+extern crate rabbitmq_http_client;
 use rabbitmq_http_client::{blocking::Client, password_hashing, requests::UserParams};
 
-mod common;
+extern crate common;
 use crate::common::{endpoint, PASSWORD, USERNAME};
 
 #[test]
