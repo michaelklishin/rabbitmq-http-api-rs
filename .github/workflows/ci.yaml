@@ -9,7 +9,7 @@ on:
 env:
   RUSTFLAGS: -D warnings
   CARGO_TERM_COLOR: always
-  TEST_STATS_DELAY: 15000
+  TEST_STATS_DELAY: 5000
 
 jobs:
   lint:
