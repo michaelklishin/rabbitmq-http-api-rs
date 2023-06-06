@@ -12,7 +12,7 @@ fn test_list_nodes() {
 
     assert!(result.is_ok());
     let vec = result.unwrap();
-    assert!(vec.iter().find(|n| n.name.starts_with("rabbit@")).is_some())
+    assert!(vec.iter().any(|n| n.name.starts_with("rabbit@")))
 }
 
 #[test]

@@ -12,7 +12,7 @@ fn test_list_users() {
 
     assert!(result.is_ok());
     let vec = result.unwrap();
-    assert!(vec.iter().find(|u| u.name == "guest").is_some())
+    assert!(vec.iter().any(|u| u.name == "guest"))
 }
 
 #[test]
@@ -34,7 +34,7 @@ fn test_user_creation() {
 
     let salt = password_hashing::salt();
     let password_hash =
-        password_hashing::base64_encoded_salted_password_hash_sha256(&salt, &"rust3_t0p_sEkr37");
+        password_hashing::base64_encoded_salted_password_hash_sha256(&salt, "rust3_t0p_sEkr37");
 
     let params = UserParams {
         name: "rust3",
@@ -52,17 +52,17 @@ fn test_user_deletion() {
 
     let salt = password_hashing::salt();
     let password_hash =
-        password_hashing::base64_encoded_salted_password_hash_sha256(&salt, &"del3te_me");
+        password_hashing::base64_encoded_salted_password_hash_sha256(&salt, "del3te_me");
 
     let name = "del3te_me";
     let params = UserParams {
-        name: name,
+        name,
         password_hash: &password_hash,
         tags: "management",
     };
     let result1 = rc.create_user(&params);
     assert!(result1.is_ok());
 
-    let result2 = rc.delete_user(&name);
+    let result2 = rc.delete_user(name);
     assert!(result2.is_ok());
 }

@@ -18,7 +18,7 @@ pub fn await_metric_emission(ms: u64) {
 pub fn await_queue_metric_emission() {
     #[allow(dead_code)]
     pub fn await_queue_metric_emission() {
-        let delay = env::var("TEST_STATS_DELAY").unwrap_or("500".to_owned());
+        let delay = env::var("TEST_STATS_DELAY").unwrap_or_else(|_| "500".to_owned());
         await_metric_emission(delay.parse::<u64>().unwrap());
     }
 }

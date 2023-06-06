@@ -22,7 +22,7 @@ fn test_upsert_runtime_parameter() {
     assert!(result1.is_ok());
 
     let mut val = max_connections_limit(9988);
-    let rpf = example_runtime_parameter_definition(&vh_params.name, &mut val);
+    let rpf = example_runtime_parameter_definition(vh_params.name, &mut val);
     let result2 = rc.upsert_runtime_parameter(&rpf);
     assert!(result2.is_ok());
 
@@ -59,7 +59,7 @@ fn test_clear_runtime_parameter() {
     assert!(result1.is_ok());
 
     let mut val = max_queue_limit(4444);
-    let rp = example_runtime_parameter_definition(&vh_params.name, &mut val);
+    let rp = example_runtime_parameter_definition(vh_params.name, &mut val);
     let result2 = rc.upsert_runtime_parameter(&rp);
     assert!(result2.is_ok());
     await_metric_emission(1000);

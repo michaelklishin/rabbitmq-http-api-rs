@@ -28,16 +28,14 @@ fn test_list_all_bindings() {
     let vec = result3.unwrap();
     assert!(vec
         .iter()
-        .find(|b| b.destination == cq && b.source == fanout)
-        .is_some());
+        .any(|b| b.destination == cq && b.source == fanout));
 
     let result4 = rc.list_bindings_in(vh_name);
     assert!(result4.is_ok());
     let vec = result4.unwrap();
     assert!(vec
         .iter()
-        .find(|vh| vh.vhost == vh_name && vh.source == fanout)
-        .is_some());
+        .any(|vh| vh.vhost == vh_name && vh.source == fanout));
 
     let _ = rc.delete_queue(vh_name, cq);
 }
@@ -62,11 +60,10 @@ fn test_list_only_queue_bindings() {
     let vec = result3.unwrap();
     assert!(vec
         .iter()
-        .find(|b| b.destination_type == BindingDestinationType::Queue
+        .any(|b| b.destination_type == BindingDestinationType::Queue
             && b.vhost == vh_name
             && b.destination == cq
-            && b.source == fanout)
-        .is_some());
+            && b.source == fanout));
 
     let _ = rc.delete_queue(vh_name, cq);
 }
@@ -99,32 +96,28 @@ fn test_list_only_exchange_bindings() {
     let result5 = rc.list_exchange_bindings_with_source(vh_name, fanout2);
     assert!(result5.is_ok());
     let vec = result5.unwrap();
+    assert!(!vec
+        .iter()
+        .any(|b| b.destination_type == BindingDestinationType::Queue));
     assert!(vec
         .iter()
-        .find(|b| b.destination_type == BindingDestinationType::Queue)
-        .is_none());
-    assert!(vec
-        .iter()
-        .find(|b| b.destination_type == BindingDestinationType::Exchange
+        .any(|b| b.destination_type == BindingDestinationType::Exchange
             && b.vhost == vh_name
             && b.destination == fanout1
-            && b.source == fanout2)
-        .is_some());
+            && b.source == fanout2));
 
     let result6 = rc.list_exchange_bindings_with_destination(vh_name, fanout1);
     assert!(result6.is_ok());
     let vec = result6.unwrap();
+    assert!(!vec
+        .iter()
+        .any(|b| b.destination_type == BindingDestinationType::Queue));
     assert!(vec
         .iter()
-        .find(|b| b.destination_type == BindingDestinationType::Queue)
-        .is_none());
-    assert!(vec
-        .iter()
-        .find(|b| b.destination_type == BindingDestinationType::Exchange
+        .any(|b| b.destination_type == BindingDestinationType::Exchange
             && b.vhost == vh_name
             && b.destination == fanout1
-            && b.source == fanout2)
-        .is_some());
+            && b.source == fanout2));
 
     let _ = rc.delete_queue(vh_name, cq);
     let _ = rc.delete_exchange(vh_name, fanout2);

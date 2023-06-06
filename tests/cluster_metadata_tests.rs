@@ -31,7 +31,7 @@ fn test_set_cluster_name() {
     let result3 = rc.get_cluster_name();
     assert!(result3.is_ok());
     let meta3 = result3.unwrap();
-    assert!(meta3.name == String::from("rusty"));
+    assert!(meta3.name == *"rusty");
 
     let _ = rc.set_cluster_name(&meta1.name);
 }

@@ -12,19 +12,19 @@ fn test_declare_a_fanout_exchange() {
     let vhost = "/";
     let name = "rust.tests.fanout.1";
 
-    let _ = rc.delete_exchange(&vhost, &name);
+    let _ = rc.delete_exchange(vhost, name);
 
-    let result1 = rc.get_exchange_info(&vhost, &name);
-    assert!(!result1.is_ok());
+    let result1 = rc.get_exchange_info(vhost, name);
+    assert!(result1.is_err());
 
     let mut map = Map::<String, Value>::new();
     map.insert("x-alternate-exchange".to_owned(), json!("amq.fanout"));
     let optional_args = Some(map);
-    let params = ExchangeParams::durable_fanout(&name, optional_args);
-    let result2 = rc.declare_exchange(&vhost, &params);
+    let params = ExchangeParams::durable_fanout(name, optional_args);
+    let result2 = rc.declare_exchange(vhost, &params);
     assert!(result2.is_ok());
 
-    let _ = rc.delete_exchange(&vhost, &name);
+    let _ = rc.delete_exchange(vhost, name);
 }
 
 #[test]
@@ -34,18 +34,18 @@ fn test_delete_exchange() {
     let vhost = "/";
     let name = "rust.tests.cq.10";
 
-    let _ = rc.delete_exchange(&vhost, &name);
+    let _ = rc.delete_exchange(vhost, name);
 
-    let result1 = rc.get_exchange_info(&vhost, &name);
-    assert!(!result1.is_ok());
+    let result1 = rc.get_exchange_info(vhost, name);
+    assert!(result1.is_err());
 
-    let params = ExchangeParams::durable_fanout(&name, None);
-    let result2 = rc.declare_exchange(&vhost, &params);
+    let params = ExchangeParams::durable_fanout(name, None);
+    let result2 = rc.declare_exchange(vhost, &params);
     assert!(result2.is_ok());
 
-    let _ = rc.delete_exchange(&vhost, &name);
-    let result3 = rc.get_exchange_info(&vhost, &name);
-    assert!(!result3.is_ok());
+    let _ = rc.delete_exchange(vhost, name);
+    let result3 = rc.get_exchange_info(vhost, name);
+    assert!(result3.is_err());
 }
 
 #[test]
