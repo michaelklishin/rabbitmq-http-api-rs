@@ -35,15 +35,17 @@ jobs:
           build:buildbuddy --color=yes
           build:buildbuddy --disk_cache=
         EOF
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
+    # - name: Setup tmate session
+    #   uses: mxschmitt/action-tmate@v3
     - name: CONFIGURE RABBITMQ
       run: |
-        docker exec rabbitmq rabbitmq-plugins enable rabbitmq_management
+        c="$(docker ps --format '{{.ID}}')"
+
+        docker exec $c rabbitmq-plugins enable rabbitmq_management
         sleep 3
-        docker exec rabbitmq rabbitmqctl add_vhost /
-        docker exec rabbitmq rabbitmqctl add_user guest guest
-        docker exec rabbitmq rabbitmqctl set_permissions -p / guest ".*" ".*" ".*"
+        docker exec $c rabbitmqctl add_vhost /
+        docker exec $c rabbitmqctl add_user guest guest
+        docker exec $c rabbitmqctl set_permissions -p / guest ".*" ".*" ".*"
     - name: TEST
       run: |
         bazel test //... \
