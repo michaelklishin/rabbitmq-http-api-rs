@@ -41,9 +41,8 @@ jobs:
       run: |
         c="$(docker ps --format '{{.ID}}')"
 
-        RUST_HTTP_API_CLIENT_RABBITMQCTL="docker exec $c rabbitmqctl"
-        RUST_HTTP_API_CLIENT_RABBITMQ_PLUGINS="docker exec $c rabbitmq-plugins"
-
+        RUST_HTTP_API_CLIENT_RABBITMQCTL="docker exec $c rabbitmqctl" \
+        RUST_HTTP_API_CLIENT_RABBITMQ_PLUGINS="docker exec $c rabbitmq-plugins" \
         ./bin/ci/before_build.sh
     - name: TEST
       env:
