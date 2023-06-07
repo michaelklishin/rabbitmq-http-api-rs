@@ -18,6 +18,7 @@ jobs:
         image: pivotalrabbitmq/rabbitmq:main-otp-max-bazel
         ports:
         - 15672:15672
+        - 5672:5672
     steps:
     - name: CHECKOUT
       uses: actions/checkout@v3
@@ -39,10 +40,7 @@ jobs:
     #   uses: mxschmitt/action-tmate@v3
     - name: CONFIGURE RABBITMQ
       run: |
-        c="$(docker ps --format '{{.ID}}')"
-
-        RUST_HTTP_API_CLIENT_RABBITMQCTL="docker exec $c rabbitmqctl" \
-        RUST_HTTP_API_CLIENT_RABBITMQ_PLUGINS="docker exec $c rabbitmq-plugins" \
+        RUST_HTTP_API_CLIENT_RABBITMQCTL=DOCKER:${{job.services.rabbitmq.id}} \
         ./bin/ci/before_build.sh
     - name: TEST
       run: |

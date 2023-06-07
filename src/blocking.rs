@@ -545,6 +545,56 @@ impl<'a> Client<'a> {
         Ok(())
     }
 
+    pub fn get_operator_policy(&self, vhost: &str, name: &str) -> Result<responses::Policy> {
+        let response = self.http_get(&format!(
+            "operator-policies/{}/{}",
+            self.percent_encode(vhost),
+            self.percent_encode(name)
+        ))?;
+        let response2 = self.ok_or_status_code_error(response)?;
+        response2.json::<responses::Policy>().map_err(Error::from)
+    }
+
+    pub fn list_operator_policies(&self) -> Result<Vec<responses::Policy>> {
+        let response = self.http_get("operator-policies")?;
+        let response2 = self.ok_or_status_code_error(response)?;
+        response2
+            .json::<Vec<responses::Policy>>()
+            .map_err(Error::from)
+    }
+
+    pub fn list_operator_policies_in(&self, vhost: &str) -> Result<Vec<responses::Policy>> {
+        let response =
+            self.http_get(&format!("operator-policies/{}", self.percent_encode(vhost)))?;
+        let response2 = self.ok_or_status_code_error(response)?;
+        response2
+            .json::<Vec<responses::Policy>>()
+            .map_err(Error::from)
+    }
+
+    pub fn declare_operator_policy(&self, params: &PolicyParams) -> Result<()> {
+        let response = self.http_put(
+            &format!(
+                "operator-policies/{}/{}",
+                self.percent_encode(params.vhost),
+                self.percent_encode(params.name)
+            ),
+            params,
+        )?;
+        self.ok_or_status_code_error(response)?;
+        Ok(())
+    }
+
+    pub fn delete_operator_policy(&self, vhost: &str, name: &str) -> Result<()> {
+        let response = self.http_delete(&format!(
+            "operator-policies/{}/{}",
+            self.percent_encode(vhost),
+            self.percent_encode(name)
+        ))?;
+        self.ok_or_status_code_error(response)?;
+        Ok(())
+    }
+
     //
     // Implementation
     //

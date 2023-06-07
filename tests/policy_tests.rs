@@ -75,13 +75,46 @@ fn test_dlx_policy() {
     let _ = rc.delete_vhost(vh_params.name);
 }
 
+#[test]
+fn test_operator_policy() {
+    let endpoint = endpoint();
+    let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
+
+    let mut map = Map::<String, Value>::new();
+    map.insert("delivery-limit".to_owned(), json!(13));
+    let policy_definition = Some(map);
+
+    let vh_params = VirtualHostParams {
+        name: "test_operator_policy",
+        tracing: false,
+        description: None,
+        tags: None,
+        default_queue_type: None,
+    };
+    let _ = rc.delete_vhost(vh_params.name);
+    let result1 = rc.create_vhost(&vh_params);
+    assert!(result1.is_ok());
+
+    let operator_policy = PolicyParams {
+        vhost: vh_params.name,
+        name: "operator_policy",
+        pattern: ".*",
+        apply_to: PolicyTarget::QuorumQueues,
+        priority: 0,
+        definition: policy_definition,
+    };
+    test_an_operator_policy(&rc, &operator_policy);
+
+    // let _ = rc.delete_vhost(vh_params.name);
+}
+
 fn test_a_policy(rc: &Client, policy: &PolicyParams) {
     // initially, there should be no such policy
     let policies = rc.list_policies_in(policy.vhost).unwrap();
     assert!(!policies.iter().any(|p| p.name == policy.name));
 
     let result = rc.declare_policy(policy);
-    assert!(result.is_ok());
+    assert!(result.is_ok(), "declare_policy returned {:?}", result);
 
     // validate it was created as expected
     let result = rc.get_policy(policy.vhost, policy.name);
@@ -92,5 +125,25 @@ fn test_a_policy(rc: &Client, policy: &PolicyParams) {
 
     // there should be no such policy anymore
     let policies = rc.list_policies().unwrap();
+    assert!(!policies.iter().any(|p| p.name == policy.name));
+}
+
+fn test_an_operator_policy(rc: &Client, policy: &PolicyParams) {
+    // initially, there should be no such policy
+    let policies = rc.list_operator_policies_in(policy.vhost).unwrap();
+    assert!(!policies.iter().any(|p| p.name == policy.name));
+
+    let result = rc.declare_operator_policy(policy);
+    assert!(result.is_ok(), "declare_policy returned {:?}", result);
+
+    // validate it was created as expected
+    let result = rc.get_operator_policy(policy.vhost, policy.name);
+    assert!(result.unwrap().definition == policy.definition);
+
+    // delete it
+    assert!(rc.delete_operator_policy(policy.vhost, policy.name).is_ok());
+
+    // there should be no such policy anymore
+    let policies = rc.list_operator_policies().unwrap();
     assert!(!policies.iter().any(|p| p.name == policy.name));
 }
