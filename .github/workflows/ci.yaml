@@ -45,8 +45,7 @@ jobs:
         RUST_HTTP_API_CLIENT_RABBITMQ_PLUGINS="docker exec $c rabbitmq-plugins" \
         ./bin/ci/before_build.sh
     - name: TEST
-      env:
-        RUST_BACKTRACE: 1
       run: |
         bazel test //... \
-          --config=buildbuddy
+          --config=buildbuddy \
+          --test_env RUST_BACKTRACE=1
