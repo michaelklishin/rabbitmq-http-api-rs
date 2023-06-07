@@ -13,13 +13,12 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    services:
-      rabbitmq:
-        image: pivotalrabbitmq/rabbitmq:main-otp-max-bazel
-        ports:
-        - 15672:15672
-        - 5672:5672
     steps:
+    - name: CONFIGURE OTP & ELIXIR
+      uses: erlef/setup-beam@v1.15
+      with:
+        otp-version: 26
+        elixir-version: 1.14
     - name: CHECKOUT
       uses: actions/checkout@v3
     - name: MOUNT BAZEL CACHE
@@ -38,9 +37,12 @@ jobs:
         EOF
     # - name: Setup tmate session
     #   uses: mxschmitt/action-tmate@v3
-    - name: CONFIGURE RABBITMQ
+    - name: SETUP RABBITMQ
       run: |
-        RUST_HTTP_API_CLIENT_RABBITMQCTL=DOCKER:${{job.services.rabbitmq.id}} \
+        bazel run :start-background-broker
+
+        export RUST_HTTP_API_CLIENT_RABBITMQCTL="bazel run :rabbitmqctl -- "
+        export RUST_HTTP_API_CLIENT_RABBITMQ_PLUGINS="bazel run :rabbitmq-plugins -- "
         ./bin/ci/before_build.sh
     - name: TEST
       run: |
