@@ -7,3 +7,39 @@ bazel_dep(
     name = "platforms",
     version = "0.0.6",
 )
+bazel_dep(
+    name = "rules_erlang",
+    version = "3.10.6",
+)
+
+erlang_config = use_extension(
+    "@rules_erlang//bzlmod:extensions.bzl",
+    "erlang_config",
+    dev_dependency = True,
+)
+use_repo(
+    erlang_config,
+    "erlang_config",
+)
+
+bazel_dep(
+    name = "rabbitmq-server",
+    version = "3.13.0",
+)
+archive_override(
+    module_name = "rabbitmq-server",
+    strip_prefix = "rabbitmq-server-main",
+    urls = [
+        "https://github.com/rabbitmq/rabbitmq-server/archive/refs/heads/main.zip",
+    ],
+)
+
+elixir_config = use_extension(
+    "@rabbitmq-server//bazel/bzlmod:extensions.bzl",
+    "elixir_config",
+    dev_dependency = True,
+)
+use_repo(
+    elixir_config,
+    "elixir_config",
+)

@@ -1,5 +1,8 @@
 load("@crate_index//:defs.bzl", "aliases", "all_crate_deps")
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test_suite")
+load("@rabbitmq-server//:rabbitmq_home.bzl", "rabbitmq_home")
+load("@rabbitmq-server//:rabbitmq_run.bzl", "rabbitmq_run", "rabbitmq_run_command")
+load("@rabbitmq-server//:rabbitmqctl.bzl", "rabbitmqctl")
 
 rust_library(
     name = module_name(),
@@ -11,6 +14,48 @@ rust_library(
     deps = all_crate_deps(
         normal = True,
     ),
+)
+
+rabbitmq_home(
+    name = "broker-home",
+    plugins = [
+        "@rabbitmq-server//deps/rabbit:erlang_app",
+        "@rabbitmq-server//deps/rabbitmq_management:erlang_app",
+        "@rabbitmq-server//deps/rabbitmq_shovel:erlang_app",
+        "@rabbitmq-server//deps/rabbitmq_shovel_management:erlang_app",
+        "@rabbitmq-server//deps/rabbitmq_federation:erlang_app",
+        "@rabbitmq-server//deps/rabbitmq_federation_management:erlang_app",
+    ],
+)
+
+rabbitmq_run(
+    name = "rabbitmq-run",
+    home = ":broker-home",
+)
+
+# `bazel run broker`
+rabbitmq_run_command(
+    name = "broker",
+    rabbitmq_run = ":rabbitmq-run",
+    subcommand = "run-broker",
+)
+
+# `bazel run start-background-broker`
+rabbitmq_run_command(
+    name = "start-background-broker",
+    rabbitmq_run = ":rabbitmq-run",
+    subcommand = "start-background-broker",
+)
+
+# `bazel run rabbitmqctl -- stop`
+rabbitmqctl(
+    name = "rabbitmqctl",
+    home = ":broker-home",
+)
+
+rabbitmqctl(
+    name = "rabbitmq-plugins",
+    home = ":broker-home",
 )
 
 rust_library(
