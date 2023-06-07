@@ -44,8 +44,8 @@ jobs:
         docker exec $c rabbitmq-plugins enable rabbitmq_management
         sleep 3
         docker exec $c rabbitmqctl add_vhost /
-        docker exec $c rabbitmqctl add_user guest guest
-        docker exec $c rabbitmqctl set_permissions -p / guest ".*" ".*" ".*"
+        # docker exec $c rabbitmqctl add_user guest guest
+        # docker exec $c rabbitmqctl set_permissions -p / guest ".*" ".*" ".*"
     - name: TEST
       run: |
         bazel test //... \
