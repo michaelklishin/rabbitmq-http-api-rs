@@ -2,13 +2,18 @@ use crate::commons::{ExchangeType, PolicyTarget, QueueType};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 
+/// Properties of a [virtual host](https://rabbitmq.com/vhosts.html) to be created or updated.
 #[derive(Serialize)]
 pub struct VirtualHostParams<'a> {
+    /// Virtual host name
     pub name: &'a str,
+    /// Optional description, e.g. what purpose does this virtual host serve?
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<&'a str>,
+    // A list of virtual host tags
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tags: Option<Vec<&'a str>>,
+    //
     #[serde(skip_serializing_if = "Option::is_none")]
     pub default_queue_type: Option<QueueType>,
     pub tracing: bool,
@@ -26,6 +31,8 @@ impl<'a> VirtualHostParams<'a> {
     }
 }
 
+/// Represents resource usage a limit to be enforced
+/// on a [virtual host](https://rabbitmq.com/vhosts.html) or a user.
 #[derive(Serialize)]
 pub struct EnforcedLimitParams<T> {
     pub kind: T,
@@ -38,6 +45,7 @@ impl<T> EnforcedLimitParams<T> {
     }
 }
 
+/// Properties of a [user](https://rabbitmq.com/access-control.html#user-management) to be created or updated.
 #[derive(Serialize)]
 pub struct UserParams<'a> {
     pub name: &'a str,
@@ -47,14 +55,23 @@ pub struct UserParams<'a> {
 
 pub type XArguments = Option<Map<String, Value>>;
 
+/// [Queue](https://rabbitmq.com/queues.html) properties used at queue declaration time
 #[derive(Serialize)]
 pub struct QueueParams<'a> {
+    /// The name of the queue to declare.
+    /// Must be no longer than 255 bytes in length.
     pub name: &'a str,
+    /// The type of the queue to declare, such as
+    /// [quorum](https://rabbitmq.com/quorum-queues.html), classic, or [stream](https://rabbitmq.com/streams.html)
     #[serde(skip_serializing)]
     pub queue_type: QueueType,
+    /// [Queue durability](https://rabbitmq.com/queues.html#durability)
     pub durable: bool,
+    /// Should this queue be an [auto-delete](https://rabbitmq.com/queues.html#temporary-queues) one?
     pub auto_delete: bool,
+    /// Should this queue be an [exclusive](https://rabbitmq.com/queues.html#temporary-queues) one?
     pub exclusive: bool,
+    /// [Optional queue arguments](https://rabbitmq.com/queues.html#optional-arguments)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub arguments: XArguments,
 }
@@ -129,6 +146,7 @@ impl<'a> QueueParams<'a> {
     }
 }
 
+/// Exchange properties used at queue declaration time
 #[derive(Debug, Serialize)]
 pub struct ExchangeParams<'a> {
     pub name: &'a str,
@@ -240,6 +258,7 @@ impl<'a> ExchangeParams<'a> {
 
 pub type RuntimeParameterValue = Map<String, Value>;
 
+/// Represents a [runtime parameter](https://rabbitmq.com/parameters.html).
 #[derive(Serialize, Deserialize)]
 pub struct RuntimeParameterDefinition {
     pub name: String,
@@ -250,6 +269,7 @@ pub struct RuntimeParameterDefinition {
 
 pub type PolicyDefinition = Option<Map<String, Value>>;
 
+/// Represents a [policy](https://rabbitmq.com/parameters.html#policies).
 #[derive(Serialize)]
 pub struct PolicyParams<'a> {
     pub vhost: &'a str,
@@ -261,6 +281,7 @@ pub struct PolicyParams<'a> {
     pub definition: PolicyDefinition,
 }
 
+/// Represents a user's [permission in a particular virtual host](https://rabbitmq.com/access-control.html).
 #[derive(Serialize)]
 pub struct Permissions<'a> {
     pub user: &'a str,
