@@ -1,4 +1,4 @@
-#![allow()]
+#![allow(rustdoc::bare_urls)]
 //! # Rust client for the RabbitMQ HTTP API
 //!
 //! This library is Rust client for the [RabbitMQ HTTP API](https://rabbitmq.com/management.html#http-api).

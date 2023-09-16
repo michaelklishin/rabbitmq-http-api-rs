@@ -48,8 +48,12 @@ impl<T> EnforcedLimitParams<T> {
 /// Properties of a [user](https://rabbitmq.com/access-control.html#user-management) to be created or updated.
 #[derive(Serialize)]
 pub struct UserParams<'a> {
+    /// Username
     pub name: &'a str,
+    /// Hashed and salted password of the user.
+    /// Use functions in [`crate::password_hashing`] instead of [manually salting and hashing values](https://rabbitmq.com/passwords.html#computing-password-hash).
     pub password_hash: &'a str,
+    /// A comma-separate list of user tags
     pub tags: &'a str,
 }
 
