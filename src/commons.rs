@@ -119,6 +119,8 @@ impl From<QueueType> for String {
     }
 }
 
+/// Binding destination can be either a queue or another exchange
+/// (in the case of [exchange-to-exchange bindings](https://rabbitmq.com/e2e.html)).
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum BindingDestinationType {

@@ -77,6 +77,7 @@ pub struct QueueParams<'a> {
 }
 
 impl<'a> QueueParams<'a> {
+    /// Instantiates a [`QueueParams`] of a [quorum queue](https://rabbitmq.com/quorum-queues.html).
     pub fn new_quorum_queue(name: &'a str, optional_args: XArguments) -> Self {
         let typ = QueueType::Quorum;
         let args = Self::combined_args(optional_args, &typ);
@@ -90,6 +91,7 @@ impl<'a> QueueParams<'a> {
         }
     }
 
+    /// Instantiates a [`QueueParams`] of a [stream](https://rabbitmq.com/streams.html).
     pub fn new_stream(name: &'a str, optional_args: XArguments) -> Self {
         let typ = QueueType::Stream;
         let args = Self::combined_args(optional_args, &typ);
@@ -103,6 +105,7 @@ impl<'a> QueueParams<'a> {
         }
     }
 
+    /// Instantiates a [`QueueParams`] of a classic [durable queue](https://rabbitmq.com/queues.html).
     pub fn new_durable_classic_queue(name: &'a str, optional_args: XArguments) -> Self {
         let typ = QueueType::Classic;
         let args = Self::combined_args(optional_args, &typ);
@@ -163,6 +166,7 @@ impl<'a> ExchangeParams<'a> {
         Self::new(name, exchange_type, true, false, optional_args)
     }
 
+    /// Instantiates a [`ExchangeParams`] of a [fanout exchange]](https://rabbitmq.com/tutorials/tutorial-three-python.html).
     pub fn fanout(
         name: &'a str,
         durable: bool,
@@ -178,6 +182,7 @@ impl<'a> ExchangeParams<'a> {
         )
     }
 
+    /// Instantiates a [`ExchangeParams`] of a durable [fanout exchange]](https://rabbitmq.com/tutorials/tutorial-three-python.html).
     pub fn durable_fanout(name: &'a str, optional_args: XArguments) -> Self {
         Self::new(name, ExchangeType::Fanout, true, false, optional_args)
     }
@@ -197,10 +202,12 @@ impl<'a> ExchangeParams<'a> {
         )
     }
 
+    /// Instantiates a [`ExchangeParams`] of a durable [fanout exchange]](https://rabbitmq.com/tutorials/tutorial-five-python.html).
     pub fn durable_topic(name: &'a str, optional_args: XArguments) -> Self {
         Self::new(name, ExchangeType::Topic, true, false, optional_args)
     }
 
+    /// Instantiates a [`ExchangeParams`] of a [direct exchange]](https://rabbitmq.com/tutorials/tutorial-four-python.html).
     pub fn direct(
         name: &'a str,
         durable: bool,
@@ -216,10 +223,12 @@ impl<'a> ExchangeParams<'a> {
         )
     }
 
+    /// Instantiates a [`ExchangeParams`] of a durable [direct exchange]](https://rabbitmq.com/tutorials/tutorial-four-python.html).
     pub fn durable_direct(name: &'a str, optional_args: XArguments) -> Self {
         Self::new(name, ExchangeType::Direct, true, false, optional_args)
     }
 
+    /// Instantiates a [`ExchangeParams`] of a headers exchange
     pub fn headers(
         name: &'a str,
         durable: bool,
@@ -235,6 +244,7 @@ impl<'a> ExchangeParams<'a> {
         )
     }
 
+    /// Instantiates a [`ExchangeParams`] of a durable headers exchange
     pub fn durable_headers(name: &'a str, optional_args: XArguments) -> Self {
         Self::new(name, ExchangeType::Headers, true, false, optional_args)
     }
