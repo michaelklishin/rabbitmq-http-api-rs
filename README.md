@@ -1,6 +1,6 @@
 # A Rust Client for the RabbitMQ HTTP API
 
-This library is very immature and under heavy development.
+This library is young, breaking API changes are possible if not likely.
 
 ## License
 
