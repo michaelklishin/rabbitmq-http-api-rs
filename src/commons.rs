@@ -244,6 +244,7 @@ pub enum VirtualHostLimitTarget {
     MaxQueues,
 }
 
+#[allow(clippy::to_string_trait_impl)]
 impl ToString for VirtualHostLimitTarget {
     fn to_string(&self) -> String {
         match self {
@@ -289,6 +290,7 @@ pub enum UserLimitTarget {
     MaxChannels,
 }
 
+#[allow(clippy::to_string_trait_impl)]
 impl ToString for UserLimitTarget {
     fn to_string(&self) -> String {
         match self {

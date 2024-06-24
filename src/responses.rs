@@ -14,14 +14,14 @@ use std::borrow::Cow;
 #[cfg(feature = "tabled")]
 use tabled::Tabled;
 
-fn fmt_list(f: &mut fmt::Formatter<'_>, xs: &Vec<String>) -> fmt::Result {
+fn fmt_list(f: &mut fmt::Formatter<'_>, xs: &[String]) -> fmt::Result {
     match xs.len() {
         0 => {
             write!(f, "[]")
         }
         _ => {
             write!(f, "[")?;
-            let mut xs = xs.clone();
+            let mut xs = xs.to_owned();
             let last_element = xs.pop().unwrap();
             for elem in xs {
                 write!(f, "{}, ", elem)?;
