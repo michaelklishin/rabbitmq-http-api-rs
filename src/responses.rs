@@ -502,7 +502,6 @@ pub struct ClusterNode {
     pub fd_total: u32,
     #[serde(rename(deserialize = "proc_total"))]
     pub total_erlang_processes: u32,
-    pub sockets_total: u32,
     #[serde(rename(deserialize = "mem_limit"))]
     pub memory_high_watermark: u64,
     #[serde(rename(deserialize = "mem_alarm"))]
