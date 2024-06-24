@@ -14,14 +14,14 @@ use std::borrow::Cow;
 #[cfg(feature = "tabled")]
 use tabled::Tabled;
 
-fn fmt_list(f: &mut fmt::Formatter<'_>, xs: &Vec<String>) -> fmt::Result {
+fn fmt_list(f: &mut fmt::Formatter<'_>, xs: &[String]) -> fmt::Result {
     match xs.len() {
         0 => {
             write!(f, "[]")
         }
         _ => {
             write!(f, "[")?;
-            let mut xs = xs.clone();
+            let mut xs = xs.to_owned();
             let last_element = xs.pop().unwrap();
             for elem in xs {
                 write!(f, "{}, ", elem)?;
@@ -502,7 +502,6 @@ pub struct ClusterNode {
     pub fd_total: u32,
     #[serde(rename(deserialize = "proc_total"))]
     pub total_erlang_processes: u32,
-    pub sockets_total: u32,
     #[serde(rename(deserialize = "mem_limit"))]
     pub memory_high_watermark: u64,
     #[serde(rename(deserialize = "mem_alarm"))]
