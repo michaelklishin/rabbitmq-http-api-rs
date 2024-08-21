@@ -13,7 +13,7 @@ percent-encoding = "2"
 rand = "0.8"
 ring = "0.17"
 rbase64 = "2"
-tabled = { version = "0.15", features = ["derive", "macros"], optional = true }
+tabled = { version = "0.16", features = ["derive", "macros"], optional = true }
 
 [dev-dependencies]
 amqprs = "1"
