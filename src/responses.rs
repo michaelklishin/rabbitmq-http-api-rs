@@ -121,7 +121,7 @@ pub struct VirtualHostMetadata {
     pub default_queue_type: Option<String>,
 }
 
-/// Represents a [RabbitMQ virtual host](https://rabbitmq.com/vhosts.html).
+/// Represents a [RabbitMQ virtual host](https://rabbitmq.com/docs/vhosts/).
 #[derive(Debug, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]

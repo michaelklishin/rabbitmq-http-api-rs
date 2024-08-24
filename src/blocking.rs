@@ -42,7 +42,7 @@ pub enum Error {
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-/// A client for the [RabbitMQ HTTP API](https://rabbitmq.com/management.html#http-api).
+/// A client for the [RabbitMQ HTTP API](https://rabbitmq.com/docs/management/#http-api).
 ///
 /// Most functions provided by this type represent various HTTP API operations.
 /// For example,

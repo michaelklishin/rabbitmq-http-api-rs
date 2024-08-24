@@ -2,7 +2,7 @@ use crate::commons::{ExchangeType, PolicyTarget, QueueType};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 
-/// Properties of a [virtual host](https://rabbitmq.com/vhosts.html) to be created or updated.
+/// Properties of a [virtual host](https://rabbitmq.com/docs/vhosts/) to be created or updated.
 #[derive(Serialize)]
 pub struct VirtualHostParams<'a> {
     /// Virtual host name
@@ -32,7 +32,7 @@ impl<'a> VirtualHostParams<'a> {
 }
 
 /// Represents resource usage a limit to be enforced
-/// on a [virtual host](https://rabbitmq.com/vhosts.html) or a user.
+/// on a [virtual host](https://rabbitmq.com/docs/vhosts/) or a user.
 #[derive(Serialize)]
 pub struct EnforcedLimitParams<T> {
     pub kind: T,
@@ -45,13 +45,13 @@ impl<T> EnforcedLimitParams<T> {
     }
 }
 
-/// Properties of a [user](https://rabbitmq.com/access-control.html#user-management) to be created or updated.
+/// Properties of a [user](https://rabbitmq.com/docs/access-control/#user-management) to be created or updated.
 #[derive(Serialize)]
 pub struct UserParams<'a> {
     /// Username
     pub name: &'a str,
     /// Hashed and salted password of the user.
-    /// Use functions in [`crate::password_hashing`] instead of [manually salting and hashing values](https://rabbitmq.com/passwords.html#computing-password-hash).
+    /// Use functions in [`crate::password_hashing`] instead of [manually salting and hashing values](https://rabbitmq.com/docs/passwords/#computing-password-hash).
     pub password_hash: &'a str,
     /// A comma-separate list of user tags
     pub tags: &'a str,
@@ -59,29 +59,29 @@ pub struct UserParams<'a> {
 
 pub type XArguments = Option<Map<String, Value>>;
 
-/// [Queue](https://rabbitmq.com/queues.html) properties used at queue declaration time
+/// [Queue](https://rabbitmq.com/docs/queues/) properties used at queue declaration time
 #[derive(Serialize)]
 pub struct QueueParams<'a> {
     /// The name of the queue to declare.
     /// Must be no longer than 255 bytes in length.
     pub name: &'a str,
     /// The type of the queue to declare, such as
-    /// [quorum](https://rabbitmq.com/quorum-queues.html), classic, or [stream](https://rabbitmq.com/streams.html)
+    /// [quorum](https://rabbitmq.com/docs/quorum-queues.html), classic, or [stream](https://rabbitmq.com/streams/)
     #[serde(skip_serializing)]
     pub queue_type: QueueType,
-    /// [Queue durability](https://rabbitmq.com/queues.html#durability)
+    /// [Queue durability](https://rabbitmq.com/docs/queues/#durability)
     pub durable: bool,
-    /// Should this queue be an [auto-delete](https://rabbitmq.com/queues.html#temporary-queues) one?
+    /// Should this queue be an [auto-delete](https://rabbitmq.com/docs/queues/#temporary-queues) one?
     pub auto_delete: bool,
-    /// Should this queue be an [exclusive](https://rabbitmq.com/queues.html#temporary-queues) one?
+    /// Should this queue be an [exclusive](https://rabbitmq.com/docs/queues/#temporary-queues) one?
     pub exclusive: bool,
-    /// [Optional queue arguments](https://rabbitmq.com/queues.html#optional-arguments)
+    /// [Optional queue arguments](https://rabbitmq.com/docs/queues/#optional-arguments)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub arguments: XArguments,
 }
 
 impl<'a> QueueParams<'a> {
-    /// Instantiates a [`QueueParams`] of a [quorum queue](https://rabbitmq.com/quorum-queues.html).
+    /// Instantiates a [`QueueParams`] of a [quorum queue](https://rabbitmq.com/docs/quorum-queues/).
     pub fn new_quorum_queue(name: &'a str, optional_args: XArguments) -> Self {
         let typ = QueueType::Quorum;
         let args = Self::combined_args(optional_args, &typ);
@@ -95,7 +95,7 @@ impl<'a> QueueParams<'a> {
         }
     }
 
-    /// Instantiates a [`QueueParams`] of a [stream](https://rabbitmq.com/streams.html).
+    /// Instantiates a [`QueueParams`] of a [stream](https://rabbitmq.com/docs/streams/).
     pub fn new_stream(name: &'a str, optional_args: XArguments) -> Self {
         let typ = QueueType::Stream;
         let args = Self::combined_args(optional_args, &typ);
@@ -109,7 +109,7 @@ impl<'a> QueueParams<'a> {
         }
     }
 
-    /// Instantiates a [`QueueParams`] of a classic [durable queue](https://rabbitmq.com/queues.html).
+    /// Instantiates a [`QueueParams`] of a classic [durable queue](https://rabbitmq.com/docs/queues/).
     pub fn new_durable_classic_queue(name: &'a str, optional_args: XArguments) -> Self {
         let typ = QueueType::Classic;
         let args = Self::combined_args(optional_args, &typ);
@@ -170,7 +170,7 @@ impl<'a> ExchangeParams<'a> {
         Self::new(name, exchange_type, true, false, optional_args)
     }
 
-    /// Instantiates a [`ExchangeParams`] of a [fanout exchange]](https://rabbitmq.com/tutorials/tutorial-three-python.html).
+    /// Instantiates a [`ExchangeParams`] of a [fanout exchange]](https://rabbitmq.com/docs/tutorials/tutorial-three-python/).
     pub fn fanout(
         name: &'a str,
         durable: bool,
@@ -186,7 +186,7 @@ impl<'a> ExchangeParams<'a> {
         )
     }
 
-    /// Instantiates a [`ExchangeParams`] of a durable [fanout exchange]](https://rabbitmq.com/tutorials/tutorial-three-python.html).
+    /// Instantiates a [`ExchangeParams`] of a durable [fanout exchange]](https://rabbitmq.com/docs/tutorials/tutorial-three-python/).
     pub fn durable_fanout(name: &'a str, optional_args: XArguments) -> Self {
         Self::new(name, ExchangeType::Fanout, true, false, optional_args)
     }
@@ -206,12 +206,12 @@ impl<'a> ExchangeParams<'a> {
         )
     }
 
-    /// Instantiates a [`ExchangeParams`] of a durable [fanout exchange]](https://rabbitmq.com/tutorials/tutorial-five-python.html).
+    /// Instantiates a [`ExchangeParams`] of a durable [fanout exchange]](https://rabbitmq.com/docs/tutorials/tutorial-five-python/).
     pub fn durable_topic(name: &'a str, optional_args: XArguments) -> Self {
         Self::new(name, ExchangeType::Topic, true, false, optional_args)
     }
 
-    /// Instantiates a [`ExchangeParams`] of a [direct exchange]](https://rabbitmq.com/tutorials/tutorial-four-python.html).
+    /// Instantiates a [`ExchangeParams`] of a [direct exchange]](https://rabbitmq.com/docs/tutorials/tutorial-four-python/).
     pub fn direct(
         name: &'a str,
         durable: bool,
@@ -227,7 +227,7 @@ impl<'a> ExchangeParams<'a> {
         )
     }
 
-    /// Instantiates a [`ExchangeParams`] of a durable [direct exchange]](https://rabbitmq.com/tutorials/tutorial-four-python.html).
+    /// Instantiates a [`ExchangeParams`] of a durable [direct exchange]](https://rabbitmq.com/docs/tutorials/tutorial-four-python/).
     pub fn durable_direct(name: &'a str, optional_args: XArguments) -> Self {
         Self::new(name, ExchangeType::Direct, true, false, optional_args)
     }
@@ -272,7 +272,7 @@ impl<'a> ExchangeParams<'a> {
 
 pub type RuntimeParameterValue = Map<String, Value>;
 
-/// Represents a [runtime parameter](https://rabbitmq.com/parameters.html).
+/// Represents a [runtime parameter](https://rabbitmq.com/docs/parameters/).
 #[derive(Serialize, Deserialize)]
 pub struct RuntimeParameterDefinition {
     pub name: String,
@@ -283,7 +283,7 @@ pub struct RuntimeParameterDefinition {
 
 pub type PolicyDefinition = Option<Map<String, Value>>;
 
-/// Represents a [policy](https://rabbitmq.com/parameters.html#policies).
+/// Represents a [policy](https://rabbitmq.com/docs/parameters/#policies).
 #[derive(Serialize)]
 pub struct PolicyParams<'a> {
     pub vhost: &'a str,
@@ -295,7 +295,7 @@ pub struct PolicyParams<'a> {
     pub definition: PolicyDefinition,
 }
 
-/// Represents a user's [permission in a particular virtual host](https://rabbitmq.com/access-control.html).
+/// Represents a user's [permission in a particular virtual host](https://rabbitmq.com/docs/access-control/).
 #[derive(Serialize)]
 pub struct Permissions<'a> {
     pub user: &'a str,
