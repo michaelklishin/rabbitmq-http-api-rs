@@ -1,8 +1,35 @@
-use rabbitmq_http_client::{blocking::Client, requests::QueueParams};
+use rabbitmq_http_client::{blocking::Client, commons::QueueType, requests::QueueParams};
 use serde_json::{json, Map, Value};
 
 mod common;
 use crate::common::{endpoint, PASSWORD, USERNAME};
+
+#[test]
+fn test_declare_and_redeclare_a_classic_queue() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let vhost = "/";
+    let name = "rust.tests.cq.69373293479827";
+
+    let _ = rc.delete_queue(vhost, name);
+
+    let result1 = rc.get_queue_info(vhost, name);
+    assert!(result1.is_err());
+
+    let mut map = Map::<String, Value>::new();
+    map.insert("x-max-length".to_owned(), json!(10_000));
+    // note: x-queue-type will be injected by QueueParams::new_durable_classic_queue
+    let optional_args = Some(map);
+    let params = QueueParams::new_durable_classic_queue(name, optional_args.clone());
+    let result2 = rc.declare_queue(vhost, &params);
+    assert!(result2.is_ok(), "declare_queue returned {:?}", result2);
+
+    let params2 = QueueParams::new(name, QueueType::Classic, true, false, optional_args.clone());
+    let result3 = rc.declare_queue(vhost, &params2);
+    assert!(result3.is_ok(), "declare_queue returned {:?}", result3);
+
+    let _ = rc.delete_queue(vhost, name);
+}
 
 #[test]
 fn test_declare_a_quorum_queue() {
