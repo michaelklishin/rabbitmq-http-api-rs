@@ -464,6 +464,18 @@ pub struct QueueInfo {
 #[derive(Debug, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
+pub struct QueueDefinition {
+    pub name: String,
+    pub vhost: String,
+    pub durable: bool,
+    pub auto_delete: bool,
+    #[cfg_attr(feature = "tabled", tabled(skip))]
+    pub arguments: XArguments,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+#[allow(dead_code)]
 pub struct ExchangeInfo {
     pub name: String,
     pub vhost: String,
@@ -474,6 +486,7 @@ pub struct ExchangeInfo {
     #[cfg_attr(feature = "tabled", tabled(skip))]
     pub arguments: XArguments,
 }
+type ExchangeDefinition = ExchangeInfo;
 
 #[derive(Debug, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
@@ -567,6 +580,23 @@ pub struct Permissions {
     pub configure: String,
     pub read: String,
     pub write: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+#[allow(dead_code)]
+pub struct DefinitionSet {
+    #[serde(rename(deserialize = "rabbitmq_version"))]
+    pub server_version: String,
+    pub users: Vec<User>,
+    #[serde(rename(deserialize = "vhosts"))]
+    pub virtual_hosts: Vec<VirtualHost>,
+    pub permissions: Vec<Permissions>,
+
+    pub parameters: Vec<RuntimeParameter>,
+    pub policies: Vec<Policy>,
+
+    pub queues: Vec<QueueDefinition>,
+    pub exchanges: Vec<ExchangeDefinition>,
 }
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]

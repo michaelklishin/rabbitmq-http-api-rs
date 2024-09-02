@@ -17,6 +17,7 @@ use serde_json::{json, Map, Value};
 use std::{collections::HashMap, fmt::Display};
 
 use thiserror::Error;
+use crate::responses::DefinitionSet;
 
 type HttpClientResponse = reqwest::blocking::Response;
 
@@ -1012,9 +1013,21 @@ impl<'a> Client<'a> {
     // Definitions
 
     pub fn export_definitions(&self) -> Result<String> {
+        self.export_definitions_as_string()
+    }
+
+    pub fn export_definitions_as_string(&self) -> Result<String> {
         let response = self.http_get("definitions")?;
         let response2 = self.ok_or_status_code_error(response)?;
         response2.text().map_err(Error::from)
+    }
+
+    pub fn export_definitions_as_data(&self) -> Result<DefinitionSet> {
+        let response = self.http_get("definitions")?;
+        let response2 = self.ok_or_status_code_error(response)?;
+        response2
+            .json::<responses::DefinitionSet>()
+            .map_err(Error::from)
     }
 
     pub fn import_definitions(&self, definitions: Value) -> Result<()> {
