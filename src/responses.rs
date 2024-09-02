@@ -352,21 +352,6 @@ pub struct Consumer {
 impl Tabled for Consumer {
     const LENGTH: usize = 9;
 
-    fn headers() -> Vec<Cow<'static, str>> {
-        let mut hds: Vec<Cow<'static, str>> = Vec::with_capacity(Self::LENGTH);
-        hds.push(Cow::Borrowed("vhost"));
-        hds.push(Cow::Borrowed("queue"));
-        hds.push(Cow::Borrowed("consumer_tag"));
-        hds.push(Cow::Borrowed("manual_ack"));
-        hds.push(Cow::Borrowed("prefetch_count"));
-        hds.push(Cow::Borrowed("active"));
-        hds.push(Cow::Borrowed("exclusive"));
-        hds.push(Cow::Borrowed("arguments"));
-        hds.push(Cow::Borrowed("delivery_ack_timeout"));
-
-        hds
-    }
-
     fn fields(&self) -> Vec<Cow<'_, str>> {
         let mut fds: Vec<Cow<'static, str>> = Vec::with_capacity(Self::LENGTH);
         let qinfo = &self.queue;
@@ -381,6 +366,21 @@ impl Tabled for Consumer {
         fds.push(Cow::Owned(self.delivery_ack_timeout.to_string()));
 
         fds
+    }
+
+    fn headers() -> Vec<Cow<'static, str>> {
+        let mut hds: Vec<Cow<'static, str>> = Vec::with_capacity(Self::LENGTH);
+        hds.push(Cow::Borrowed("vhost"));
+        hds.push(Cow::Borrowed("queue"));
+        hds.push(Cow::Borrowed("consumer_tag"));
+        hds.push(Cow::Borrowed("manual_ack"));
+        hds.push(Cow::Borrowed("prefetch_count"));
+        hds.push(Cow::Borrowed("active"));
+        hds.push(Cow::Borrowed("exclusive"));
+        hds.push(Cow::Borrowed("arguments"));
+        hds.push(Cow::Borrowed("delivery_ack_timeout"));
+
+        hds
     }
 }
 
@@ -464,6 +464,18 @@ pub struct QueueInfo {
 #[derive(Debug, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
+pub struct QueueDefinition {
+    pub name: String,
+    pub vhost: String,
+    pub durable: bool,
+    pub auto_delete: bool,
+    #[cfg_attr(feature = "tabled", tabled(skip))]
+    pub arguments: XArguments,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+#[allow(dead_code)]
 pub struct ExchangeInfo {
     pub name: String,
     pub vhost: String,
@@ -474,6 +486,7 @@ pub struct ExchangeInfo {
     #[cfg_attr(feature = "tabled", tabled(skip))]
     pub arguments: XArguments,
 }
+type ExchangeDefinition = ExchangeInfo;
 
 #[derive(Debug, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
@@ -486,7 +499,8 @@ pub struct BindingInfo {
     pub routing_key: String,
     #[cfg_attr(feature = "tabled", tabled(skip))]
     pub arguments: XArguments,
-    pub properties_key: String,
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    pub properties_key: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -567,6 +581,24 @@ pub struct Permissions {
     pub configure: String,
     pub read: String,
     pub write: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+#[allow(dead_code)]
+pub struct DefinitionSet {
+    #[serde(rename(deserialize = "rabbitmq_version"))]
+    pub server_version: String,
+    pub users: Vec<User>,
+    #[serde(rename(deserialize = "vhosts"))]
+    pub virtual_hosts: Vec<VirtualHost>,
+    pub permissions: Vec<Permissions>,
+
+    pub parameters: Vec<RuntimeParameter>,
+    pub policies: Vec<Policy>,
+
+    pub queues: Vec<QueueDefinition>,
+    pub exchanges: Vec<ExchangeDefinition>,
+    pub bindings: Vec<BindingInfo>,
 }
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]

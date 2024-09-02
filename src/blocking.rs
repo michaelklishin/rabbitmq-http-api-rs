@@ -16,6 +16,7 @@ use serde::Serialize;
 use serde_json::{json, Map, Value};
 use std::{collections::HashMap, fmt::Display};
 
+use crate::responses::DefinitionSet;
 use thiserror::Error;
 
 type HttpClientResponse = reqwest::blocking::Response;
@@ -631,16 +632,31 @@ impl<'a> Client<'a> {
         match bs.len() {
             0 => Err(Error::NotFound()),
             1 => {
-                let first_key = bs.first().unwrap().properties_key.as_str();
-                let response = self.http_delete(&format!(
-                    // /api/bindings/vhost/e/exchange/[eq]/destination/props
-                    "bindings/{}/e/{}/{}/{}/{}",
-                    self.percent_encode(virtual_host),
-                    self.percent_encode(source),
-                    destination_type.path_appreviation(),
-                    self.percent_encode(destination),
-                    self.percent_encode(first_key),
-                ))?;
+                let first_key = bs.first().unwrap().properties_key.clone();
+                let path = match first_key {
+                    Some(pk) => {
+                        format!(
+                            // /api/bindings/vhost/e/exchange/[eq]/destination/props
+                            "bindings/{}/e/{}/{}/{}/{}",
+                            self.percent_encode(virtual_host),
+                            self.percent_encode(source),
+                            destination_type.path_appreviation(),
+                            self.percent_encode(destination),
+                            self.percent_encode(pk.as_str())
+                        )
+                    }
+                    None => {
+                        format!(
+                            // /api/bindings/vhost/e/exchange/[eq]/destination/
+                            "bindings/{}/e/{}/{}/{}",
+                            self.percent_encode(virtual_host),
+                            self.percent_encode(source),
+                            destination_type.path_appreviation(),
+                            self.percent_encode(destination),
+                        )
+                    }
+                };
+                let response = self.http_delete(&path)?;
                 self.ok_or_status_code_error(response)
             }
             _ => Err(Error::ManyMatchingBindings()),
@@ -1012,9 +1028,21 @@ impl<'a> Client<'a> {
     // Definitions
 
     pub fn export_definitions(&self) -> Result<String> {
+        self.export_definitions_as_string()
+    }
+
+    pub fn export_definitions_as_string(&self) -> Result<String> {
         let response = self.http_get("definitions")?;
         let response2 = self.ok_or_status_code_error(response)?;
         response2.text().map_err(Error::from)
+    }
+
+    pub fn export_definitions_as_data(&self) -> Result<DefinitionSet> {
+        let response = self.http_get("definitions")?;
+        let response2 = self.ok_or_status_code_error(response)?;
+        response2
+            .json::<responses::DefinitionSet>()
+            .map_err(Error::from)
     }
 
     pub fn import_definitions(&self, definitions: Value) -> Result<()> {
