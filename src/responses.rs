@@ -352,21 +352,6 @@ pub struct Consumer {
 impl Tabled for Consumer {
     const LENGTH: usize = 9;
 
-    fn headers() -> Vec<Cow<'static, str>> {
-        let mut hds: Vec<Cow<'static, str>> = Vec::with_capacity(Self::LENGTH);
-        hds.push(Cow::Borrowed("vhost"));
-        hds.push(Cow::Borrowed("queue"));
-        hds.push(Cow::Borrowed("consumer_tag"));
-        hds.push(Cow::Borrowed("manual_ack"));
-        hds.push(Cow::Borrowed("prefetch_count"));
-        hds.push(Cow::Borrowed("active"));
-        hds.push(Cow::Borrowed("exclusive"));
-        hds.push(Cow::Borrowed("arguments"));
-        hds.push(Cow::Borrowed("delivery_ack_timeout"));
-
-        hds
-    }
-
     fn fields(&self) -> Vec<Cow<'_, str>> {
         let mut fds: Vec<Cow<'static, str>> = Vec::with_capacity(Self::LENGTH);
         let qinfo = &self.queue;
@@ -381,6 +366,21 @@ impl Tabled for Consumer {
         fds.push(Cow::Owned(self.delivery_ack_timeout.to_string()));
 
         fds
+    }
+
+    fn headers() -> Vec<Cow<'static, str>> {
+        let mut hds: Vec<Cow<'static, str>> = Vec::with_capacity(Self::LENGTH);
+        hds.push(Cow::Borrowed("vhost"));
+        hds.push(Cow::Borrowed("queue"));
+        hds.push(Cow::Borrowed("consumer_tag"));
+        hds.push(Cow::Borrowed("manual_ack"));
+        hds.push(Cow::Borrowed("prefetch_count"));
+        hds.push(Cow::Borrowed("active"));
+        hds.push(Cow::Borrowed("exclusive"));
+        hds.push(Cow::Borrowed("arguments"));
+        hds.push(Cow::Borrowed("delivery_ack_timeout"));
+
+        hds
     }
 }
 
