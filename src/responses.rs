@@ -5,6 +5,7 @@ use crate::commons::{BindingDestinationType, PolicyTarget};
 use serde::{
     de::{MapAccess, Visitor},
     Deserialize,
+    Serialize
 };
 use serde_aux::prelude::*;
 use serde_json::Map;
@@ -44,7 +45,7 @@ where
     }
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TagList(pub Vec<String>);
 
 impl fmt::Display for TagList {
@@ -53,7 +54,7 @@ impl fmt::Display for TagList {
     }
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct XArguments(pub Map<String, serde_json::Value>);
 impl fmt::Display for XArguments {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -66,7 +67,7 @@ impl fmt::Display for XArguments {
     }
 }
 
-#[derive(Debug, Deserialize, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 #[serde(transparent)]
 pub struct RuntimeParameterValue(pub Map<String, serde_json::Value>);
 impl fmt::Display for RuntimeParameterValue {
@@ -109,7 +110,7 @@ impl fmt::Display for NodeList {
     }
 }
 
-#[derive(Debug, Deserialize, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 #[allow(dead_code)]
 pub struct VirtualHostMetadata {
     /// Optional tags
@@ -122,7 +123,7 @@ pub struct VirtualHostMetadata {
 }
 
 /// Represents a [RabbitMQ virtual host](https://rabbitmq.com/docs/vhosts/).
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct VirtualHost {
@@ -196,7 +197,7 @@ pub struct UserLimits {
     pub limits: EnforcedLimits,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct User {
@@ -461,7 +462,7 @@ pub struct QueueInfo {
     pub unacknowledged_message_count: u64,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct QueueDefinition {
@@ -473,7 +474,7 @@ pub struct QueueDefinition {
     pub arguments: XArguments,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct ExchangeInfo {
@@ -488,7 +489,7 @@ pub struct ExchangeInfo {
 }
 type ExchangeDefinition = ExchangeInfo;
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct BindingInfo {
@@ -527,7 +528,7 @@ pub struct ClusterNode {
     pub rates_mode: String,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct RuntimeParameter {
@@ -544,7 +545,7 @@ pub struct ClusterIdentity {
     pub name: String,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PolicyDefinition(pub Option<Map<String, serde_json::Value>>);
 
 impl fmt::Display for PolicyDefinition {
@@ -559,7 +560,7 @@ impl fmt::Display for PolicyDefinition {
     }
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct Policy {
@@ -572,7 +573,7 @@ pub struct Policy {
     pub definition: PolicyDefinition,
 }
 
-#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct Permissions {
@@ -583,7 +584,7 @@ pub struct Permissions {
     pub write: String,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct DefinitionSet {
     #[serde(rename(deserialize = "rabbitmq_version"))]
