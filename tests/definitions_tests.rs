@@ -63,15 +63,15 @@ fn test_export_definitions_as_data() {
     let defs = result.unwrap();
 
     assert!(
-        defs.virtual_hosts.len() > 0,
+        !defs.virtual_hosts.is_empty(),
         "expected more than zero virtual hosts in definitions"
     );
     assert!(
-        defs.users.len() > 0,
+        !defs.users.is_empty(),
         "expected more than zero users in definitions"
     );
     assert!(
-        defs.exchanges.len() > 0,
+        !defs.exchanges.is_empty(),
         "expected more than zero exchanges in definitions"
     );
 
@@ -102,8 +102,8 @@ fn test_export_definitions_as_data() {
         q_name
     );
 
-    let _ = rc.delete_exchange("/", &x_name);
-    let _ = rc.delete_policy("/", &qq_pol_name);
+    let _ = rc.delete_exchange("/", x_name);
+    let _ = rc.delete_policy("/", qq_pol_name);
 }
 
 #[test]
