@@ -632,16 +632,31 @@ impl<'a> Client<'a> {
         match bs.len() {
             0 => Err(Error::NotFound()),
             1 => {
-                let first_key = bs.first().unwrap().properties_key.as_str();
-                let response = self.http_delete(&format!(
-                    // /api/bindings/vhost/e/exchange/[eq]/destination/props
-                    "bindings/{}/e/{}/{}/{}/{}",
-                    self.percent_encode(virtual_host),
-                    self.percent_encode(source),
-                    destination_type.path_appreviation(),
-                    self.percent_encode(destination),
-                    self.percent_encode(first_key),
-                ))?;
+                let first_key = bs.first().unwrap().properties_key.clone();
+                let path = match first_key {
+                    Some(pk) => {
+                        format!(
+                            // /api/bindings/vhost/e/exchange/[eq]/destination/props
+                            "bindings/{}/e/{}/{}/{}/{}",
+                            self.percent_encode(virtual_host),
+                            self.percent_encode(source),
+                            destination_type.path_appreviation(),
+                            self.percent_encode(destination),
+                            self.percent_encode(pk.as_str())
+                        )
+                    }
+                    None => {
+                        format!(
+                            // /api/bindings/vhost/e/exchange/[eq]/destination/
+                            "bindings/{}/e/{}/{}/{}",
+                            self.percent_encode(virtual_host),
+                            self.percent_encode(source),
+                            destination_type.path_appreviation(),
+                            self.percent_encode(destination),
+                        )
+                    }
+                };
+                let response = self.http_delete(&path)?;
                 self.ok_or_status_code_error(response)
             }
             _ => Err(Error::ManyMatchingBindings()),

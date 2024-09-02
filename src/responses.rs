@@ -499,7 +499,7 @@ pub struct BindingInfo {
     pub routing_key: String,
     #[cfg_attr(feature = "tabled", tabled(skip))]
     pub arguments: XArguments,
-    pub properties_key: String,
+    pub properties_key: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -597,6 +597,7 @@ pub struct DefinitionSet {
 
     pub queues: Vec<QueueDefinition>,
     pub exchanges: Vec<ExchangeDefinition>,
+    pub bindings: Vec<BindingInfo>,
 }
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
