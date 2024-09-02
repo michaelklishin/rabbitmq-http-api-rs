@@ -2,9 +2,9 @@ use rabbitmq_http_client::blocking::Client;
 
 mod common;
 use crate::common::{await_metric_emission, endpoint, PASSWORD, USERNAME};
-use serde_json::{json, Map, Value};
 use rabbitmq_http_client::commons::PolicyTarget;
 use rabbitmq_http_client::requests::{ExchangeParams, PolicyParams, QueueParams};
+use serde_json::{json, Map, Value};
 
 #[test]
 fn test_export_definitions_as_string() {
@@ -12,7 +12,11 @@ fn test_export_definitions_as_string() {
     let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
     let result = rc.export_definitions_as_string();
 
-    assert!(result.is_ok(), "export_definitions_as_string returned {:?}", result);
+    assert!(
+        result.is_ok(),
+        "export_definitions_as_string returned {:?}",
+        result
+    );
 }
 
 #[test]
@@ -36,7 +40,7 @@ fn test_export_definitions_as_data() {
         pattern: "definitions.qq.limited",
         apply_to: PolicyTarget::QuorumQueues,
         priority: 1,
-        definition: Some(qq_pol_def_m)
+        definition: Some(qq_pol_def_m),
     });
     assert!(pol_result.is_ok());
 
@@ -50,25 +54,53 @@ fn test_export_definitions_as_data() {
     let result = rc.export_definitions_as_data();
     println!("defs: {:?}", result);
 
-    assert!(result.is_ok(), "export_definitions_as_data returned {:?}", result);
+    assert!(
+        result.is_ok(),
+        "export_definitions_as_data returned {:?}",
+        result
+    );
 
     let defs = result.unwrap();
 
-    assert!(defs.virtual_hosts.len() > 0, "expected more than zero virtual hosts in definitions");
-    assert!(defs.users.len() > 0, "expected more than zero users in definitions");
-    assert!(defs.exchanges.len() > 0, "expected more than zero exchanges in definitions");
+    assert!(
+        defs.virtual_hosts.len() > 0,
+        "expected more than zero virtual hosts in definitions"
+    );
+    assert!(
+        defs.users.len() > 0,
+        "expected more than zero users in definitions"
+    );
+    assert!(
+        defs.exchanges.len() > 0,
+        "expected more than zero exchanges in definitions"
+    );
 
     let u_found = defs.users.iter().any(|x| x.name == "rust3");
     assert!(u_found, "expected to find user {} in definitions", "rust3");
 
     let x_found = defs.exchanges.iter().any(|x| x.name == x_name);
-    assert!(x_found, "expected to find exchange {} in definitions", x_name);
+    assert!(
+        x_found,
+        "expected to find exchange {} in definitions",
+        x_name
+    );
 
     let qq_pol_found = defs.policies.iter().any(|p| p.name == qq_pol_name);
-    assert!(qq_pol_found, "expected to find policy {} in definitions", qq_pol_name);
+    assert!(
+        qq_pol_found,
+        "expected to find policy {} in definitions",
+        qq_pol_name
+    );
 
-    let b_found = defs.bindings.iter().any(|b| b.destination_type == "queue".into() && b.destination == q_name);
-    assert!(b_found, "expected to find a binding for queue {} in definitions", q_name);
+    let b_found = defs
+        .bindings
+        .iter()
+        .any(|b| b.destination_type == "queue".into() && b.destination == q_name);
+    assert!(
+        b_found,
+        "expected to find a binding for queue {} in definitions",
+        q_name
+    );
 
     let _ = rc.delete_exchange("/", &x_name);
     let _ = rc.delete_policy("/", &qq_pol_name);

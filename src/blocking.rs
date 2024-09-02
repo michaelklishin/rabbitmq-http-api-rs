@@ -16,8 +16,8 @@ use serde::Serialize;
 use serde_json::{json, Map, Value};
 use std::{collections::HashMap, fmt::Display};
 
-use thiserror::Error;
 use crate::responses::DefinitionSet;
+use thiserror::Error;
 
 type HttpClientResponse = reqwest::blocking::Response;
 

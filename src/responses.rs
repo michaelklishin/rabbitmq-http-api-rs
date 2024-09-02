@@ -499,6 +499,7 @@ pub struct BindingInfo {
     pub routing_key: String,
     #[cfg_attr(feature = "tabled", tabled(skip))]
     pub arguments: XArguments,
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
     pub properties_key: Option<String>,
 }
 
