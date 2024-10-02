@@ -4,7 +4,7 @@ use std::fmt;
 use crate::commons::{BindingDestinationType, PolicyTarget};
 use serde::{
     de::{MapAccess, Visitor},
-    Deserialize, Serialize
+    Deserialize, Serialize,
 };
 use serde_aux::prelude::*;
 use serde_json::Map;
