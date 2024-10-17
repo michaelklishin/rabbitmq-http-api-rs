@@ -1361,7 +1361,7 @@ where
     }
 
     fn rooted_path(&self, path: &str) -> String {
-        format!("/api/{}/{}", self.endpoint, path)
+        format!("{}/api/{}", self.endpoint, path)
     }
 }
 
