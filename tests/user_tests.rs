@@ -6,7 +6,7 @@ use crate::common::{endpoint, PASSWORD, USERNAME};
 #[test]
 fn test_list_users() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let result = rc.list_users();
 
     assert!(result.is_ok());
@@ -17,7 +17,7 @@ fn test_list_users() {
 #[test]
 fn test_get_user() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let name = "guest";
     let result = rc.get_user(name);
 
@@ -29,7 +29,7 @@ fn test_get_user() {
 #[test]
 fn test_user_creation() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let salt = password_hashing::salt();
     let password_hash =
@@ -47,7 +47,7 @@ fn test_user_creation() {
 #[test]
 fn test_user_deletion() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let salt = password_hashing::salt();
     let password_hash =

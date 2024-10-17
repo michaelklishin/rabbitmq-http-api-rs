@@ -9,7 +9,7 @@ use serde_json::{json, Map, Value};
 #[test]
 fn test_export_definitions_as_string() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let result = rc.export_definitions_as_string();
 
     assert!(
@@ -22,7 +22,7 @@ fn test_export_definitions_as_string() {
 #[test]
 fn test_export_definitions_as_data() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let x_name = "definitions_test.x.fanout";
     let mut x_args_m = Map::<String, Value>::new();
@@ -109,7 +109,7 @@ fn test_export_definitions_as_data() {
 #[test]
 fn test_import_definitions() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let _ = rc.delete_queue("/", "imported_queue");
     let defs = json!({  "queues": [
       {

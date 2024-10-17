@@ -12,6 +12,7 @@
 //! This means that the user can choose either of the licenses.
 
 /// The primary API: a blocking HTTP API client
+#[cfg(feature = "blocking")]
 pub mod blocking;
 /// Types commonly used by API requests and responses
 pub mod commons;

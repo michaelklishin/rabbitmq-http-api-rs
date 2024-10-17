@@ -6,7 +6,7 @@ use crate::common::{endpoint, PASSWORD, USERNAME};
 #[test]
 fn test_list_nodes() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let result = rc.list_nodes();
 
     assert!(result.is_ok());
@@ -17,7 +17,7 @@ fn test_list_nodes() {
 #[test]
 fn test_get_node_info() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let nodes = rc.list_nodes().unwrap();
     let name = nodes.first().unwrap().name.clone();
     let node = &rc.get_node_info(&name).unwrap();

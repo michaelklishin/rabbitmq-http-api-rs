@@ -10,11 +10,13 @@ use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
 use reqwest::{
     blocking::Client as HttpClient,
     header::{HeaderMap, HeaderValue, InvalidHeaderValue},
-    tls,
 };
 use serde::Serialize;
 use serde_json::{json, Map, Value};
-use std::{collections::HashMap, fmt::Display};
+use std::{
+    collections::HashMap,
+    fmt::{self, Display},
+};
 
 use crate::responses::DefinitionSet;
 use thiserror::Error;
@@ -43,6 +45,80 @@ pub enum Error {
 
 pub type Result<T> = std::result::Result<T, Error>;
 
+/// A `ClientBuilder` can be used to create a `Client` with custom configuration.
+pub struct ClientBuilder<E, U, P> {
+    endpoint: E,
+    username: U,
+    password: P,
+    client: HttpClient,
+}
+
+impl Default for ClientBuilder<&'static str, &'static str, &'static str> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl ClientBuilder<&'static str, &'static str, &'static str> {
+    /// Constructs a new `ClientBuilder`.
+    ///
+    /// This is the same as `Client::builder()`.
+    pub fn new() -> Self {
+        let client = HttpClient::new();
+        Self {
+            endpoint: "http://localhost:15672",
+            username: "guest",
+            password: "guest",
+            client,
+        }
+    }
+}
+
+impl<E, U, P> ClientBuilder<E, U, P>
+where
+    E: fmt::Display,
+    U: fmt::Display,
+    P: fmt::Display,
+{
+    pub fn with_basic_auth_credentials<NewU, NewP>(
+        self,
+        username: NewU,
+        password: NewP,
+    ) -> ClientBuilder<E, NewU, NewP>
+    where
+        NewU: fmt::Display,
+        NewP: fmt::Display,
+    {
+        ClientBuilder {
+            endpoint: self.endpoint,
+            username,
+            password,
+            client: self.client,
+        }
+    }
+
+    pub fn with_endpoint<T>(self, endpoint: T) -> ClientBuilder<T, U, P>
+    where
+        T: fmt::Display,
+    {
+        ClientBuilder {
+            endpoint,
+            username: self.username,
+            password: self.password,
+            client: self.client,
+        }
+    }
+
+    pub fn with_client(self, client: HttpClient) -> Self {
+        ClientBuilder { client, ..self }
+    }
+
+    /// Returns a `Client` that uses this `ClientBuilder` configuration.
+    pub fn build(self) -> Client<E, U, P> {
+        Client::from_http_client(self.client, self.endpoint, self.username, self.password)
+    }
+}
+
 /// A client for the [RabbitMQ HTTP API](https://rabbitmq.com/docs/management/#http-api).
 ///
 /// Most functions provided by this type represent various HTTP API operations.
@@ -68,36 +144,20 @@ pub type Result<T> = std::result::Result<T, Error>;
 /// // fetch information and metrics of a specific queue
 /// rc.get_queue_info("/", "qq.1");
 /// ```
-pub struct Client<'a> {
-    endpoint: &'a str,
-    username: &'a str,
-    password: &'a str,
-    ca_certificate: Option<reqwest::Certificate>,
-    skip_tls_peer_verification: bool,
+pub struct Client<E, U, P> {
+    endpoint: E,
+    username: U,
+    password: P,
+    client: HttpClient,
 }
 
-impl<'a> Client<'a> {
-    /// Instantiates a client for the specified endpoint.
-    /// Credentials default to guest/guest.
-    ///
-    /// Example
-    /// ```rust
-    /// use rabbitmq_http_client::blocking::Client;
-    ///
-    /// let endpoint = "http://localhost:15672/api/";
-    /// let rc = Client::new(&endpoint);
-    /// ```
-    pub fn new(endpoint: &'a str) -> Self {
-        Self {
-            endpoint,
-            username: "guest",
-            password: "guest",
-            ca_certificate: None,
-            skip_tls_peer_verification: false,
-        }
-    }
-
-    /// Configures basic HTTP Auth for authentication.
+impl<E, U, P> Client<E, U, P>
+where
+    E: fmt::Display,
+    U: fmt::Display,
+    P: fmt::Display,
+{
+    /// Instantiates a client for the specified endpoint with username and password.
     ///
     /// Example
     /// ```rust
@@ -106,47 +166,47 @@ impl<'a> Client<'a> {
     /// let endpoint = "http://localhost:15672/api/";
     /// let username = "username";
     /// let password = "password";
-    /// let rc = Client::new(&endpoint).with_basic_auth_credentials(&username, &password);
+    /// let rc = Client::new(endpoint, username, password);
     /// ```
-    pub fn with_basic_auth_credentials(mut self, username: &'a str, password: &'a str) -> Self {
-        self.username = username;
-        self.password = password;
-        self
+    pub fn new(endpoint: E, username: U, password: P) -> Self {
+        let client = HttpClient::builder().build().unwrap();
+
+        Self {
+            endpoint,
+            username,
+            password,
+            client,
+        }
     }
 
-    /// Configures a custom CA Certificate for TLS peer certificate chain verification.
+    /// Instantiates a client for the specified endpoint with username and password and pre-build HttpClient.
+    /// Credentials default to guest/guest.
     ///
     /// Example
     /// ```rust
-    /// # use rabbitmq_http_client::blocking::Client;
-    /// # use std::fs::File;
-    /// # use std::io::Read;
-    /// # fn call() -> Result<(), Box<dyn std::error::Error>> {
-    /// let endpoint = "http://localhost:15672/api/";
-    /// let mut buf = Vec::new();
-    /// File::open("ca_certificate.pem")?.read_to_end(&mut buf)?;
-    /// let rc = Client::new(&endpoint).with_pem_ca_certificate(buf);
-    /// # drop(call);
-    /// # Ok(())
-    /// # }
-    /// ```
-    pub fn with_pem_ca_certificate(mut self, ca_certificate: Vec<u8>) -> Result<Self> {
-        self.ca_certificate = Some(reqwest::Certificate::from_pem(&ca_certificate)?);
-        Ok(self)
-    }
-
-    /// Configures a custom CA Certificate for TLS peer certificate chain verification.
-    ///
-    /// Example
-    /// ```rust
+    /// use use reqwest::blocking::Client as HttpClient;
     /// use rabbitmq_http_client::blocking::Client;
     ///
+    /// let client = HttpClient::new();
     /// let endpoint = "http://localhost:15672/api/";
-    /// let rc = Client::new(&endpoint).without_tls_peer_verification().list_nodes();
+    /// let username = "username";
+    /// let password = "password";
+    /// let rc = Client::from_http_client(client, endpoint, username, password);
     /// ```
-    pub fn without_tls_peer_verification(mut self) -> Self {
-        self.skip_tls_peer_verification = true;
-        self
+    pub fn from_http_client(client: HttpClient, endpoint: E, username: U, password: P) -> Self {
+        Self {
+            endpoint,
+            username,
+            password,
+            client,
+        }
+    }
+
+    /// Creates a `ClientBuilder` to configure a `Client`.
+    ///
+    /// This is the same as `ClientBuilder::new()`.
+    pub fn builder() -> ClientBuilder<&'static str, &'static str, &'static str> {
+        ClientBuilder::new()
     }
 
     /// Lists cluster nodes.
@@ -1182,9 +1242,9 @@ impl<'a> Client<'a> {
 
     fn http_get(&self, path: &str) -> crate::blocking::Result<HttpClientResponse> {
         let response = self
-            .http_client()
+            .client
             .get(self.rooted_path(path))
-            .basic_auth(self.username, Some(self.password))
+            .basic_auth(&self.username, Some(&self.password))
             .send();
 
         self.ok_or_http_client_error(response)
@@ -1195,10 +1255,10 @@ impl<'a> Client<'a> {
         T: Serialize,
     {
         let response = self
-            .http_client()
+            .client
             .put(self.rooted_path(path))
             .json(&payload)
-            .basic_auth(self.username, Some(self.password))
+            .basic_auth(&self.username, Some(&self.password))
             .send();
 
         self.ok_or_http_client_error(response)
@@ -1209,10 +1269,10 @@ impl<'a> Client<'a> {
         T: Serialize,
     {
         let response = self
-            .http_client()
+            .client
             .post(self.rooted_path(path))
             .json(&payload)
-            .basic_auth(self.username, Some(self.password))
+            .basic_auth(&self.username, Some(&self.password))
             .send();
 
         self.ok_or_http_client_error(response)
@@ -1220,9 +1280,9 @@ impl<'a> Client<'a> {
 
     fn http_delete(&self, path: &str) -> crate::blocking::Result<HttpClientResponse> {
         let response = self
-            .http_client()
+            .client
             .delete(self.rooted_path(path))
-            .basic_auth(self.username, Some(self.password))
+            .basic_auth(&self.username, Some(&self.password))
             .send();
         self.ok_or_http_client_error(response)
     }
@@ -1233,9 +1293,9 @@ impl<'a> Client<'a> {
         headers: HeaderMap,
     ) -> crate::blocking::Result<HttpClientResponse> {
         let response = self
-            .http_client()
+            .client
             .delete(self.rooted_path(path))
-            .basic_auth(self.username, Some(self.password))
+            .basic_auth(&self.username, Some(&self.password))
             .headers(headers)
             .send();
         self.ok_or_http_client_error(response)
@@ -1282,27 +1342,6 @@ impl<'a> Client<'a> {
         Ok(response)
     }
 
-    fn http_client(&self) -> HttpClient {
-        let mut builder = HttpClient::builder();
-
-        if self.endpoint.starts_with("https://") {
-            builder = builder
-                .use_rustls_tls()
-                .min_tls_version(tls::Version::TLS_1_2)
-                .max_tls_version(tls::Version::TLS_1_3);
-
-            if self.skip_tls_peer_verification {
-                builder = builder.danger_accept_invalid_certs(true);
-            };
-
-            if let Some(cert) = &self.ca_certificate {
-                builder = builder.add_root_certificate(cert.clone());
-            }
-        }
-
-        builder.build().unwrap()
-    }
-
     fn ok_or_status_code_error_except_503(
         &self,
         response: HttpClientResponse,
@@ -1322,19 +1361,13 @@ impl<'a> Client<'a> {
     }
 
     fn rooted_path(&self, path: &str) -> String {
-        format!("{}/{}", self.endpoint, path)
+        format!("/api/{}/{}", self.endpoint, path)
     }
 }
 
-impl<'a> Default for Client<'a> {
+impl Default for Client<&'static str, &'static str, &'static str> {
     fn default() -> Self {
-        Self {
-            endpoint: "http://localhost:15672",
-            username: "guest",
-            password: "guest",
-            ca_certificate: None,
-            skip_tls_peer_verification: false,
-        }
+        Self::new("http://localhost:15672", "guest", "guest")
     }
 }
 

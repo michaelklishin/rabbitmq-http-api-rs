@@ -6,7 +6,7 @@ use crate::common::{endpoint, PASSWORD, USERNAME};
 #[test]
 fn test_get_cluster_name() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let result = rc.get_cluster_name();
     assert!(result.is_ok());
@@ -17,7 +17,7 @@ fn test_get_cluster_name() {
 #[test]
 fn test_set_cluster_name() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let result1 = rc.get_cluster_name();
     assert!(result1.is_ok());

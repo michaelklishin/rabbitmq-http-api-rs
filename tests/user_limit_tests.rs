@@ -11,7 +11,7 @@ use crate::common::{endpoint, PASSWORD, USERNAME};
 #[test]
 fn test_list_all_user_limits() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let salt = password_hashing::salt();
     let password_hash =
@@ -49,7 +49,7 @@ fn test_list_all_user_limits() {
 #[test]
 fn test_list_user_limits() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let salt = password_hashing::salt();
     let password_hash =

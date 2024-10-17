@@ -8,7 +8,7 @@ use crate::common::{endpoint, PASSWORD, USERNAME};
 #[test]
 fn test_list_permissions() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let vh_params = VirtualHostParams::named("test_list_permissions");
     let _ = rc.delete_vhost(vh_params.name);
@@ -34,7 +34,7 @@ fn test_list_permissions() {
 #[test]
 fn test_list_permissions_in() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let vh_params = VirtualHostParams::named("test_list_permissions_in");
     let _ = rc.delete_vhost(vh_params.name);
@@ -60,7 +60,7 @@ fn test_list_permissions_in() {
 #[test]
 fn test_list_permissions_of() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let vh_params = VirtualHostParams::named("test_list_permissions_of");
     let _ = rc.delete_vhost(vh_params.name);
@@ -86,7 +86,7 @@ fn test_list_permissions_of() {
 #[test]
 fn test_get_permissions() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let vh_params = VirtualHostParams::named("test_get_permissions");
     let _ = rc.delete_vhost(vh_params.name);
@@ -118,7 +118,7 @@ fn test_get_permissions() {
 #[test]
 fn test_grant_permissions() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let vh_params = VirtualHostParams::named("test_grant_permissions");
     let _ = rc.delete_vhost(vh_params.name);

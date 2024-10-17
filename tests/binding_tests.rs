@@ -10,7 +10,7 @@ use crate::common::{endpoint, PASSWORD, USERNAME};
 #[test]
 fn test_list_all_bindings() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let vh_name = "/";
     let cq = "rust.cq.durable.1";
@@ -42,7 +42,7 @@ fn test_list_all_bindings() {
 #[test]
 fn test_list_only_queue_bindings() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let vh_name = "/";
     let cq = "rust.cq.durable.2";
@@ -74,7 +74,7 @@ fn test_list_only_queue_bindings() {
 #[test]
 fn test_list_only_exchange_bindings() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let vh_name = "/";
     let cq = "rust.cq.durable.3";
@@ -137,7 +137,7 @@ fn test_list_only_exchange_bindings() {
 #[test]
 fn test_delete_queue_bindings() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let vh_name = "/";
     let cq = "rust.cq.delete_queue_binding";
@@ -194,7 +194,7 @@ fn test_delete_queue_bindings() {
 #[test]
 fn test_delete_exchange_bindings() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let vh_name = "/";
     let fanout = "amq.fanout";
