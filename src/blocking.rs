@@ -46,6 +46,22 @@ pub enum Error {
 pub type Result<T> = std::result::Result<T, Error>;
 
 /// A `ClientBuilder` can be used to create a `Client` with custom configuration.
+///
+/// Example
+/// ```rust
+/// use rabbitmq_http_client::blocking::ClientBuilder;
+///
+/// let endpoint = "http://localhost:15672";
+/// let username = "username";
+/// let password = "password";
+/// let rc = ClientBuilder::new().with_endpoint(&endpoint).with_basic_auth_credentials(&username, &password).build();
+/// // list cluster nodes
+/// rc.list_nodes();
+/// // list user connections
+/// rc.list_connections();
+/// // fetch information and metrics of a specific queue
+/// rc.get_queue_info("/", "qq.1");
+/// ```
 pub struct ClientBuilder<E, U, P> {
     endpoint: E,
     username: U,
@@ -133,10 +149,10 @@ where
 /// ```rust
 /// use rabbitmq_http_client::blocking::Client;
 ///
-/// let endpoint = "http://localhost:15672/api/";
+/// let endpoint = "http://localhost:15672";
 /// let username = "username";
 /// let password = "password";
-/// let rc = Client::new(&endpoint).with_basic_auth_credentials(&username, &password);
+/// let rc = Client::new(&endpoint, &username, &password);
 /// // list cluster nodes
 /// rc.list_nodes();
 /// // list user connections
@@ -163,7 +179,7 @@ where
     /// ```rust
     /// use rabbitmq_http_client::blocking::Client;
     ///
-    /// let endpoint = "http://localhost:15672/api/";
+    /// let endpoint = "http://localhost:15672";
     /// let username = "username";
     /// let password = "password";
     /// let rc = Client::new(endpoint, username, password);
@@ -184,11 +200,11 @@ where
     ///
     /// Example
     /// ```rust
-    /// use use reqwest::blocking::Client as HttpClient;
+    /// use reqwest::blocking::Client as HttpClient;
     /// use rabbitmq_http_client::blocking::Client;
     ///
     /// let client = HttpClient::new();
-    /// let endpoint = "http://localhost:15672/api/";
+    /// let endpoint = "http://localhost:15672";
     /// let username = "username";
     /// let password = "password";
     /// let rc = Client::from_http_client(client, endpoint, username, password);
