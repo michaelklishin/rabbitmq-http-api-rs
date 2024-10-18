@@ -6,7 +6,7 @@ use crate::common::{endpoint, PASSWORD, USERNAME};
 #[test]
 fn test_list_connections() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let result1 = rc.list_connections();
     assert!(result1.is_ok(), "list_connections returned {:?}", result1);
@@ -15,7 +15,7 @@ fn test_list_connections() {
 #[test]
 fn test_list_user_connections() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let result1 = rc.list_user_connections(USERNAME);
     assert!(
@@ -28,7 +28,7 @@ fn test_list_user_connections() {
 #[test]
 fn test_list_virtual_host_connections() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let vh_name = "/";
     let result1 = rc.list_connections_in(vh_name);

@@ -11,7 +11,7 @@ use crate::common::{endpoint, PASSWORD, USERNAME};
 #[test]
 fn test_publish_and_get() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let vhost = "/";
     let queue = "rust.tests.cq.publish_and_get";
 

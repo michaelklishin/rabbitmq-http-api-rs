@@ -6,7 +6,7 @@ use crate::common::{endpoint, PASSWORD, USERNAME};
 #[test]
 fn test_list_vhosts() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let result = rc.list_vhosts();
 
     assert!(result.is_ok());
@@ -17,7 +17,7 @@ fn test_list_vhosts() {
 #[test]
 fn test_get_vhost() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let name = "/";
     let result = rc.get_vhost(name);
 
@@ -29,7 +29,7 @@ fn test_get_vhost() {
 #[test]
 fn test_create_vhost() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let name = "rust_test_create_vhost";
 
     let _ = rc.delete_vhost(name);
@@ -59,7 +59,7 @@ fn test_create_vhost() {
 #[test]
 fn test_update_vhost() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let name = "rust_test_update_vhost";
 
     let _ = rc.delete_vhost(name);
@@ -97,7 +97,7 @@ fn test_update_vhost() {
 #[test]
 fn test_delete_vhost() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let name = "rust_test_delete_vhost";
 
     let desc = format!("{} description", &name);

@@ -11,7 +11,7 @@ use crate::common::{endpoint, PASSWORD, USERNAME};
 #[test]
 fn test_message_ttl_policy() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(endpoint.as_str(), USERNAME, PASSWORD);
 
     let vh_params = VirtualHostParams::named("test_message_ttl_policy");
     let _ = rc.delete_vhost(vh_params.name);
@@ -38,7 +38,7 @@ fn test_message_ttl_policy() {
 #[test]
 fn test_dlx_policy() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(endpoint.as_str(), USERNAME, PASSWORD);
 
     let mut map = Map::<String, Value>::new();
     map.insert("dead-letter-exchange".to_owned(), json!("my-dlx"));
@@ -65,7 +65,7 @@ fn test_dlx_policy() {
 #[test]
 fn test_operator_policy() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(endpoint.as_str(), USERNAME, PASSWORD);
 
     let mut map = Map::<String, Value>::new();
     map.insert("delivery-limit".to_owned(), json!(13));
@@ -89,7 +89,7 @@ fn test_operator_policy() {
     // let _ = rc.delete_vhost(vh_params.name);
 }
 
-fn test_a_policy(rc: &Client, policy: &PolicyParams) {
+fn test_a_policy(rc: &Client<&str, &str, &str>, policy: &PolicyParams) {
     // initially, there should be no such policy
     let policies = rc.list_policies_in(policy.vhost).unwrap();
     assert!(!policies.iter().any(|p| p.name == policy.name));
@@ -109,7 +109,7 @@ fn test_a_policy(rc: &Client, policy: &PolicyParams) {
     assert!(!policies.iter().any(|p| p.name == policy.name));
 }
 
-fn test_an_operator_policy(rc: &Client, policy: &PolicyParams) {
+fn test_an_operator_policy(rc: &Client<&str, &str, &str>, policy: &PolicyParams) {
     // initially, there should be no such policy
     let policies = rc.list_operator_policies_in(policy.vhost).unwrap();
     assert!(!policies.iter().any(|p| p.name == policy.name));

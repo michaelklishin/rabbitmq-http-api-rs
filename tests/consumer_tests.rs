@@ -6,7 +6,7 @@ use crate::common::{endpoint, PASSWORD, USERNAME};
 #[test]
 fn test_list_consumers() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let result1 = rc.list_consumers();
     assert!(result1.is_ok(), "list_consumers returned {:?}", result1);
@@ -15,7 +15,7 @@ fn test_list_consumers() {
 #[test]
 fn test_list_vhost_consumers() {
     let endpoint = endpoint();
-    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let vh_params = VirtualHostParams::named("test_list_vhost_consumers");
     let result1 = rc.create_vhost(&vh_params);
