@@ -45,8 +45,7 @@ jobs:
         with:
           toolchain: ${{ matrix.rust-version }}
 
-      - name: Install cargo-nextest
-        run: cargo install cargo-nextest
+      - uses: taiki-e/install-action@nextest
 
       - name: Wait for node to start booting
         run: sleep 15
