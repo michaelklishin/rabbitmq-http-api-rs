@@ -34,14 +34,14 @@ fn test_list_all_user_limits() {
     let vec = result3.unwrap();
     assert!(vec.iter().any(|it| it.username == params.name));
 
-    let key1 = UserLimitTarget::MaxConnections.to_string();
+    let key1 = UserLimitTarget::MaxConnections;
     assert!(!vec
         .iter()
-        .any(|it| it.username == params.name && it.limits.get(&key1).is_some()));
-    let key2 = UserLimitTarget::MaxChannels.to_string();
+        .any(|it| it.username == params.name && it.limits.get(key1.as_ref()).is_some()));
+    let key2 = UserLimitTarget::MaxChannels;
     assert!(vec
         .iter()
-        .any(|it| it.username == params.name && it.limits.get(&key2).is_some()));
+        .any(|it| it.username == params.name && it.limits.get(key2.as_ref()).is_some()));
 
     rc.delete_user(params.name).unwrap();
 }
@@ -72,14 +72,14 @@ fn test_list_user_limits() {
     assert!(result3.is_ok());
     let vec = result3.unwrap();
 
-    let key1 = UserLimitTarget::MaxChannels.to_string();
+    let key1 = UserLimitTarget::MaxChannels;
     assert!(vec
         .iter()
-        .any(|it| it.username == params.name && it.limits.get(&key1).is_some()));
-    let key2 = UserLimitTarget::MaxConnections.to_string();
+        .any(|it| it.username == params.name && it.limits.get(key1.as_ref()).is_some()));
+    let key2 = UserLimitTarget::MaxConnections;
     assert!(!vec
         .iter()
-        .any(|it| it.username == params.name && it.limits.get(&key2).is_some()));
+        .any(|it| it.username == params.name && it.limits.get(key2.as_ref()).is_some()));
 
     rc.delete_user(params.name).unwrap();
 }

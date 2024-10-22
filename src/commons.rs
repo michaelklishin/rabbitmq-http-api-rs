@@ -1,6 +1,6 @@
-use serde::{Deserialize, Serialize};
 use std::fmt;
-use std::fmt::Formatter;
+
+use serde::{Deserialize, Serialize};
 
 /// Exchange types. Most variants are for exchange types included with modern RabbitMQ distributions.
 /// For custom types provided by 3rd party plugins, use the `Plugin(String)` variant.
@@ -129,7 +129,7 @@ pub enum BindingDestinationType {
 }
 
 impl fmt::Display for BindingDestinationType {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             BindingDestinationType::Queue => write!(f, "queue")?,
             BindingDestinationType::Exchange => write!(f, "exchange")?,
@@ -189,7 +189,7 @@ pub enum PolicyTarget {
 }
 
 impl fmt::Display for PolicyTarget {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", Into::<String>::into(self.clone()))?;
 
         Ok(())
@@ -244,12 +244,11 @@ pub enum VirtualHostLimitTarget {
     MaxQueues,
 }
 
-#[allow(clippy::to_string_trait_impl)]
-impl ToString for VirtualHostLimitTarget {
-    fn to_string(&self) -> String {
+impl AsRef<str> for VirtualHostLimitTarget {
+    fn as_ref(&self) -> &str {
         match self {
-            VirtualHostLimitTarget::MaxConnections => "max-connections".to_owned(),
-            VirtualHostLimitTarget::MaxQueues => "max-queues".to_owned(),
+            VirtualHostLimitTarget::MaxConnections => "max-connections",
+            VirtualHostLimitTarget::MaxQueues => "max-queues",
         }
     }
 }
@@ -276,10 +275,7 @@ impl From<String> for VirtualHostLimitTarget {
 
 impl From<VirtualHostLimitTarget> for String {
     fn from(value: VirtualHostLimitTarget) -> Self {
-        match value {
-            VirtualHostLimitTarget::MaxConnections => "max-connections".to_owned(),
-            VirtualHostLimitTarget::MaxQueues => "max-queues".to_owned(),
-        }
+        value.as_ref().to_string()
     }
 }
 
@@ -290,12 +286,11 @@ pub enum UserLimitTarget {
     MaxChannels,
 }
 
-#[allow(clippy::to_string_trait_impl)]
-impl ToString for UserLimitTarget {
-    fn to_string(&self) -> String {
+impl AsRef<str> for UserLimitTarget {
+    fn as_ref(&self) -> &str {
         match self {
-            UserLimitTarget::MaxConnections => "max-connections".to_owned(),
-            UserLimitTarget::MaxChannels => "max-channels".to_owned(),
+            UserLimitTarget::MaxConnections => "max-connections",
+            UserLimitTarget::MaxChannels => "max-channels",
         }
     }
 }
@@ -322,9 +317,6 @@ impl From<String> for UserLimitTarget {
 
 impl From<UserLimitTarget> for String {
     fn from(value: UserLimitTarget) -> Self {
-        match value {
-            UserLimitTarget::MaxConnections => "max-connections".to_owned(),
-            UserLimitTarget::MaxChannels => "max-channels".to_owned(),
-        }
+        value.as_ref().to_string()
     }
 }

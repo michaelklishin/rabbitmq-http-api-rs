@@ -22,3 +22,5 @@ pub mod password_hashing;
 pub mod requests;
 /// API response types
 pub mod responses;
+
+mod utils;

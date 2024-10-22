@@ -1,5 +1,4 @@
-use std::borrow::Borrow;
-use std::fmt;
+use std::{fmt, ops};
 
 use crate::commons::{BindingDestinationType, PolicyTarget};
 use serde::{
@@ -55,6 +54,7 @@ impl fmt::Display for TagList {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct XArguments(pub Map<String, serde_json::Value>);
+
 impl fmt::Display for XArguments {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let coll = &self.0;
@@ -69,6 +69,15 @@ impl fmt::Display for XArguments {
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 #[serde(transparent)]
 pub struct RuntimeParameterValue(pub Map<String, serde_json::Value>);
+
+impl ops::Deref for RuntimeParameterValue {
+    type Target = Map<String, serde_json::Value>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 impl fmt::Display for RuntimeParameterValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let coll = &self.0;
@@ -77,26 +86,6 @@ impl fmt::Display for RuntimeParameterValue {
         }
 
         Ok(())
-    }
-}
-
-impl RuntimeParameterValue {
-    #[inline]
-    pub fn get<Q>(&self, key: &Q) -> Option<&serde_json::Value>
-    where
-        String: Borrow<Q>,
-        Q: ?Sized + Ord + Eq + core::hash::Hash,
-    {
-        self.0.get(key)
-    }
-
-    #[inline]
-    pub fn contains_key<Q>(&self, key: &Q) -> bool
-    where
-        String: Borrow<Q>,
-        Q: ?Sized + Ord + Eq + core::hash::Hash,
-    {
-        self.0.contains_key(key)
     }
 }
 
@@ -146,23 +135,11 @@ pub struct VirtualHost {
 #[derive(Debug, Deserialize, Clone)]
 pub struct EnforcedLimits(pub Map<String, serde_json::Value>);
 
-impl EnforcedLimits {
-    #[inline]
-    pub fn get<Q>(&self, key: &Q) -> Option<&serde_json::Value>
-    where
-        String: Borrow<Q>,
-        Q: ?Sized + Ord + Eq + core::hash::Hash,
-    {
-        self.0.get(key)
-    }
+impl ops::Deref for EnforcedLimits {
+    type Target = Map<String, serde_json::Value>;
 
-    #[inline]
-    pub fn contains_key<Q>(&self, key: &Q) -> bool
-    where
-        String: Borrow<Q>,
-        Q: ?Sized + Ord + Eq + core::hash::Hash,
-    {
-        self.0.contains_key(key)
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 

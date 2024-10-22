@@ -25,14 +25,14 @@ fn test_list_all_vhost_limits() {
     let vec = result3.unwrap();
     assert!(vec.iter().any(|it| it.vhost == vh_params.name));
 
-    let key1 = VirtualHostLimitTarget::MaxConnections.to_string();
+    let key1 = VirtualHostLimitTarget::MaxConnections;
     assert!(!vec
         .iter()
-        .any(|it| it.vhost == vh_params.name && it.limits.get(&key1).is_some()));
-    let key2 = VirtualHostLimitTarget::MaxQueues.to_string();
+        .any(|it| it.vhost == vh_params.name && it.limits.get(key1.as_ref()).is_some()));
+    let key2 = VirtualHostLimitTarget::MaxQueues;
     assert!(vec
         .iter()
-        .any(|it| it.vhost == vh_params.name && it.limits.get(&key2).is_some()));
+        .any(|it| it.vhost == vh_params.name && it.limits.get(key2.as_ref()).is_some()));
 
     rc.delete_vhost(vh_params.name).unwrap();
 }
@@ -54,14 +54,14 @@ fn test_list_vhost_limits() {
     assert!(result3.is_ok());
     let vec = result3.unwrap();
 
-    let key1 = VirtualHostLimitTarget::MaxConnections.to_string();
+    let key1 = VirtualHostLimitTarget::MaxConnections;
     assert!(vec
         .iter()
-        .any(|it| it.vhost == vh_params.name && it.limits.get(&key1).is_some()));
-    let key2 = VirtualHostLimitTarget::MaxQueues.to_string();
+        .any(|it| it.vhost == vh_params.name && it.limits.get(key1.as_ref()).is_some()));
+    let key2 = VirtualHostLimitTarget::MaxQueues;
     assert!(!vec
         .iter()
-        .any(|it| it.vhost == vh_params.name && it.limits.get(&key2).is_some()));
+        .any(|it| it.vhost == vh_params.name && it.limits.get(key2.as_ref()).is_some()));
 
     rc.delete_vhost(vh_params.name).unwrap();
 }
