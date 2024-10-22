@@ -2,15 +2,15 @@ use std::fmt;
 
 use reqwest::{
     blocking::Client as HttpClient,
-    header::{HeaderMap, HeaderValue, InvalidHeaderValue},
+    header::{HeaderMap, HeaderValue},
     StatusCode,
 };
 use serde::Serialize;
 use serde_json::{json, Map, Value};
-use thiserror::Error;
 
 use crate::{
     commons::{BindingDestinationType, UserLimitTarget, VirtualHostLimitTarget},
+    error::Error,
     path,
     requests::{
         self, EnforcedLimitParams, ExchangeParams, Permissions, PolicyParams, QueueParams,
@@ -21,27 +21,7 @@ use crate::{
 
 type HttpClientResponse = reqwest::blocking::Response;
 
-#[derive(Error, Debug)]
-pub enum Error {
-    #[error("encountered an error when performing an HTTP request")]
-    RequestError(#[from] reqwest::Error),
-    #[error("API responded with a client error: status code of {0}")]
-    ClientErrorResponse(StatusCode, HttpClientResponse),
-    #[error("API responded with a server error: status code of {0}")]
-    ServerErrorResponse(StatusCode, HttpClientResponse),
-    #[error("Health check failed: resource alarms are in effect")]
-    HealthCheckFailed(responses::HealthCheckFailureDetails),
-    #[error("Could not find the requested resource")]
-    NotFound(),
-    #[error("Can't delete a binding: multiple matching bindings found")]
-    ManyMatchingBindings(),
-    #[error("could not convert provided value into an HTTP header value")]
-    InvalidHeaderValue(#[from] InvalidHeaderValue),
-    #[error("an unspecified error")]
-    Other,
-}
-
-pub type Result<T> = std::result::Result<T, Error>;
+pub type Result<T> = std::result::Result<T, Error<HttpClientResponse>>;
 
 /// A `ClientBuilder` can be used to create a `Client` with custom configuration.
 ///
