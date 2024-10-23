@@ -154,7 +154,7 @@ where
     ///
     /// Example
     /// ```rust
-    /// use rabbitmq_http_client::blocking::Client;
+    /// use rabbitmq_http_client::api::Client;
     ///
     /// let endpoint = "http://localhost:15672";
     /// let username = "username";
@@ -177,7 +177,7 @@ where
     ///
     /// Example
     /// ```rust
-    /// use reqwest::blocking::Client as HttpClient;
+    /// use reqwest::Client as HttpClient;
     /// use rabbitmq_http_client::api::Client;
     ///
     /// let client = HttpClient::new();
