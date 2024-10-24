@@ -964,6 +964,12 @@ where
         Ok(response)
     }
 
+    pub fn overview(&self) -> Result<responses::Overview> {
+        let response = self.http_get("overview", None, None)?;
+        let response = response.json()?;
+        Ok(response)
+    }
+
     //
     // Implementation
     //

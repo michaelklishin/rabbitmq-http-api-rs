@@ -1090,6 +1090,12 @@ where
         Ok(response)
     }
 
+    pub async fn overview(&self) -> Result<responses::Overview> {
+        let response = self.http_get("overview", None, None).await?;
+        let response = response.json().await?;
+        Ok(response)
+    }
+
     //
     // Implementation
     //
