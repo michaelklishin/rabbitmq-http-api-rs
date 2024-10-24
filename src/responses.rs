@@ -659,7 +659,6 @@ pub struct Overview {
     pub cluster_name: String,
     pub erlang_full_version: String,
     pub erlang_version: String,
-    pub management_version: String,
     pub node: String,
     pub rabbitmq_version: String,
     pub statistics_db_event_queue: u64,
