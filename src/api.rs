@@ -28,7 +28,7 @@ pub type Result<T> = std::result::Result<T, Error<HttpClientResponse>>;
 /// ```rust
 /// use rabbitmq_http_client::api::ClientBuilder;
 ///
-/// let endpoint = "http://localhost:15672";
+/// let endpoint = "http://localhost:15672/api";
 /// let username = "username";
 /// let password = "password";
 /// let rc = ClientBuilder::new().with_endpoint(&endpoint).with_basic_auth_credentials(&username, &password).build();
@@ -59,7 +59,7 @@ impl ClientBuilder<&'static str, &'static str, &'static str> {
     pub fn new() -> Self {
         let client = HttpClient::new();
         Self {
-            endpoint: "http://localhost:15672",
+            endpoint: "http://localhost:15672/api",
             username: "guest",
             password: "guest",
             client,
@@ -126,7 +126,7 @@ where
 /// ```rust
 /// use rabbitmq_http_client::api::Client;
 ///
-/// let endpoint = "http://localhost:15672";
+/// let endpoint = "http://localhost:15672/api";
 /// let username = "username";
 /// let password = "password";
 /// let rc = Client::new(&endpoint, &username, &password);
@@ -156,7 +156,7 @@ where
     /// ```rust
     /// use rabbitmq_http_client::api::Client;
     ///
-    /// let endpoint = "http://localhost:15672";
+    /// let endpoint = "http://localhost:15672/api";
     /// let username = "username";
     /// let password = "password";
     /// let rc = Client::new(endpoint, username, password);
@@ -181,7 +181,7 @@ where
     /// use rabbitmq_http_client::api::Client;
     ///
     /// let client = HttpClient::new();
-    /// let endpoint = "http://localhost:15672";
+    /// let endpoint = "http://localhost:15672/api";
     /// let username = "username";
     /// let password = "password";
     /// let rc = Client::from_http_client(client, endpoint, username, password);

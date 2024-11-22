@@ -1,7 +1,7 @@
 use std::env;
 use std::time::Duration;
 
-pub const ENDPOINT: &str = "http://localhost:15672";
+pub const ENDPOINT: &str = "http://localhost:15672/api";
 pub const USERNAME: &str = "guest";
 pub const PASSWORD: &str = "guest";
 
