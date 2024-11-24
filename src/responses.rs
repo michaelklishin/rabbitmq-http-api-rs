@@ -655,6 +655,7 @@ impl fmt::Display for MessageProperties {
 }
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
 pub struct Overview {
     pub cluster_name: String,
     pub erlang_full_version: String,
