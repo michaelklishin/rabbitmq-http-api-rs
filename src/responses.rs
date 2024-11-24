@@ -656,13 +656,56 @@ impl fmt::Display for MessageProperties {
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
+pub struct ChurnRates {
+    connection_created: u32,
+    connection_closed: u32,
+    queue_declared: u32,
+    queue_created: u32,
+    queue_deleted: u32,
+    channel_created: u32,
+    channel_closed: u32,
+}
+
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+pub struct ObjectTotals {
+    connections: u64,
+    channels: u64,
+    queues: u64,
+    exchanges: u64,
+}
+
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+pub struct Listener {
+    node: String,
+    protocol: String,
+    port: u32,
+    #[serde(rename(deserialize = "ip_address"))]
+    interface: String
+}
+
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq, Default)]
+#[serde(transparent)]
+pub struct TagMap(pub Vec<Map<String, serde_json::Value>>);
+
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
 pub struct Overview {
     pub cluster_name: String,
+    pub node: String,
+
     pub erlang_full_version: String,
     pub erlang_version: String,
-    pub node: String,
     pub rabbitmq_version: String,
+    pub product_name: String,
+    pub product_version: String,
+
+    pub cluster_tags: TagMap,
+    pub node_tags: TagMap,
+
     pub statistics_db_event_queue: u64,
+    pub churn_rates: ChurnRates
 }
 
 fn undefined() -> String {
