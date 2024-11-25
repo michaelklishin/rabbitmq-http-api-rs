@@ -657,13 +657,13 @@ impl fmt::Display for MessageProperties {
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 pub struct ChurnRates {
-    connection_created: u32,
-    connection_closed: u32,
-    queue_declared: u32,
-    queue_created: u32,
-    queue_deleted: u32,
-    channel_created: u32,
-    channel_closed: u32,
+    pub connection_created: u32,
+    pub connection_closed: u32,
+    pub queue_declared: u32,
+    pub queue_created: u32,
+    pub queue_deleted: u32,
+    pub channel_created: u32,
+    pub channel_closed: u32,
 }
 impl fmt::Display for ChurnRates {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -682,10 +682,10 @@ impl fmt::Display for ChurnRates {
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 pub struct ObjectTotals {
-    connections: u64,
-    channels: u64,
-    queues: u64,
-    exchanges: u64,
+    pub connections: u64,
+    pub channels: u64,
+    pub queues: u64,
+    pub exchanges: u64,
 }
 impl fmt::Display for ObjectTotals {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
