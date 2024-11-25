@@ -665,6 +665,19 @@ pub struct ChurnRates {
     channel_created: u32,
     channel_closed: u32,
 }
+impl fmt::Display for ChurnRates {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "connection_created: {}", self.connection_created)?;
+        writeln!(f, "connection_closed: {}", self.connection_closed)?;
+        writeln!(f, "queue_declared: {}", self.queue_declared)?;
+        writeln!(f, "queue_created: {}", self.queue_created)?;
+        writeln!(f, "queue_deleted: {}", self.queue_deleted)?;
+        writeln!(f, "channel_created: {}", self.channel_created)?;
+        writeln!(f, "channel_closed: {}", self.channel_closed)?;
+
+        Ok(())
+    }
+}
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
@@ -673,6 +686,16 @@ pub struct ObjectTotals {
     channels: u64,
     queues: u64,
     exchanges: u64,
+}
+impl fmt::Display for ObjectTotals {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "connections: {}", self.connections)?;
+        writeln!(f, "channels: {}", self.channels)?;
+        writeln!(f, "queues: {}", self.queues)?;
+        writeln!(f, "exchanges: {}", self.exchanges)?;
+
+        Ok(())
+    }
 }
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]

@@ -11,6 +11,8 @@
 //! This library is double licensed under the Apache 2.0 and MIT licenses.
 //! This means that the user can choose either of the licenses.
 
+extern crate alloc;
+
 /// The primary API: a async HTTP API client
 #[cfg(feature = "async")]
 pub mod api;
