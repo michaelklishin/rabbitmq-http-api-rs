@@ -718,7 +718,7 @@ pub struct Listener {
     protocol: String,
     port: u32,
     #[serde(rename(deserialize = "ip_address"))]
-    interface: String
+    interface: String,
 }
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq, Default)]
@@ -751,7 +751,7 @@ pub struct Overview {
     pub node_tags: TagMap,
 
     pub statistics_db_event_queue: u64,
-    pub churn_rates: ChurnRates
+    pub churn_rates: ChurnRates,
 }
 
 fn undefined() -> String {
