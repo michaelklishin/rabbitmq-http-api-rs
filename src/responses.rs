@@ -687,7 +687,17 @@ pub struct Listener {
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq, Default)]
 #[serde(transparent)]
-pub struct TagMap(pub Vec<Map<String, serde_json::Value>>);
+pub struct TagMap(pub Map<String, serde_json::Value>);
+
+impl fmt::Display for TagMap {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for (k, v) in &self.0 {
+            writeln!(f, "{}: {}", k, v)?;
+        }
+
+        Ok(())
+    }
+}
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
