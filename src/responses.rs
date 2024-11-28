@@ -725,8 +725,6 @@ pub struct Listener {
 #[serde(transparent)]
 pub struct TagMap(pub Map<String, serde_json::Value>);
 
-
-
 impl fmt::Display for TagMap {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for (k, v) in &self.0 {
