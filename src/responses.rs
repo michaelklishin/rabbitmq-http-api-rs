@@ -725,6 +725,8 @@ pub struct Listener {
 #[serde(transparent)]
 pub struct TagMap(pub Map<String, serde_json::Value>);
 
+
+
 impl fmt::Display for TagMap {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for (k, v) in &self.0 {
@@ -748,7 +750,9 @@ pub struct Overview {
     pub product_version: String,
 
     // these two won't be available in 3.13.x
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
     pub cluster_tags: Option<TagMap>,
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
     pub node_tags: Option<TagMap>,
 
     pub statistics_db_event_queue: u64,
