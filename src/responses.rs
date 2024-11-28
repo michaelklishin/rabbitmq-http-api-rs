@@ -747,8 +747,9 @@ pub struct Overview {
     pub product_name: String,
     pub product_version: String,
 
-    pub cluster_tags: TagMap,
-    pub node_tags: TagMap,
+    // these two won't be available in 3.13.x
+    pub cluster_tags: Option<TagMap>,
+    pub node_tags: Option<TagMap>,
 
     pub statistics_db_event_queue: u64,
     pub churn_rates: ChurnRates,
