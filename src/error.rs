@@ -20,7 +20,7 @@ use crate::responses;
 pub enum Error<Response> {
     #[error("encountered an error when performing an HTTP request")]
     RequestError(#[from] reqwest::Error),
-    #[error("API responded with a client error: status code of {0}: {1}")]
+    #[error("API responded with a client error: status code of {0}")]
     ClientErrorResponse(StatusCode, Response),
     #[error("API responded with a server error: status code of {0}")]
     ServerErrorResponse(StatusCode, Response),
