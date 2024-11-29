@@ -17,13 +17,13 @@ use thiserror::Error;
 use crate::responses;
 
 #[derive(Error, Debug)]
-pub enum Error<Respone> {
+pub enum Error<Response> {
     #[error("encountered an error when performing an HTTP request")]
     RequestError(#[from] reqwest::Error),
-    #[error("API responded with a client error: status code of {0}")]
-    ClientErrorResponse(StatusCode, Respone),
+    #[error("API responded with a client error: status code of {0}: {1}")]
+    ClientErrorResponse(StatusCode, Response),
     #[error("API responded with a server error: status code of {0}")]
-    ServerErrorResponse(StatusCode, Respone),
+    ServerErrorResponse(StatusCode, Response),
     #[error("Health check failed")]
     HealthCheckFailed(responses::HealthCheckFailureDetails),
     #[error("Could not find the requested resource")]
