@@ -1017,8 +1017,8 @@ where
     fn http_get<S>(
         &self,
         path: S,
-        client_expect_code_error: Option<StatusCode>,
-        server_expect_code_error: Option<StatusCode>,
+        client_code_to_accept_or_ignore: Option<StatusCode>,
+        server_code_to_accept_or_ignore: Option<StatusCode>,
     ) -> Result<HttpClientResponse>
     where
         S: AsRef<str>,
@@ -1030,8 +1030,8 @@ where
             .send()?;
         let response = self.ok_or_status_code_error(
             response,
-            client_expect_code_error,
-            server_expect_code_error,
+            client_code_to_accept_or_ignore,
+            server_code_to_accept_or_ignore,
         )?;
         Ok(response)
     }
@@ -1040,8 +1040,8 @@ where
         &self,
         path: S,
         payload: &T,
-        client_expect_code_error: Option<StatusCode>,
-        server_expect_code_error: Option<StatusCode>,
+        client_code_to_accept_or_ignore: Option<StatusCode>,
+        server_code_to_accept_or_ignore: Option<StatusCode>,
     ) -> Result<HttpClientResponse>
     where
         S: AsRef<str>,
@@ -1055,8 +1055,8 @@ where
             .send()?;
         let response = self.ok_or_status_code_error(
             response,
-            client_expect_code_error,
-            server_expect_code_error,
+            client_code_to_accept_or_ignore,
+            server_code_to_accept_or_ignore,
         )?;
         Ok(response)
     }
@@ -1065,8 +1065,8 @@ where
         &self,
         path: S,
         payload: &T,
-        client_expect_code_error: Option<StatusCode>,
-        server_expect_code_error: Option<StatusCode>,
+        client_code_to_accept_or_ignore: Option<StatusCode>,
+        server_code_to_accept_or_ignore: Option<StatusCode>,
     ) -> Result<HttpClientResponse>
     where
         S: AsRef<str>,
@@ -1080,8 +1080,8 @@ where
             .send()?;
         let response = self.ok_or_status_code_error(
             response,
-            client_expect_code_error,
-            server_expect_code_error,
+            client_code_to_accept_or_ignore,
+            server_code_to_accept_or_ignore,
         )?;
         Ok(response)
     }
@@ -1089,8 +1089,8 @@ where
     fn http_delete<S>(
         &self,
         path: S,
-        client_expect_code_error: Option<StatusCode>,
-        server_expect_code_error: Option<StatusCode>,
+        client_code_to_accept_or_ignore: Option<StatusCode>,
+        server_code_to_accept_or_ignore: Option<StatusCode>,
     ) -> Result<HttpClientResponse>
     where
         S: AsRef<str>,
@@ -1102,8 +1102,8 @@ where
             .send()?;
         let response = self.ok_or_status_code_error(
             response,
-            client_expect_code_error,
-            server_expect_code_error,
+            client_code_to_accept_or_ignore,
+            server_code_to_accept_or_ignore,
         )?;
         Ok(response)
     }
@@ -1112,8 +1112,8 @@ where
         &self,
         path: S,
         headers: HeaderMap,
-        client_expect_code_error: Option<StatusCode>,
-        server_expect_code_error: Option<StatusCode>,
+        client_code_to_accept_or_ignore: Option<StatusCode>,
+        server_code_to_accept_or_ignore: Option<StatusCode>,
     ) -> Result<HttpClientResponse>
     where
         S: AsRef<str>,
@@ -1126,8 +1126,8 @@ where
             .send()?;
         let response = self.ok_or_status_code_error(
             response,
-            client_expect_code_error,
-            server_expect_code_error,
+            client_code_to_accept_or_ignore,
+            server_code_to_accept_or_ignore,
         )?;
         Ok(response)
     }
@@ -1135,19 +1135,19 @@ where
     fn ok_or_status_code_error(
         &self,
         response: HttpClientResponse,
-        client_expect_code_error: Option<StatusCode>,
-        server_expect_code_error: Option<StatusCode>,
+        client_code_to_accept_or_ignore: Option<StatusCode>,
+        server_code_to_accept_or_ignore: Option<StatusCode>,
     ) -> Result<HttpClientResponse> {
         let status = response.status();
         if status.is_client_error() {
-            match client_expect_code_error {
+            match client_code_to_accept_or_ignore {
                 Some(expect) if status == expect => {}
                 _ => return Err(Error::ClientErrorResponse(status, response)),
             }
         }
 
         if status.is_server_error() {
-            match server_expect_code_error {
+            match server_code_to_accept_or_ignore {
                 Some(expect) if status == expect => {}
                 _ => return Err(Error::ServerErrorResponse(status, response)),
             }
