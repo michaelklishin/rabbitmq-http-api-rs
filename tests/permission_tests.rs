@@ -13,7 +13,7 @@
 // limitations under the License.
 use rabbitmq_http_client::requests::VirtualHostParams;
 use rabbitmq_http_client::responses;
-use rabbitmq_http_client::{blocking::Client, requests::Permissions};
+use rabbitmq_http_client::{blocking_api::Client, requests::Permissions};
 
 mod common;
 use crate::common::{endpoint, PASSWORD, USERNAME};

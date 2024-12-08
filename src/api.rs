@@ -22,7 +22,6 @@ use serde_json::{json, Map, Value};
 
 use crate::{
     commons::{BindingDestinationType, UserLimitTarget, VirtualHostLimitTarget},
-    error::Error,
     path,
     requests::{
         self, EnforcedLimitParams, ExchangeParams, Permissions, PolicyParams, QueueParams,
@@ -30,6 +29,7 @@ use crate::{
     },
     responses::{self, BindingInfo, DefinitionSet},
 };
+use crate::error::Error;
 
 type HttpClientResponse = reqwest::Response;
 
@@ -652,7 +652,7 @@ where
             .filter(|b| b.source == source && b.routing_key == routing_key && b.arguments.0 == args)
             .collect();
         match bs.len() {
-            0 => Err(Error::NotFound()),
+            0 => Err(Error::NotFound),
             1 => {
                 let first_key = bs.first().unwrap().properties_key.clone();
                 let path_appreviation = destination_type.path_appreviation();
@@ -684,7 +684,7 @@ where
                 let response = self.http_delete(&path, None, None).await?;
                 Ok(response)
             }
-            _ => Err(Error::ManyMatchingBindings()),
+            _ => Err(Error::MultipleMatchingBindings()),
         }
     }
 
@@ -1277,7 +1277,7 @@ where
         if status.is_client_error() {
             match client_expect_code_error {
                 Some(expect) if status == expect => {}
-                _ => return Err(Error::ClientErrorResponse(status, response)),
+                _ => return Err(Error::ClientErrorResponse(status, response.error_for_status()?)),
             }
         }
 

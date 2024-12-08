@@ -11,27 +11,42 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-use reqwest::{header::InvalidHeaderValue, StatusCode};
+use reqwest::{header::InvalidHeaderValue};
 use thiserror::Error;
-
 use crate::responses;
 
 #[derive(Error, Debug)]
-pub enum Error<Response> {
-    #[error("encountered an error when performing an HTTP request")]
-    RequestError(#[from] reqwest::Error),
-    #[error("API responded with a client error: status code of {0}")]
-    ClientErrorResponse(StatusCode, Response),
-    #[error("API responded with a server error: status code of {0}")]
-    ServerErrorResponse(StatusCode, Response),
+pub enum Error<R, S, E, BT> {
+    #[error("API responded with a client error: status code of {status_code}")]
+    ClientErrorResponse {
+        status_code: S,
+        response: Option<R>,
+        backtrace: BT,
+    },
+    #[error("API responded with a server error: status code of {status_code}")]
+    ServerErrorResponse {
+        status_code: S,
+        response: Option<R>,
+        backtrace: BT,
+    },
     #[error("Health check failed")]
-    HealthCheckFailed(responses::HealthCheckFailureDetails),
+    HealthCheckFailed {
+        details: responses::HealthCheckFailureDetails,
+        status_code: S
+    },
     #[error("Could not find the requested resource")]
-    NotFound(),
+    NotFound,
     #[error("Cannot delete a binding: multiple matching bindings were found, provide additional properties")]
-    ManyMatchingBindings(),
+    MultipleMatchingBindings,
     #[error("could not convert provided value into an HTTP header value")]
-    InvalidHeaderValue(#[from] InvalidHeaderValue),
+    InvalidHeaderValue {
+        error: InvalidHeaderValue
+    },
+    #[error("encountered an error when performing an HTTP request")]
+    RequestError {
+        error: E,
+        backtrace: BT,
+    },
     #[error("an unspecified error")]
-    Other,
+    Other
 }

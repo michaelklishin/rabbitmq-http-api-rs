@@ -43,7 +43,7 @@ pub fn salted_password_hash_sha256(salt: &[u8], password: &str) -> Vec<u8> {
 
 ///
 /// Produces a Base64-encoded, SHA-256 hashed, salted passowrd hash that can be passed
-/// as [`crate::requests::UserParams::password_hash`] when adding a user with [`crate::blocking::Client::create_user`].
+/// as [`crate::requests::UserParams::password_hash`] when adding a user with [`crate::blocking_api::Client::create_user`].
 ///
 /// See the [Credentials and Passwords guide](https://rabbitmq.com/docs/passwords/).
 pub fn base64_encoded_salted_password_hash_sha256(salt: &[u8], password: &str) -> String {

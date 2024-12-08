@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 use rabbitmq_http_client::{
-    blocking::Client,
+    blocking_api::Client,
     commons::PolicyTarget,
     requests::{PolicyParams, VirtualHostParams},
 };

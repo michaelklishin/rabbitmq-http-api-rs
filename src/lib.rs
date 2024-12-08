@@ -31,12 +31,9 @@ extern crate alloc;
 pub mod api;
 /// The primary API: a blocking HTTP API client
 #[cfg(feature = "blocking")]
-pub mod blocking;
+pub mod blocking_api;
 /// Types commonly used by API requests and responses
 pub mod commons;
-/// Error
-#[cfg(any(feature = "async", feature = "blocking"))]
-pub mod error;
 /// Providers password hashing utilities for user pre-seeding.
 pub mod password_hashing;
 /// Types used to issues API requests (such as `PUT`, `POST`, `DELETE`)
@@ -46,3 +43,6 @@ pub mod responses;
 
 #[cfg(any(feature = "async", feature = "blocking"))]
 mod utils;
+/// Error
+#[cfg(any(feature = "async", feature = "blocking"))]
+pub mod error;

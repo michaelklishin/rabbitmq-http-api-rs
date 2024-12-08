@@ -13,7 +13,7 @@
 // limitations under the License.
 use rabbitmq_http_client::requests::{RuntimeParameterDefinition, RuntimeParameterValue};
 use rabbitmq_http_client::responses::RuntimeParameter;
-use rabbitmq_http_client::{blocking::Client, requests::VirtualHostParams};
+use rabbitmq_http_client::{blocking_api::Client, requests::VirtualHostParams};
 use serde_json::{json, Map, Value};
 
 mod common;
