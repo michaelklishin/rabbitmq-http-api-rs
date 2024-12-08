@@ -1195,7 +1195,7 @@ where
         if status.is_client_error() {
             match client_code_to_accept_or_ignore {
                 Some(expect) if status == expect => {}
-                _ => return Err(Error::ClientErrorResponse {
+                _ => return Err(ClientErrorResponse {
                     response: Some(response),
                     status_code: status,
                     backtrace: Backtrace::new()
@@ -1206,7 +1206,7 @@ where
         if status.is_server_error() {
             match server_code_to_accept_or_ignore {
                 Some(expect) if status == expect => {}
-                _ => return Err(Error::ServerErrorResponse {
+                _ => return Err(ServerErrorResponse {
                     response: Some(response),
                     status_code: status,
                     backtrace: Backtrace::new()
