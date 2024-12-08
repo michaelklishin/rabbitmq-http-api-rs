@@ -41,8 +41,8 @@ pub mod requests;
 /// API response types
 pub mod responses;
 
-#[cfg(any(feature = "async", feature = "blocking"))]
-mod utils;
 /// Error
 #[cfg(any(feature = "async", feature = "blocking"))]
 pub mod error;
+#[cfg(any(feature = "async", feature = "blocking"))]
+mod utils;

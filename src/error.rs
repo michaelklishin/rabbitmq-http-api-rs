@@ -11,9 +11,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-use reqwest::{header::InvalidHeaderValue};
-use thiserror::Error;
 use crate::responses;
+use reqwest::header::InvalidHeaderValue;
+use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum Error<R, S, E, BT> {
@@ -32,21 +32,16 @@ pub enum Error<R, S, E, BT> {
     #[error("Health check failed")]
     HealthCheckFailed {
         details: responses::HealthCheckFailureDetails,
-        status_code: S
+        status_code: S,
     },
     #[error("Could not find the requested resource")]
     NotFound,
     #[error("Cannot delete a binding: multiple matching bindings were found, provide additional properties")]
     MultipleMatchingBindings,
     #[error("could not convert provided value into an HTTP header value")]
-    InvalidHeaderValue {
-        error: InvalidHeaderValue
-    },
+    InvalidHeaderValue { error: InvalidHeaderValue },
     #[error("encountered an error when performing an HTTP request")]
-    RequestError {
-        error: E,
-        backtrace: BT,
-    },
+    RequestError { error: E, backtrace: BT },
     #[error("an unspecified error")]
-    Other
+    Other,
 }

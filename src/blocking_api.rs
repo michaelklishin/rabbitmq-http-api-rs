@@ -11,16 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-use std::fmt;
-use reqwest::{
-    blocking::Client as HttpClient,
-    header::{HeaderMap, HeaderValue},
-    StatusCode,
-};
-use serde::Serialize;
-use serde_json::{json, Map, Value};
-use backtrace::Backtrace;
 use crate::error::Error;
+use crate::error::Error::{
+    ClientErrorResponse, InvalidHeaderValue, NotFound, RequestError, ServerErrorResponse,
+};
 use crate::{
     commons::{BindingDestinationType, UserLimitTarget, VirtualHostLimitTarget},
     path,
@@ -30,7 +24,15 @@ use crate::{
     },
     responses::{self, BindingInfo, DefinitionSet},
 };
-use crate::error::Error::{ClientErrorResponse, InvalidHeaderValue, NotFound, RequestError, ServerErrorResponse};
+use backtrace::Backtrace;
+use reqwest::{
+    blocking::Client as HttpClient,
+    header::{HeaderMap, HeaderValue},
+    StatusCode,
+};
+use serde::Serialize;
+use serde_json::{json, Map, Value};
+use std::fmt;
 
 type HttpClientResponse = reqwest::blocking::Response;
 type HttpClientError = Error<HttpClientResponse, StatusCode, reqwest::Error, Backtrace>;
@@ -40,12 +42,10 @@ pub type Result<T> = std::result::Result<T, HttpClientError>;
 impl From<reqwest::Error> for HttpClientError {
     fn from(req_err: reqwest::Error) -> Self {
         match req_err.status() {
-            None => {
-                RequestError {
-                    error: req_err,
-                    backtrace: Backtrace::new()
-                }
-            }
+            None => RequestError {
+                error: req_err,
+                backtrace: Backtrace::new(),
+            },
             Some(status_code) => {
                 if status_code.is_client_error() {
                     return ClientErrorResponse {
@@ -53,8 +53,8 @@ impl From<reqwest::Error> for HttpClientError {
                         // reqwest::Error does not provide access to the associated
                         // response, if any
                         response: None,
-                        backtrace: Backtrace::new()
-                    }
+                        backtrace: Backtrace::new(),
+                    };
                 };
 
                 if status_code.is_server_error() {
@@ -63,13 +63,13 @@ impl From<reqwest::Error> for HttpClientError {
                         // reqwest::Error does not provide access to the associated
                         // response, if any
                         response: None,
-                        backtrace: Backtrace::new()
-                    }
+                        backtrace: Backtrace::new(),
+                    };
                 };
 
                 RequestError {
                     error: req_err,
-                    backtrace: Backtrace::new()
+                    backtrace: Backtrace::new(),
                 }
             }
         }
@@ -78,9 +78,7 @@ impl From<reqwest::Error> for HttpClientError {
 
 impl From<reqwest::header::InvalidHeaderValue> for HttpClientError {
     fn from(err: reqwest::header::InvalidHeaderValue) -> Self {
-        InvalidHeaderValue {
-            error: err
-        }
+        InvalidHeaderValue { error: err }
     }
 }
 
@@ -977,7 +975,7 @@ where
         let failure_details = response.json()?;
         Err(Error::HealthCheckFailed {
             status_code,
-            details: failure_details
+            details: failure_details,
         })
     }
 
@@ -1048,7 +1046,7 @@ where
         let failure_details = responses::HealthCheckFailureDetails::AlarmCheck(body);
         Err(Error::HealthCheckFailed {
             details: failure_details,
-            status_code
+            status_code,
         })
     }
 
@@ -1195,22 +1193,26 @@ where
         if status.is_client_error() {
             match client_code_to_accept_or_ignore {
                 Some(expect) if status == expect => {}
-                _ => return Err(ClientErrorResponse {
-                    response: Some(response),
-                    status_code: status,
-                    backtrace: Backtrace::new()
-                }),
+                _ => {
+                    return Err(ClientErrorResponse {
+                        response: Some(response),
+                        status_code: status,
+                        backtrace: Backtrace::new(),
+                    })
+                }
             }
         }
 
         if status.is_server_error() {
             match server_code_to_accept_or_ignore {
                 Some(expect) if status == expect => {}
-                _ => return Err(ServerErrorResponse {
-                    response: Some(response),
-                    status_code: status,
-                    backtrace: Backtrace::new()
-                }),
+                _ => {
+                    return Err(ServerErrorResponse {
+                        response: Some(response),
+                        status_code: status,
+                        backtrace: Backtrace::new(),
+                    })
+                }
             }
         }
 

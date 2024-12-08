@@ -20,6 +20,7 @@ use reqwest::{
 use serde::Serialize;
 use serde_json::{json, Map, Value};
 
+use crate::error::Error;
 use crate::{
     commons::{BindingDestinationType, UserLimitTarget, VirtualHostLimitTarget},
     path,
@@ -29,7 +30,6 @@ use crate::{
     },
     responses::{self, BindingInfo, DefinitionSet},
 };
-use crate::error::Error;
 
 type HttpClientResponse = reqwest::Response;
 
@@ -1277,7 +1277,12 @@ where
         if status.is_client_error() {
             match client_expect_code_error {
                 Some(expect) if status == expect => {}
-                _ => return Err(Error::ClientErrorResponse(status, response.error_for_status()?)),
+                _ => {
+                    return Err(Error::ClientErrorResponse(
+                        status,
+                        response.error_for_status()?,
+                    ))
+                }
             }
         }
 
