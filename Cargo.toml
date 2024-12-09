@@ -22,14 +22,11 @@ rbase64 = "2"
 percent-encoding = { version = "2", optional = true }
 tabled = { version = "0.17", features = ["derive", "macros"], optional = true }
 
-#
-# Blocking client
-#
 reqwest = { version = "0.12", features = [
     "json",
     "multipart",
 ], optional = true }
-backtrace = { version = "0.3", option = true }
+backtrace = { version = "0.3", optional = true }
 thiserror = { version = "2", optional = true }
 
 
@@ -40,11 +37,17 @@ cargo-nextest = "0.9.84"
 [features]
 default = ["core", "blocking"]
 core = []
-async = ["dep:reqwest", "dep:thiserror", "dep:percent-encoding"]
+async = [
+    "dep:reqwest",
+    "dep:thiserror",
+    "dep:backtrace",
+    "dep:percent-encoding"
+]
 blocking = [
     "dep:reqwest",
     "reqwest/blocking",
     "dep:thiserror",
+    "dep:backtrace",
     "dep:percent-encoding",
 ]
 tabled = ["dep:tabled"]
