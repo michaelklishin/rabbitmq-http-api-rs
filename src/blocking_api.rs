@@ -93,11 +93,11 @@ impl From<reqwest::header::InvalidHeaderValue> for HttpClientError {
 /// let password = "password";
 /// let rc = ClientBuilder::new().with_endpoint(&endpoint).with_basic_auth_credentials(&username, &password).build();
 /// // list cluster nodes
-/// rc.list_nodes();
+/// let _ = rc.list_nodes();
 /// // list user connections
-/// rc.list_connections();
+/// let _ = rc.list_connections();
 /// // fetch information and metrics of a specific queue
-/// rc.get_queue_info("/", "qq.1");
+/// let _ = rc.get_queue_info("/", "qq.1");
 /// ```
 pub struct ClientBuilder<E, U, P> {
     endpoint: E,
