@@ -21,6 +21,8 @@ fn test_overview() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
+    common::await_queue_metric_emission();
+
     let result1 = rc.overview();
     assert!(result1.is_ok(), "overview returned {:?}", result1);
 }
