@@ -640,6 +640,7 @@ pub struct GetMessage {
 }
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
 pub struct MessageRouted {
     pub routed: bool,
 }
