@@ -728,7 +728,7 @@ pub struct ObjectTotals {
     pub queues: u64,
     pub exchanges: u64,
 }
-impl fmt::Display for ObjectTotals {
+impl Display for ObjectTotals {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "connections: {}", self.connections)?;
         writeln!(f, "channels: {}", self.channels)?;
@@ -753,7 +753,7 @@ pub struct Listener {
 #[serde(transparent)]
 pub struct TagMap(pub Map<String, serde_json::Value>);
 
-impl fmt::Display for TagMap {
+impl Display for TagMap {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for (k, v) in &self.0 {
             writeln!(f, "{}: {}", k, v)?;
