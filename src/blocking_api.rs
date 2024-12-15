@@ -34,8 +34,8 @@ use serde::Serialize;
 use serde_json::{json, Map, Value};
 use std::fmt;
 
-type HttpClientResponse = reqwest::blocking::Response;
-type HttpClientError = Error<HttpClientResponse, StatusCode, reqwest::Error, Backtrace>;
+pub type HttpClientResponse = reqwest::blocking::Response;
+pub type HttpClientError = Error<HttpClientResponse, StatusCode, reqwest::Error, Backtrace>;
 
 pub type Result<T> = std::result::Result<T, HttpClientError>;
 
