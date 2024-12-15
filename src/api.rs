@@ -24,6 +24,7 @@ use crate::error::Error;
 use crate::error::Error::{
     ClientErrorResponse, InvalidHeaderValue, RequestError, ServerErrorResponse,
 };
+use crate::responses::MessageList;
 use crate::{
     commons::{BindingDestinationType, UserLimitTarget, VirtualHostLimitTarget},
     path,
@@ -33,7 +34,6 @@ use crate::{
     },
     responses::{self, BindingInfo, DefinitionSet},
 };
-use crate::responses::MessageList;
 
 type HttpClientResponse = reqwest::Response;
 type HttpClientError = Error<HttpClientResponse, StatusCode, reqwest::Error, Backtrace>;
