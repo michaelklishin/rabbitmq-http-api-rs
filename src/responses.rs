@@ -1,3 +1,4 @@
+use core::fmt::Display;
 // Copyright (C) 2023-2024 RabbitMQ Core Team (teamrabbitmq@gmail.com)
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -624,7 +625,7 @@ pub struct QuorumEndangeredQueue {
     pub queue_type: String,
 }
 
-#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct GetMessage {
@@ -639,13 +640,39 @@ pub struct GetMessage {
     pub payload_encoding: String,
 }
 
+impl Display for GetMessage {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "payload: {}", self.payload)?;
+        writeln!(f, "exchange: {}", self.exchange)?;
+        writeln!(f, "routing key: {}", self.routing_key)?;
+        writeln!(f, "redelivered: {}", self.redelivered)?;
+        writeln!(f, "properties: {}", self.properties)?;
+
+        Ok(())
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(transparent)]
+pub struct MessageList(pub Vec<GetMessage>);
+
+impl Display for MessageList {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for msg in &self.0 {
+            writeln!(f, "{}", msg)?;
+        }
+
+        Ok(())
+    }
+}
+
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 pub struct MessageRouted {
     pub routed: bool,
 }
 
-impl fmt::Display for MessageRouted {
+impl Display for MessageRouted {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.routed {
             true => write!(f, "Message published and routed successfully"),
@@ -654,11 +681,11 @@ impl fmt::Display for MessageRouted {
     }
 }
 
-#[derive(Debug, Deserialize, Clone, Eq, PartialEq, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Default)]
 #[serde(transparent)]
 pub struct MessageProperties(pub Map<String, serde_json::Value>);
 
-impl fmt::Display for MessageProperties {
+impl Display for MessageProperties {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for (k, v) in &self.0 {
             writeln!(f, "{}: {}", k, v)?;

@@ -25,6 +25,7 @@
 //! This means that the user can choose either of the licenses.
 
 extern crate alloc;
+extern crate core;
 
 /// The primary API: a async HTTP API client
 #[cfg(feature = "async")]

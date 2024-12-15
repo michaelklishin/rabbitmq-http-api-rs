@@ -33,6 +33,7 @@ use crate::{
     },
     responses::{self, BindingInfo, DefinitionSet},
 };
+use crate::responses::MessageList;
 
 type HttpClientResponse = reqwest::Response;
 type HttpClientError = Error<HttpClientResponse, StatusCode, reqwest::Error, Backtrace>;
@@ -1138,7 +1139,7 @@ where
         queue: &str,
         count: u32,
         ack_mode: &str,
-    ) -> Result<Vec<responses::GetMessage>> {
+    ) -> Result<MessageList> {
         let body = serde_json::json!({
           "count": count,
           "ackmode": ack_mode,
