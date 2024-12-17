@@ -183,7 +183,7 @@ impl<'a> ExchangeParams<'a> {
         Self::new(name, exchange_type, true, false, optional_args)
     }
 
-    /// Instantiates a [`ExchangeParams`] of a [fanout exchange]](https://rabbitmq.com/docs/tutorials/tutorial-three-python/).
+    /// Instantiates a [`ExchangeParams`] of a [fanout exchange](https://rabbitmq.com/docs/tutorials/tutorial-three-python/).
     pub fn fanout(
         name: &'a str,
         durable: bool,
@@ -199,7 +199,7 @@ impl<'a> ExchangeParams<'a> {
         )
     }
 
-    /// Instantiates a [`ExchangeParams`] of a durable [fanout exchange]](https://rabbitmq.com/docs/tutorials/tutorial-three-python/).
+    /// Instantiates a [`ExchangeParams`] of a durable [fanout exchange](https://rabbitmq.com/docs/tutorials/tutorial-three-python/).
     pub fn durable_fanout(name: &'a str, optional_args: XArguments) -> Self {
         Self::new(name, ExchangeType::Fanout, true, false, optional_args)
     }
@@ -219,12 +219,12 @@ impl<'a> ExchangeParams<'a> {
         )
     }
 
-    /// Instantiates a [`ExchangeParams`] of a durable [fanout exchange]](https://rabbitmq.com/docs/tutorials/tutorial-five-python/).
+    /// Instantiates a [`ExchangeParams`] of a durable [fanout exchange](https://rabbitmq.com/docs/tutorials/tutorial-five-python/).
     pub fn durable_topic(name: &'a str, optional_args: XArguments) -> Self {
         Self::new(name, ExchangeType::Topic, true, false, optional_args)
     }
 
-    /// Instantiates a [`ExchangeParams`] of a [direct exchange]](https://rabbitmq.com/docs/tutorials/tutorial-four-python/).
+    /// Instantiates a [`ExchangeParams`] of a [direct exchange](https://rabbitmq.com/docs/tutorials/tutorial-four-python/).
     pub fn direct(
         name: &'a str,
         durable: bool,
@@ -240,7 +240,7 @@ impl<'a> ExchangeParams<'a> {
         )
     }
 
-    /// Instantiates a [`ExchangeParams`] of a durable [direct exchange]](https://rabbitmq.com/docs/tutorials/tutorial-four-python/).
+    /// Instantiates a [`ExchangeParams`] of a durable [direct exchange](https://rabbitmq.com/docs/tutorials/tutorial-four-python/).
     pub fn durable_direct(name: &'a str, optional_args: XArguments) -> Self {
         Self::new(name, ExchangeType::Direct, true, false, optional_args)
     }
