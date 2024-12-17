@@ -1083,9 +1083,10 @@ where
     }
 
     pub async fn health_check_if_node_is_quorum_critical(&self) -> Result<()> {
+        let path = "health/checks/node-is-quorum-critical";
         let response = self
             .http_get(
-                "health/checks/node-is-quorum-critical",
+                path,
                 None,
                 Some(StatusCode::SERVICE_UNAVAILABLE),
             )
@@ -1098,6 +1099,7 @@ where
 
         let failure_details = response.json().await?;
         Err(Error::HealthCheckFailed {
+            path: path.to_owned(),
             status_code,
             details: failure_details,
         })
@@ -1175,6 +1177,7 @@ where
         let body = response.json().await?;
         let failure_details = responses::HealthCheckFailureDetails::AlarmCheck(body);
         Err(Error::HealthCheckFailed {
+            path: path.to_owned(),
             details: failure_details,
             status_code,
         })

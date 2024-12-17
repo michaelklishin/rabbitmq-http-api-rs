@@ -31,6 +31,7 @@ pub enum Error<R, S, E, BT> {
     },
     #[error("Health check failed")]
     HealthCheckFailed {
+        path: String,
         details: responses::HealthCheckFailureDetails,
         status_code: S,
     },
