@@ -1085,11 +1085,7 @@ where
     pub async fn health_check_if_node_is_quorum_critical(&self) -> Result<()> {
         let path = "health/checks/node-is-quorum-critical";
         let response = self
-            .http_get(
-                path,
-                None,
-                Some(StatusCode::SERVICE_UNAVAILABLE),
-            )
+            .http_get(path, None, Some(StatusCode::SERVICE_UNAVAILABLE))
             .await?;
 
         let status_code = response.status();
