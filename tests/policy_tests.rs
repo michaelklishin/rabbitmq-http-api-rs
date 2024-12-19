@@ -18,8 +18,8 @@ use rabbitmq_http_client::{
 };
 
 use serde_json::{json, Map, Value};
-mod common;
-use crate::common::{endpoint, PASSWORD, USERNAME};
+mod test_helpers;
+use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
 
 #[test]
 fn test_message_ttl_policy() {

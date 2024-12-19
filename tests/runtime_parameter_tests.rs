@@ -16,8 +16,8 @@ use rabbitmq_http_client::responses::RuntimeParameter;
 use rabbitmq_http_client::{blocking_api::Client, requests::VirtualHostParams};
 use serde_json::{json, Map, Value};
 
-mod common;
-use crate::common::{await_metric_emission, endpoint, PASSWORD, USERNAME};
+mod test_helpers;
+use crate::test_helpers::{await_metric_emission, endpoint, PASSWORD, USERNAME};
 
 #[test]
 fn test_upsert_runtime_parameter() {

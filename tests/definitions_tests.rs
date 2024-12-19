@@ -13,8 +13,8 @@
 // limitations under the License.
 use rabbitmq_http_client::blocking_api::Client;
 
-mod common;
-use crate::common::{await_metric_emission, endpoint, PASSWORD, USERNAME};
+mod test_helpers;
+use crate::test_helpers::{await_metric_emission, endpoint, PASSWORD, USERNAME};
 use rabbitmq_http_client::commons::PolicyTarget;
 use rabbitmq_http_client::requests::{ExchangeParams, PolicyParams, QueueParams};
 use serde_json::{json, Map, Value};

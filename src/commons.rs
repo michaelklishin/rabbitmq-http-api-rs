@@ -34,12 +34,24 @@ pub enum ExchangeType {
     ModulusHash,
     /// Random exchange
     Random,
+    /// Local random exchange
+    #[serde(rename = "x-local-random")]
+    LocalRandom,
     /// JMS topic exchange
+    #[serde(rename = "x-jms-topic")]
     JmsTopic,
     /// Recent history exchange
+    #[serde(rename = "x-recent-history")]
     RecentHistory,
-    /// All other x-* exchange types, for example, those provided by plugins
-    Plugin(String),
+    /// x-delayed-message exchange
+    #[serde(rename = "x-delayed-message")]
+    DelayedMessage,
+    /// x-message-deduplication
+    #[serde(rename = "x-message-deduplication")]
+    MessageDeduplication,
+    /// Other types
+    #[serde(untagged)]
+    Plugin(String)
 }
 
 const EXCHANGE_TYPE_FANOUT: &str = "fanout";
@@ -50,7 +62,10 @@ const EXCHANGE_TYPE_CONSISTENT_HASHING: &str = "x-consistent-hash";
 const EXCHANGE_TYPE_MODULUS_HASH: &str = "x-modulus-hash";
 const EXCHANGE_TYPE_RANDOM: &str = "x-random";
 const EXCHANGE_TYPE_JMS_TOPIC: &str = "x-jms-topic";
+const EXCHANGE_TYPE_LOCAL_RANDOM: &str = "x-local-random";
 const EXCHANGE_TYPE_RECENT_HISTORY: &str = "x-recent-history";
+const EXCHANGE_TYPE_DELAYED_MESSAGE: &str = "x-delayed-message";
+const EXCHANGE_TYPE_MESSAGE_DEDUPLICATION: &str = "x-message-deduplication";
 
 impl From<&str> for ExchangeType {
     fn from(value: &str) -> Self {
@@ -62,8 +77,11 @@ impl From<&str> for ExchangeType {
             EXCHANGE_TYPE_CONSISTENT_HASHING => ExchangeType::ConsistentHashing,
             EXCHANGE_TYPE_MODULUS_HASH => ExchangeType::ModulusHash,
             EXCHANGE_TYPE_RANDOM => ExchangeType::Random,
+            EXCHANGE_TYPE_LOCAL_RANDOM => ExchangeType::LocalRandom,
             EXCHANGE_TYPE_JMS_TOPIC => ExchangeType::JmsTopic,
             EXCHANGE_TYPE_RECENT_HISTORY => ExchangeType::RecentHistory,
+            EXCHANGE_TYPE_DELAYED_MESSAGE => ExchangeType::DelayedMessage,
+            EXCHANGE_TYPE_MESSAGE_DEDUPLICATION => ExchangeType::MessageDeduplication,
             other => ExchangeType::Plugin(other.to_owned()),
         }
     }
@@ -85,8 +103,11 @@ impl From<ExchangeType> for String {
             ExchangeType::ConsistentHashing => EXCHANGE_TYPE_CONSISTENT_HASHING.to_owned(),
             ExchangeType::ModulusHash => EXCHANGE_TYPE_MODULUS_HASH.to_owned(),
             ExchangeType::Random => EXCHANGE_TYPE_RANDOM.to_owned(),
+            ExchangeType::LocalRandom => EXCHANGE_TYPE_LOCAL_RANDOM.to_owned(),
             ExchangeType::JmsTopic => EXCHANGE_TYPE_JMS_TOPIC.to_owned(),
             ExchangeType::RecentHistory => EXCHANGE_TYPE_RECENT_HISTORY.to_owned(),
+            ExchangeType::DelayedMessage => EXCHANGE_TYPE_DELAYED_MESSAGE.to_owned(),
+            ExchangeType::MessageDeduplication => EXCHANGE_TYPE_MESSAGE_DEDUPLICATION.to_owned(),
             ExchangeType::Plugin(exchange_type) => exchange_type,
         }
     }

@@ -15,8 +15,8 @@ use rabbitmq_http_client::requests::VirtualHostParams;
 use rabbitmq_http_client::responses;
 use rabbitmq_http_client::{blocking_api::Client, requests::Permissions};
 
-mod common;
-use crate::common::{endpoint, PASSWORD, USERNAME};
+mod test_helpers;
+use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
 
 #[test]
 fn test_list_permissions() {

@@ -1,4 +1,3 @@
-use amqprs::channel::ExchangeType;
 // Copyright (C) 2023-2024 RabbitMQ Core Team (teamrabbitmq@gmail.com)
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +14,10 @@ use amqprs::channel::ExchangeType;
 use rabbitmq_http_client::{blocking_api::Client, requests::ExchangeParams};
 use serde_json::{json, Map, Value};
 
-mod common;
-use crate::common::{endpoint, PASSWORD, USERNAME};
+mod test_helpers;
+use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
+
+use rabbitmq_http_client::commons::ExchangeType;
 
 #[test]
 fn test_declare_a_durable_fanout_exchange() {
@@ -38,6 +39,18 @@ fn test_declare_a_durable_headers_exchange() {
     test_declare_a_durable_exchange_of_type("rust.tests.headers.1", ExchangeType::Headers);
 }
 
+#[test]
+fn test_declare_a_durable_local_random_exchange() {
+    test_declare_a_durable_exchange_of_type("rust.tests.local-rnd.1", ExchangeType::LocalRandom);
+}
+
+#[test]
+fn test_declare_a_durable_custom_exchange_type() {
+    // This is a core type that's not in the AMQP 0-9-1 spec,
+    // using it requiring additional plugins on the node
+    test_declare_a_durable_exchange_of_type("rust.tests.local-rnd.2", ExchangeType::Plugin("x-local-random".to_owned()));
+}
+
 fn test_declare_a_durable_exchange_of_type(name: &str, typ: ExchangeType) {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
@@ -56,6 +69,8 @@ fn test_declare_a_durable_exchange_of_type(name: &str, typ: ExchangeType) {
         ExchangeType::Topic => ExchangeParams::durable_topic(name, optional_args),
         ExchangeType::Direct => ExchangeParams::durable_direct(name, optional_args),
         ExchangeType::Headers => ExchangeParams::durable_headers(name, optional_args),
+        ExchangeType::LocalRandom => ExchangeParams::durable_local_random(name, optional_args),
+        ExchangeType::Plugin(custom_type) => ExchangeParams::plugin(name, custom_type, false, false, optional_args),
         // the consistent hashing and other exchanges are intentionally ignored
         // in these tests
         _ => ExchangeParams::durable_fanout(name, optional_args),

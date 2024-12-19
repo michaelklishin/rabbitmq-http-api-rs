@@ -266,6 +266,44 @@ impl<'a> ExchangeParams<'a> {
         Self::new(name, ExchangeType::Headers, true, false, optional_args)
     }
 
+    /// Instantiates a [`ExchangeParams`] of a headers exchange
+    pub fn local_random(
+        name: &'a str,
+        durable: bool,
+        auto_delete: bool,
+        optional_args: XArguments,
+    ) -> Self {
+        Self::new(
+            name,
+            ExchangeType::LocalRandom,
+            durable,
+            auto_delete,
+            optional_args,
+        )
+    }
+
+    /// Instantiates a [`ExchangeParams`] of a durable headers exchange
+    pub fn durable_local_random(name: &'a str, optional_args: XArguments) -> Self {
+        Self::new(name, ExchangeType::LocalRandom, true, false, optional_args)
+    }
+
+    /// Instantiates a [`ExchangeParams`] of a custom (plugin-provided) type
+    pub fn plugin(
+        name: &'a str,
+        exchange_type: String,
+        durable: bool,
+        auto_delete: bool,
+        optional_args: XArguments,
+    ) -> Self {
+        Self::new(
+            name,
+            ExchangeType::Plugin(exchange_type),
+            durable,
+            auto_delete,
+            optional_args,
+        )
+    }
+
     pub fn new(
         name: &'a str,
         exchange_type: ExchangeType,

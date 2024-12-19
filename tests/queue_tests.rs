@@ -14,8 +14,8 @@
 use rabbitmq_http_client::{blocking_api::Client, commons::QueueType, requests::QueueParams};
 use serde_json::{json, Map, Value};
 
-mod common;
-use crate::common::{endpoint, PASSWORD, USERNAME};
+mod test_helpers;
+use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
 
 #[test]
 fn test_declare_and_redeclare_a_classic_queue() {
@@ -120,7 +120,7 @@ fn test_list_all_queues() {
     let result1 = rc.declare_queue(vh_name, &params);
     assert!(result1.is_ok(), "declare_queue returned {:?}", result1);
 
-    common::await_queue_metric_emission();
+    test_helpers::await_queue_metric_emission();
 
     let result2 = rc.list_queues();
     assert!(result2.is_ok(), "list_queues returned {:?}", result2);
@@ -139,7 +139,7 @@ fn test_list_queues_in_a_virtual_host() {
     let result1 = rc.declare_queue(vh_name, &params);
     assert!(result1.is_ok(), "declare_queue returned {:?}", result1);
 
-    common::await_queue_metric_emission();
+    test_helpers::await_queue_metric_emission();
 
     let result2 = rc.list_queues_in(vh_name);
     assert!(result2.is_ok(), "list_queues_in returned {:?}", result2);

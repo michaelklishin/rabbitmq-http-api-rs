@@ -18,8 +18,8 @@ use rabbitmq_http_client::{
     requests::{EnforcedLimitParams, UserParams},
 };
 
-mod common;
-use crate::common::{endpoint, PASSWORD, USERNAME};
+mod test_helpers;
+use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
 
 #[test]
 fn test_list_all_user_limits() {

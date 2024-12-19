@@ -13,8 +13,8 @@
 // limitations under the License.
 use rabbitmq_http_client::blocking_api::Client;
 
-mod common;
-use crate::common::{endpoint, PASSWORD, USERNAME};
+mod test_helpers;
+use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
 
 #[test]
 fn test_get_cluster_name() {
