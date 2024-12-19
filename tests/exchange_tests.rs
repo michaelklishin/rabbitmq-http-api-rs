@@ -48,7 +48,10 @@ fn test_declare_a_durable_local_random_exchange() {
 fn test_declare_a_durable_custom_exchange_type() {
     // This is a core type that's not in the AMQP 0-9-1 spec,
     // using it requiring additional plugins on the node
-    test_declare_a_durable_exchange_of_type("rust.tests.local-rnd.2", ExchangeType::Plugin("x-local-random".to_owned()));
+    test_declare_a_durable_exchange_of_type(
+        "rust.tests.local-rnd.2",
+        ExchangeType::Plugin("x-local-random".to_owned()),
+    );
 }
 
 fn test_declare_a_durable_exchange_of_type(name: &str, typ: ExchangeType) {
@@ -70,7 +73,9 @@ fn test_declare_a_durable_exchange_of_type(name: &str, typ: ExchangeType) {
         ExchangeType::Direct => ExchangeParams::durable_direct(name, optional_args),
         ExchangeType::Headers => ExchangeParams::durable_headers(name, optional_args),
         ExchangeType::LocalRandom => ExchangeParams::durable_local_random(name, optional_args),
-        ExchangeType::Plugin(custom_type) => ExchangeParams::plugin(name, custom_type, false, false, optional_args),
+        ExchangeType::Plugin(custom_type) => {
+            ExchangeParams::plugin(name, custom_type, false, false, optional_args)
+        }
         // the consistent hashing and other exchanges are intentionally ignored
         // in these tests
         _ => ExchangeParams::durable_fanout(name, optional_args),
@@ -81,7 +86,6 @@ fn test_declare_a_durable_exchange_of_type(name: &str, typ: ExchangeType) {
 
     let _ = rc.delete_exchange(vhost, name);
 }
-
 
 #[test]
 fn test_delete_exchange() {

@@ -51,7 +51,7 @@ pub enum ExchangeType {
     MessageDeduplication,
     /// Other types
     #[serde(untagged)]
-    Plugin(String)
+    Plugin(String),
 }
 
 const EXCHANGE_TYPE_FANOUT: &str = "fanout";
