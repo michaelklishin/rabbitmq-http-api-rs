@@ -29,10 +29,13 @@ pub enum ExchangeType {
     /// Headers exchange
     Headers,
     /// Consistent hashing (consistent hash) exchange
+    #[serde(rename = "x-consistent-hash")]
     ConsistentHashing,
     /// Modulus hash, ships with the 'rabbitmq-sharding' plugin
+    #[serde(rename = "x-modulus-hash")]
     ModulusHash,
     /// Random exchange
+    #[serde(rename = "x-random")]
     Random,
     /// Local random exchange
     #[serde(rename = "x-local-random")]
