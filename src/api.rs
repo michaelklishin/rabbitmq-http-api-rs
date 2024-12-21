@@ -660,14 +660,22 @@ where
 
     pub async fn delete_queue(&self, vhost: &str, name: &str) -> Result<()> {
         let _response = self
-            .http_delete(path!("queues", vhost, name), Some(StatusCode::NOT_FOUND), None)
+            .http_delete(
+                path!("queues", vhost, name),
+                Some(StatusCode::NOT_FOUND),
+                None,
+            )
             .await?;
         Ok(())
     }
 
     pub async fn delete_exchange(&self, vhost: &str, name: &str) -> Result<()> {
         let _response = self
-            .http_delete(path!("exchanges", vhost, name), Some(StatusCode::NOT_FOUND), None)
+            .http_delete(
+                path!("exchanges", vhost, name),
+                Some(StatusCode::NOT_FOUND),
+                None,
+            )
             .await?;
         Ok(())
     }

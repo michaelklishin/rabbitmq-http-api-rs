@@ -581,8 +581,7 @@ where
         } else {
             None
         };
-        let _response =
-            self.http_delete(path!("vhosts", vhost), excludes, None)?;
+        let _response = self.http_delete(path!("vhosts", vhost), excludes, None)?;
         Ok(())
     }
 
@@ -592,8 +591,7 @@ where
         } else {
             None
         };
-        let _response =
-            self.http_delete(path!("users", username), excludes, None)?;
+        let _response = self.http_delete(path!("users", username), excludes, None)?;
         Ok(())
     }
 
@@ -603,11 +601,7 @@ where
         } else {
             None
         };
-        let _response = self.http_delete(
-            path!("permissions", vhost, username),
-            excludes,
-            None,
-        )?;
+        let _response = self.http_delete(path!("permissions", vhost, username), excludes, None)?;
         Ok(())
     }
 
@@ -1215,7 +1209,7 @@ where
     ) -> Result<HttpClientResponse> {
         let status = response.status();
         if status == StatusCode::NOT_FOUND {
-            return Err(NotFound)
+            return Err(NotFound);
         }
 
         if status.is_client_error() {

@@ -11,7 +11,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-use rabbitmq_http_client::{blocking_api::Client, requests::ExchangeParams, error::Error as APIClientError};
+use rabbitmq_http_client::{
+    blocking_api::Client, error::Error as APIClientError, requests::ExchangeParams,
+};
 use serde_json::{json, Map, Value};
 
 mod test_helpers;
