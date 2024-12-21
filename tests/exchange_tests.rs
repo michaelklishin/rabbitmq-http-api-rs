@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-use rabbitmq_http_client::{blocking_api::Client, requests::ExchangeParams};
+use rabbitmq_http_client::{blocking_api::Client, requests::ExchangeParams, error::Error as APIClientError};
 use serde_json::{json, Map, Value};
 
 mod test_helpers;
@@ -59,7 +59,7 @@ fn test_declare_a_durable_exchange_of_type(name: &str, typ: ExchangeType) {
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let vhost = "/";
 
-    let _ = rc.delete_exchange(vhost, name);
+    let _ = rc.delete_exchange(vhost, name, false);
 
     let result1 = rc.get_exchange_info(vhost, name);
     assert!(result1.is_err());
@@ -84,7 +84,7 @@ fn test_declare_a_durable_exchange_of_type(name: &str, typ: ExchangeType) {
     println!("{:?}", result2);
     assert!(result2.is_ok());
 
-    let _ = rc.delete_exchange(vhost, name);
+    let _ = rc.delete_exchange(vhost, name, false);
 }
 
 #[test]
@@ -94,7 +94,7 @@ fn test_delete_exchange() {
     let vhost = "/";
     let name = "rust.tests.cq.10";
 
-    let _ = rc.delete_exchange(vhost, name);
+    let _ = rc.delete_exchange(vhost, name, false);
 
     let result1 = rc.get_exchange_info(vhost, name);
     assert!(result1.is_err());
@@ -103,9 +103,10 @@ fn test_delete_exchange() {
     let result2 = rc.declare_exchange(vhost, &params);
     assert!(result2.is_ok());
 
-    let _ = rc.delete_exchange(vhost, name);
+    let _ = rc.delete_exchange(vhost, name, false);
     let result3 = rc.get_exchange_info(vhost, name);
     assert!(result3.is_err());
+    assert!(matches!(result3.unwrap_err(), APIClientError::NotFound));
 }
 
 #[test]

@@ -45,7 +45,7 @@ fn test_create_vhost() {
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let name = "rust_test_create_vhost";
 
-    let _ = rc.delete_vhost(name);
+    let _ = rc.delete_vhost(name, false);
 
     let result1 = rc.get_vhost(name);
     assert!(result1.is_err());
@@ -66,7 +66,7 @@ fn test_create_vhost() {
     let vh2 = result3.unwrap();
     assert!(vh2.name == name);
 
-    let _ = rc.delete_vhost(name);
+    let _ = rc.delete_vhost(name, false);
 }
 
 #[test]
@@ -75,7 +75,7 @@ fn test_update_vhost() {
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let name = "rust_test_update_vhost";
 
-    let _ = rc.delete_vhost(name);
+    let _ = rc.delete_vhost(name, false);
 
     let result1 = rc.get_vhost(name);
     assert!(result1.is_err());
@@ -104,7 +104,7 @@ fn test_update_vhost() {
     let vh = result4.unwrap();
     assert!(vh.description.unwrap() == alt_desc);
 
-    let _ = rc.delete_vhost(name);
+    let _ = rc.delete_vhost(name, false);
 }
 
 #[test]
@@ -127,7 +127,7 @@ fn test_delete_vhost() {
     let result2 = rc.get_vhost(name);
     assert!(result2.is_ok());
 
-    let _ = rc.delete_vhost(name);
+    let _ = rc.delete_vhost(name, false);
     let result3 = rc.get_vhost(name);
     assert!(result3.is_err());
 }

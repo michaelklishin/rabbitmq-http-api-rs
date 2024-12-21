@@ -49,7 +49,7 @@ fn test_list_all_bindings() {
         .iter()
         .any(|vh| vh.vhost == vh_name && vh.source == fanout));
 
-    let _ = rc.delete_queue(vh_name, cq);
+    let _ = rc.delete_queue(vh_name, cq, false);
 }
 
 #[test]
@@ -81,7 +81,7 @@ fn test_list_only_queue_bindings() {
             && b.destination == cq
             && b.source == fanout));
 
-    let _ = rc.delete_queue(vh_name, cq);
+    let _ = rc.delete_queue(vh_name, cq, false);
 }
 
 #[test]
@@ -143,8 +143,8 @@ fn test_list_only_exchange_bindings() {
             && b.destination == fanout1
             && b.source == fanout2));
 
-    let _ = rc.delete_queue(vh_name, cq);
-    let _ = rc.delete_exchange(vh_name, fanout2);
+    let _ = rc.delete_queue(vh_name, cq, false);
+    let _ = rc.delete_exchange(vh_name, fanout2, false);
 }
 
 #[test]
@@ -201,7 +201,7 @@ fn test_delete_queue_bindings() {
             && b.destination == cq
             && b.source == fanout));
 
-    let _ = rc.delete_queue(vh_name, cq);
+    let _ = rc.delete_queue(vh_name, cq, false);
 }
 
 #[test]

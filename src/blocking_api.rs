@@ -575,34 +575,59 @@ where
         Ok(())
     }
 
-    pub fn delete_vhost(&self, vhost: &str) -> Result<()> {
+    pub fn delete_vhost(&self, vhost: &str, idempotently: bool) -> Result<()> {
+        let excludes = if idempotently {
+            Some(StatusCode::NOT_FOUND)
+        } else {
+            None
+        };
         let _response =
-            self.http_delete(path!("vhosts", vhost), Some(StatusCode::NOT_FOUND), None)?;
+            self.http_delete(path!("vhosts", vhost), excludes, None)?;
         Ok(())
     }
 
-    pub fn delete_user(&self, username: &str) -> Result<()> {
+    pub fn delete_user(&self, username: &str, idempotently: bool) -> Result<()> {
+        let excludes = if idempotently {
+            Some(StatusCode::NOT_FOUND)
+        } else {
+            None
+        };
         let _response =
-            self.http_delete(path!("users", username), Some(StatusCode::NOT_FOUND), None)?;
+            self.http_delete(path!("users", username), excludes, None)?;
         Ok(())
     }
 
-    pub fn clear_permissions(&self, vhost: &str, username: &str) -> Result<()> {
+    pub fn clear_permissions(&self, vhost: &str, username: &str, idempotently: bool) -> Result<()> {
+        let excludes = if idempotently {
+            Some(StatusCode::NOT_FOUND)
+        } else {
+            None
+        };
         let _response = self.http_delete(
             path!("permissions", vhost, username),
-            Some(StatusCode::NOT_FOUND),
+            excludes,
             None,
         )?;
         Ok(())
     }
 
-    pub fn delete_queue(&self, vhost: &str, name: &str) -> Result<()> {
-        let _response = self.http_delete(path!("queues", vhost, name), None, None)?;
+    pub fn delete_queue(&self, vhost: &str, name: &str, idempotently: bool) -> Result<()> {
+        let excludes = if idempotently {
+            Some(StatusCode::NOT_FOUND)
+        } else {
+            None
+        };
+        let _response = self.http_delete(path!("queues", vhost, name), excludes, None)?;
         Ok(())
     }
 
-    pub fn delete_exchange(&self, vhost: &str, name: &str) -> Result<()> {
-        let _response = self.http_delete(path!("exchanges", vhost, name), None, None)?;
+    pub fn delete_exchange(&self, vhost: &str, name: &str, idempotently: bool) -> Result<()> {
+        let excludes = if idempotently {
+            Some(StatusCode::NOT_FOUND)
+        } else {
+            None
+        };
+        let _response = self.http_delete(path!("exchanges", vhost, name), excludes, None)?;
         Ok(())
     }
 
@@ -1189,6 +1214,10 @@ where
         server_code_to_accept_or_ignore: Option<StatusCode>,
     ) -> Result<HttpClientResponse> {
         let status = response.status();
+        if status == StatusCode::NOT_FOUND {
+            return Err(NotFound)
+        }
+
         if status.is_client_error() {
             match client_code_to_accept_or_ignore {
                 Some(expect) if status == expect => {}

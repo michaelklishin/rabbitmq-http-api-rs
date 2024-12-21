@@ -24,7 +24,7 @@ fn test_declare_and_redeclare_a_classic_queue() {
     let vhost = "/";
     let name = "rust.tests.cq.69373293479827";
 
-    let _ = rc.delete_queue(vhost, name);
+    let _ = rc.delete_queue(vhost, name, false);
 
     let result1 = rc.get_queue_info(vhost, name);
     assert!(result1.is_err());
@@ -41,7 +41,7 @@ fn test_declare_and_redeclare_a_classic_queue() {
     let result3 = rc.declare_queue(vhost, &params2);
     assert!(result3.is_ok(), "declare_queue returned {:?}", result3);
 
-    let _ = rc.delete_queue(vhost, name);
+    let _ = rc.delete_queue(vhost, name, false);
 }
 
 #[test]
@@ -51,7 +51,7 @@ fn test_declare_a_quorum_queue() {
     let vhost = "/";
     let name = "rust.tests.qq.182374982374";
 
-    let _ = rc.delete_queue(vhost, name);
+    let _ = rc.delete_queue(vhost, name, false);
 
     let result1 = rc.get_queue_info(vhost, name);
     assert!(result1.is_err());
@@ -63,7 +63,7 @@ fn test_declare_a_quorum_queue() {
     let result2 = rc.declare_queue(vhost, &params);
     assert!(result2.is_ok(), "declare_queue returned {:?}", result2);
 
-    let _ = rc.delete_queue(vhost, name);
+    let _ = rc.delete_queue(vhost, name, false);
 }
 
 #[test]
@@ -73,7 +73,7 @@ fn test_declare_a_stream() {
     let vhost = "/";
     let name = "rust.tests.qq.927348926347988623";
 
-    let _ = rc.delete_queue(vhost, name);
+    let _ = rc.delete_queue(vhost, name, false);
 
     let result1 = rc.get_queue_info(vhost, name);
     assert!(result1.is_err());
@@ -85,7 +85,7 @@ fn test_declare_a_stream() {
     let result2 = rc.declare_queue(vhost, &params);
     assert!(result2.is_ok(), "declare_queue returned {:?}", result2);
 
-    let _ = rc.delete_queue(vhost, name);
+    let _ = rc.delete_queue(vhost, name, false);
 }
 
 #[test]
@@ -95,7 +95,7 @@ fn test_delete_queue() {
     let vhost = "/";
     let name = "rust.tests.cq.982734982364982364896";
 
-    let _ = rc.delete_queue(vhost, name);
+    let _ = rc.delete_queue(vhost, name, false);
 
     let result1 = rc.get_queue_info(vhost, name);
     assert!(result1.is_err());
@@ -104,7 +104,7 @@ fn test_delete_queue() {
     let result2 = rc.declare_queue(vhost, &params);
     assert!(result2.is_ok(), "declare_queue returned {:?}", result2);
 
-    rc.delete_queue(vhost, name).unwrap();
+    rc.delete_queue(vhost, name, false).unwrap();
     let result3 = rc.get_queue_info(vhost, name);
     assert!(result3.is_err());
 }
@@ -125,7 +125,7 @@ fn test_list_all_queues() {
     let result2 = rc.list_queues();
     assert!(result2.is_ok(), "list_queues returned {:?}", result2);
 
-    rc.delete_queue(vh_name, params.name).unwrap();
+    rc.delete_queue(vh_name, params.name, false).unwrap();
 }
 
 #[test]
@@ -144,5 +144,5 @@ fn test_list_queues_in_a_virtual_host() {
     let result2 = rc.list_queues_in(vh_name);
     assert!(result2.is_ok(), "list_queues_in returned {:?}", result2);
 
-    rc.delete_queue(vh_name, params.name).unwrap();
+    rc.delete_queue(vh_name, params.name, false).unwrap();
 }

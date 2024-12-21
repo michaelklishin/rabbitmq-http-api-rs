@@ -75,6 +75,6 @@ fn test_user_deletion() {
     let result1 = rc.create_user(&params);
     assert!(result1.is_ok());
 
-    let result2 = rc.delete_user(name);
+    let result2 = rc.delete_user(name, false);
     assert!(result2.is_ok());
 }

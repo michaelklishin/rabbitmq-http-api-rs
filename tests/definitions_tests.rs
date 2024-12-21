@@ -115,7 +115,7 @@ fn test_export_definitions_as_data() {
         q_name
     );
 
-    let _ = rc.delete_exchange("/", x_name);
+    let _ = rc.delete_exchange("/", x_name, false);
     let _ = rc.delete_policy("/", qq_pol_name);
 }
 
@@ -123,7 +123,7 @@ fn test_export_definitions_as_data() {
 fn test_import_definitions() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
-    let _ = rc.delete_queue("/", "imported_queue");
+    let _ = rc.delete_queue("/", "imported_queue", false);
     let defs = json!({  "queues": [
       {
         "auto_delete": false,

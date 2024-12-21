@@ -47,7 +47,7 @@ fn test_upsert_runtime_parameter() {
     );
 
     let _ = rc.clear_runtime_parameter(&rpf.component, &rpf.vhost, &rpf.name);
-    let _ = rc.delete_vhost(vh_params.name);
+    let _ = rc.delete_vhost(vh_params.name, false);
 }
 
 #[test]
@@ -79,7 +79,7 @@ fn test_clear_runtime_parameter() {
         .iter()
         .any(|p| p.component == "vhost-limits" && p.vhost == *vh_params.name));
 
-    let _ = rc.delete_vhost(vh_params.name);
+    let _ = rc.delete_vhost(vh_params.name, false);
 }
 
 #[test]

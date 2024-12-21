@@ -27,7 +27,7 @@ fn test_message_ttl_policy() {
     let rc = Client::new(endpoint.as_str(), USERNAME, PASSWORD);
 
     let vh_params = VirtualHostParams::named("test_message_ttl_policy");
-    let _ = rc.delete_vhost(vh_params.name);
+    let _ = rc.delete_vhost(vh_params.name, false);
     let result1 = rc.create_vhost(&vh_params);
     assert!(result1.is_ok());
 
@@ -45,7 +45,7 @@ fn test_message_ttl_policy() {
     };
     test_a_policy(&rc, &message_ttl_policy);
 
-    let _ = rc.delete_vhost(vh_params.name);
+    let _ = rc.delete_vhost(vh_params.name, false);
 }
 
 #[test]
@@ -58,7 +58,7 @@ fn test_dlx_policy() {
     let policy_definition = Some(map);
 
     let vh_params = VirtualHostParams::named("test_dlx_policy");
-    let _ = rc.delete_vhost(vh_params.name);
+    let _ = rc.delete_vhost(vh_params.name, false);
     let result1 = rc.create_vhost(&vh_params);
     assert!(result1.is_ok());
 
@@ -72,7 +72,7 @@ fn test_dlx_policy() {
     };
     test_a_policy(&rc, &dlx_policy);
 
-    let _ = rc.delete_vhost(vh_params.name);
+    let _ = rc.delete_vhost(vh_params.name, false);
 }
 
 #[test]
@@ -85,7 +85,7 @@ fn test_operator_policy() {
     let policy_definition = Some(map);
 
     let vh_params = VirtualHostParams::named("test_operator_policy");
-    let _ = rc.delete_vhost(vh_params.name);
+    let _ = rc.delete_vhost(vh_params.name, false);
     let result1 = rc.create_vhost(&vh_params);
     assert!(result1.is_ok());
 
@@ -99,7 +99,7 @@ fn test_operator_policy() {
     };
     test_an_operator_policy(&rc, &operator_policy);
 
-    // let _ = rc.delete_vhost(vh_params.name);
+    // let _ = rc.delete_vhost(vh_params.name, false);
 }
 
 fn test_a_policy(rc: &Client<&str, &str, &str>, policy: &PolicyParams) {

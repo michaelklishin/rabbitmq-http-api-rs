@@ -47,7 +47,7 @@ fn test_list_all_vhost_limits() {
         .iter()
         .any(|it| it.vhost == vh_params.name && it.limits.get(key2.as_ref()).is_some()));
 
-    rc.delete_vhost(vh_params.name).unwrap();
+    rc.delete_vhost(vh_params.name, false).unwrap();
 }
 
 #[test]
@@ -76,5 +76,5 @@ fn test_list_vhost_limits() {
         .iter()
         .any(|it| it.vhost == vh_params.name && it.limits.get(key2.as_ref()).is_some()));
 
-    rc.delete_vhost(vh_params.name).unwrap();
+    rc.delete_vhost(vh_params.name, false).unwrap();
 }

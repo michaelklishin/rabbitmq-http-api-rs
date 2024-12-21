@@ -56,7 +56,7 @@ fn test_list_all_user_limits() {
         .iter()
         .any(|it| it.username == params.name && it.limits.get(key2.as_ref()).is_some()));
 
-    rc.delete_user(params.name).unwrap();
+    rc.delete_user(params.name, false).unwrap();
 }
 
 #[test]
@@ -94,5 +94,5 @@ fn test_list_user_limits() {
         .iter()
         .any(|it| it.username == params.name && it.limits.get(key2.as_ref()).is_some()));
 
-    rc.delete_user(params.name).unwrap();
+    rc.delete_user(params.name, false).unwrap();
 }

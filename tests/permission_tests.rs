@@ -24,7 +24,7 @@ fn test_list_permissions() {
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let vh_params = VirtualHostParams::named("test_list_permissions");
-    let _ = rc.delete_vhost(vh_params.name);
+    let _ = rc.delete_vhost(vh_params.name, false);
     let result1 = rc.create_vhost(&vh_params);
     assert!(result1.is_ok());
 
@@ -41,7 +41,7 @@ fn test_list_permissions() {
             write: ".*".to_owned(),
         }));
 
-    rc.delete_vhost(vh_params.name).unwrap();
+    rc.delete_vhost(vh_params.name, false).unwrap();
 }
 
 #[test]
@@ -50,7 +50,7 @@ fn test_list_permissions_in() {
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let vh_params = VirtualHostParams::named("test_list_permissions_in");
-    let _ = rc.delete_vhost(vh_params.name);
+    let _ = rc.delete_vhost(vh_params.name, false);
     let result1 = rc.create_vhost(&vh_params);
     assert!(result1.is_ok());
 
@@ -67,7 +67,7 @@ fn test_list_permissions_in() {
             write: ".*".to_owned(),
         }));
 
-    rc.delete_vhost(vh_params.name).unwrap();
+    rc.delete_vhost(vh_params.name, false).unwrap();
 }
 
 #[test]
@@ -76,7 +76,7 @@ fn test_list_permissions_of() {
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let vh_params = VirtualHostParams::named("test_list_permissions_of");
-    let _ = rc.delete_vhost(vh_params.name);
+    let _ = rc.delete_vhost(vh_params.name, false);
     let result1 = rc.create_vhost(&vh_params);
     assert!(result1.is_ok());
 
@@ -93,7 +93,7 @@ fn test_list_permissions_of() {
             write: ".*".to_owned(),
         }));
 
-    rc.delete_vhost(vh_params.name).unwrap();
+    rc.delete_vhost(vh_params.name, false).unwrap();
 }
 
 #[test]
@@ -102,7 +102,7 @@ fn test_get_permissions() {
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let vh_params = VirtualHostParams::named("test_get_permissions");
-    let _ = rc.delete_vhost(vh_params.name);
+    let _ = rc.delete_vhost(vh_params.name, false);
     let result1 = rc.create_vhost(&vh_params);
     assert!(result1.is_ok());
 
@@ -125,7 +125,7 @@ fn test_get_permissions() {
         }
     );
 
-    rc.delete_vhost(vh_params.name).unwrap();
+    rc.delete_vhost(vh_params.name, false).unwrap();
 }
 
 #[test]
@@ -134,7 +134,7 @@ fn test_grant_permissions() {
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let vh_params = VirtualHostParams::named("test_grant_permissions");
-    let _ = rc.delete_vhost(vh_params.name);
+    let _ = rc.delete_vhost(vh_params.name, false);
     let result1 = rc.create_vhost(&vh_params);
     assert!(result1.is_ok());
 
@@ -169,6 +169,5 @@ fn test_grant_permissions() {
     let result5 = rc.get_permissions(vh_params.name, "guest");
     assert!(result5.is_err(), "permissions found after deletion");
 
-    rc.clear_permissions(vh_params.name, "guest").unwrap();
-    rc.delete_vhost(vh_params.name).unwrap();
+    rc.delete_vhost(vh_params.name, false).unwrap();
 }

@@ -28,7 +28,7 @@ fn test_publish_and_get() {
     let vhost = "/";
     let queue = "rust.tests.cq.publish_and_get";
 
-    let _ = rc.delete_queue(vhost, queue);
+    let _ = rc.delete_queue(vhost, queue, false);
 
     let params = QueueParams::new_durable_classic_queue(queue, None);
     let result2 = rc.declare_queue(vhost, &params);
@@ -87,5 +87,5 @@ fn test_publish_and_get() {
         }]
     );
 
-    rc.delete_queue(vhost, queue).unwrap();
+    rc.delete_queue(vhost, queue, false).unwrap();
 }
