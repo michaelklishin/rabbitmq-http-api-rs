@@ -633,49 +633,67 @@ where
         Ok(())
     }
 
-    pub async fn delete_vhost(&self, vhost: &str) -> Result<()> {
+    pub async fn delete_vhost(&self, vhost: &str, idempotently: bool) -> Result<()> {
+        let excludes = if idempotently {
+            Some(StatusCode::NOT_FOUND)
+        } else {
+            None
+        };
         let _response = self
-            .http_delete(path!("vhosts", vhost), Some(StatusCode::NOT_FOUND), None)
+            .http_delete(path!("vhosts", vhost), excludes, None)
             .await?;
         Ok(())
     }
 
-    pub async fn delete_user(&self, username: &str) -> Result<()> {
+    pub async fn delete_user(&self, username: &str, idempotently: bool) -> Result<()> {
+        let excludes = if idempotently {
+            Some(StatusCode::NOT_FOUND)
+        } else {
+            None
+        };
         let _response = self
-            .http_delete(path!("users", username), Some(StatusCode::NOT_FOUND), None)
+            .http_delete(path!("users", username), excludes, None)
             .await?;
         Ok(())
     }
 
-    pub async fn clear_permissions(&self, vhost: &str, username: &str) -> Result<()> {
+    pub async fn clear_permissions(
+        &self,
+        vhost: &str,
+        username: &str,
+        idempotently: bool,
+    ) -> Result<()> {
+        let excludes = if idempotently {
+            Some(StatusCode::NOT_FOUND)
+        } else {
+            None
+        };
         let _response = self
-            .http_delete(
-                path!("permissions", vhost, username),
-                Some(StatusCode::NOT_FOUND),
-                None,
-            )
+            .http_delete(path!("permissions", vhost, username), excludes, None)
             .await?;
         Ok(())
     }
 
-    pub async fn delete_queue(&self, vhost: &str, name: &str) -> Result<()> {
+    pub async fn delete_queue(&self, vhost: &str, name: &str, idempotently: bool) -> Result<()> {
+        let excludes = if idempotently {
+            Some(StatusCode::NOT_FOUND)
+        } else {
+            None
+        };
         let _response = self
-            .http_delete(
-                path!("queues", vhost, name),
-                Some(StatusCode::NOT_FOUND),
-                None,
-            )
+            .http_delete(path!("queues", vhost, name), excludes, None)
             .await?;
         Ok(())
     }
 
-    pub async fn delete_exchange(&self, vhost: &str, name: &str) -> Result<()> {
+    pub async fn delete_exchange(&self, vhost: &str, name: &str, idempotently: bool) -> Result<()> {
+        let excludes = if idempotently {
+            Some(StatusCode::NOT_FOUND)
+        } else {
+            None
+        };
         let _response = self
-            .http_delete(
-                path!("exchanges", vhost, name),
-                Some(StatusCode::NOT_FOUND),
-                None,
-            )
+            .http_delete(path!("exchanges", vhost, name), excludes, None)
             .await?;
         Ok(())
     }
