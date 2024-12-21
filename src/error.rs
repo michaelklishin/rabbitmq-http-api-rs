@@ -35,7 +35,7 @@ pub enum Error<R, S, E, BT> {
         details: responses::HealthCheckFailureDetails,
         status_code: S,
     },
-    #[error("Could not find the requested resource")]
+    #[error("API responded with a 404 Not Found")]
     NotFound,
     #[error("Cannot delete a binding: multiple matching bindings were found, provide additional properties")]
     MultipleMatchingBindings,
