@@ -24,7 +24,9 @@ fn test_get_cluster_name() {
     let result = rc.get_cluster_name();
     assert!(result.is_ok());
     let meta = result.unwrap();
-    assert!(meta.name.starts_with("rabbit"))
+    // in case of the below's test interference
+    let name = meta.name;
+    assert!(name.starts_with("rabbit") || name.starts_with("rusty"))
 }
 
 #[test]
