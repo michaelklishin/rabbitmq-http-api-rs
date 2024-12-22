@@ -981,6 +981,8 @@ where
 
     pub fn health_check_if_node_is_quorum_critical(&self) -> Result<()> {
         let path = "health/checks/node-is-quorum-critical";
+        // we expect that StatusCode::SERVICE_UNAVAILABLE may be return and ignore
+        // it here to provide a custom error type later
         let response = self.http_get(path, None, Some(StatusCode::SERVICE_UNAVAILABLE))?;
 
         let status_code = response.status();
@@ -1053,6 +1055,8 @@ where
     //
 
     fn health_check_alarms(&self, path: &str) -> Result<()> {
+        // we expect that StatusCode::SERVICE_UNAVAILABLE may be return and ignore
+        // it here to provide a custom error type later
         let response = self.http_get(path, None, Some(StatusCode::SERVICE_UNAVAILABLE))?;
         let status_code = response.status();
         if status_code.is_success() {
