@@ -593,6 +593,7 @@ pub struct DefinitionSet {
 }
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[serde(untagged)]
 pub enum HealthCheckFailureDetails {
     AlarmCheck(ClusterAlarmCheckDetails),
     NodeIsQuorumCritical(QuorumCriticalityCheckDetails),
