@@ -598,29 +598,34 @@ pub enum HealthCheckFailureDetails {
     NodeIsQuorumCritical(QuorumCriticalityCheckDetails),
 }
 
+impl HealthCheckFailureDetails {
+    pub fn reason(&self) -> String {
+        match self {
+            HealthCheckFailureDetails::AlarmCheck(details) => details.reason.clone(),
+            HealthCheckFailureDetails::NodeIsQuorumCritical(details) => details.reason.clone(),
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
 pub struct ClusterAlarmCheckDetails {
     pub reason: String,
     pub alarms: Vec<ResourceAlarm>,
 }
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
 pub struct ResourceAlarm {
     pub node: String,
     pub resource: String,
 }
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
 pub struct QuorumCriticalityCheckDetails {
     pub reason: String,
     pub queues: Vec<QuorumEndangeredQueue>,
 }
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
 pub struct QuorumEndangeredQueue {
     pub name: String,
     #[serde(rename(deserialize = "virtual_host"))]
