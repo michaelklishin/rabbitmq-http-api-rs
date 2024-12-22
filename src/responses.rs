@@ -628,6 +628,7 @@ pub struct QuorumCriticalityCheckDetails {
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
 pub struct QuorumEndangeredQueue {
     pub name: String,
+    pub readable_name: String,
     #[serde(rename(deserialize = "virtual_host"))]
     pub vhost: String,
     #[serde(rename(deserialize = "type"))]
