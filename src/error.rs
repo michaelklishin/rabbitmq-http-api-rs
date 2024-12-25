@@ -11,22 +11,33 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#![allow(clippy::result_large_err)]
+
 use crate::responses;
-use reqwest::header::InvalidHeaderValue;
 use thiserror::Error;
 
+use backtrace::Backtrace;
+use reqwest::{
+    header::{HeaderMap, InvalidHeaderValue},
+    StatusCode, Url,
+};
+
 #[derive(Error, Debug)]
-pub enum Error<R, S, E, BT> {
+pub enum Error<U, S, E, BT> {
     #[error("API responded with a client error: status code of {status_code}")]
     ClientErrorResponse {
+        url: Option<U>,
         status_code: S,
-        response: Option<R>,
+        body: Option<String>,
+        headers: Option<HeaderMap>,
         backtrace: BT,
     },
     #[error("API responded with a server error: status code of {status_code}")]
     ServerErrorResponse {
+        url: Option<U>,
         status_code: S,
-        response: Option<R>,
+        body: Option<String>,
+        headers: Option<HeaderMap>,
         backtrace: BT,
     },
     #[error("Health check failed")]
@@ -45,4 +56,50 @@ pub enum Error<R, S, E, BT> {
     RequestError { error: E, backtrace: BT },
     #[error("an unspecified error")]
     Other,
+}
+
+#[allow(unused)]
+pub type HttpClientError = Error<Url, StatusCode, reqwest::Error, Backtrace>;
+
+impl From<reqwest::Error> for HttpClientError {
+    fn from(req_err: reqwest::Error) -> Self {
+        match req_err.status() {
+            None => HttpClientError::RequestError {
+                error: req_err,
+                backtrace: Backtrace::new(),
+            },
+            Some(status_code) => {
+                if status_code.is_client_error() {
+                    return HttpClientError::ClientErrorResponse {
+                        url: req_err.url().cloned(),
+                        status_code,
+                        body: None,
+                        headers: None,
+                        backtrace: Backtrace::new(),
+                    };
+                };
+
+                if status_code.is_server_error() {
+                    return HttpClientError::ServerErrorResponse {
+                        url: req_err.url().cloned(),
+                        status_code,
+                        body: None,
+                        headers: None,
+                        backtrace: Backtrace::new(),
+                    };
+                };
+
+                HttpClientError::RequestError {
+                    error: req_err,
+                    backtrace: Backtrace::new(),
+                }
+            }
+        }
+    }
+}
+
+impl From<reqwest::header::InvalidHeaderValue> for HttpClientError {
+    fn from(err: reqwest::header::InvalidHeaderValue) -> Self {
+        HttpClientError::InvalidHeaderValue { error: err }
+    }
 }

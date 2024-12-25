@@ -11,10 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#![allow(clippy::result_large_err)]
+
 use crate::error::Error;
-use crate::error::Error::{
-    ClientErrorResponse, InvalidHeaderValue, NotFound, RequestError, ServerErrorResponse,
-};
+use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
 use crate::{
     commons::{BindingDestinationType, UserLimitTarget, VirtualHostLimitTarget},
     path,
@@ -35,52 +35,9 @@ use serde_json::{json, Map, Value};
 use std::fmt;
 
 pub type HttpClientResponse = reqwest::blocking::Response;
-pub type HttpClientError = Error<HttpClientResponse, StatusCode, reqwest::Error, Backtrace>;
+pub type HttpClientError = crate::error::HttpClientError;
 
 pub type Result<T> = std::result::Result<T, HttpClientError>;
-
-impl From<reqwest::Error> for HttpClientError {
-    fn from(req_err: reqwest::Error) -> Self {
-        match req_err.status() {
-            None => RequestError {
-                error: req_err,
-                backtrace: Backtrace::new(),
-            },
-            Some(status_code) => {
-                if status_code.is_client_error() {
-                    return ClientErrorResponse {
-                        status_code,
-                        // reqwest::Error does not provide access to the associated
-                        // response, if any
-                        response: None,
-                        backtrace: Backtrace::new(),
-                    };
-                };
-
-                if status_code.is_server_error() {
-                    return ServerErrorResponse {
-                        status_code,
-                        // reqwest::Error does not provide access to the associated
-                        // response, if any
-                        response: None,
-                        backtrace: Backtrace::new(),
-                    };
-                };
-
-                RequestError {
-                    error: req_err,
-                    backtrace: Backtrace::new(),
-                }
-            }
-        }
-    }
-}
-
-impl From<reqwest::header::InvalidHeaderValue> for HttpClientError {
-    fn from(err: reqwest::header::InvalidHeaderValue) -> Self {
-        InvalidHeaderValue { error: err }
-    }
-}
 
 /// A `ClientBuilder` can be used to create a `Client` with custom configuration.
 ///
@@ -1220,11 +1177,18 @@ where
             match client_code_to_accept_or_ignore {
                 Some(expect) if status == expect => {}
                 _ => {
+                    let url = response.url().clone();
+                    let headers = response.headers().clone();
+                    // this consumes `self` and makes the response largely useless to the caller,
+                    // so we copy the key parts into the error first
+                    let body = response.text()?;
                     return Err(ClientErrorResponse {
-                        response: Some(response),
+                        url: Some(url),
+                        body: Some(body),
+                        headers: Some(headers),
                         status_code: status,
                         backtrace: Backtrace::new(),
-                    })
+                    });
                 }
             }
         }
@@ -1233,11 +1197,18 @@ where
             match server_code_to_accept_or_ignore {
                 Some(expect) if status == expect => {}
                 _ => {
+                    let url = response.url().clone();
+                    let headers = response.headers().clone();
+                    // this consumes `self` and makes the response largely useless to the caller,
+                    // so we copy the key parts into the error first
+                    let body = response.text()?;
                     return Err(ServerErrorResponse {
-                        response: Some(response),
+                        url: Some(url),
+                        body: Some(body),
+                        headers: Some(headers),
                         status_code: status,
                         backtrace: Backtrace::new(),
-                    })
+                    });
                 }
             }
         }

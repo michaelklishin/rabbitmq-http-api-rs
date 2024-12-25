@@ -11,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#![allow(clippy::result_large_err)]
+
 use backtrace::Backtrace;
 use reqwest::{
     header::{HeaderMap, HeaderValue},
@@ -21,9 +23,7 @@ use serde_json::{json, Map, Value};
 use std::fmt;
 
 use crate::error::Error;
-use crate::error::Error::{
-    ClientErrorResponse, InvalidHeaderValue, RequestError, ServerErrorResponse,
-};
+use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
 use crate::responses::MessageList;
 use crate::{
     commons::{BindingDestinationType, UserLimitTarget, VirtualHostLimitTarget},
@@ -35,53 +35,10 @@ use crate::{
     responses::{self, BindingInfo, DefinitionSet},
 };
 
-type HttpClientResponse = reqwest::Response;
-type HttpClientError = Error<HttpClientResponse, StatusCode, reqwest::Error, Backtrace>;
+pub type HttpClientResponse = reqwest::Response;
+pub type HttpClientError = crate::error::HttpClientError;
 
 pub type Result<T> = std::result::Result<T, HttpClientError>;
-
-impl From<reqwest::Error> for HttpClientError {
-    fn from(req_err: reqwest::Error) -> Self {
-        match req_err.status() {
-            None => RequestError {
-                error: req_err,
-                backtrace: Backtrace::new(),
-            },
-            Some(status_code) => {
-                if status_code.is_client_error() {
-                    return ClientErrorResponse {
-                        status_code,
-                        // reqwest::Error does not provide access to the associated
-                        // response, if any
-                        response: None,
-                        backtrace: Backtrace::new(),
-                    };
-                };
-
-                if status_code.is_server_error() {
-                    return ServerErrorResponse {
-                        status_code,
-                        // reqwest::Error does not provide access to the associated
-                        // response, if any
-                        response: None,
-                        backtrace: Backtrace::new(),
-                    };
-                };
-
-                RequestError {
-                    error: req_err,
-                    backtrace: Backtrace::new(),
-                }
-            }
-        }
-    }
-}
-
-impl From<reqwest::header::InvalidHeaderValue> for HttpClientError {
-    fn from(err: reqwest::header::InvalidHeaderValue) -> Self {
-        InvalidHeaderValue { error: err }
-    }
-}
 
 /// A `ClientBuilder` can be used to create a `Client` with custom configuration.
 ///
@@ -1229,8 +1186,8 @@ where
     async fn http_get<S>(
         &self,
         path: S,
-        client_expect_code_error: Option<StatusCode>,
-        server_expect_code_error: Option<StatusCode>,
+        client_code_to_accept_or_ignore: Option<StatusCode>,
+        server_code_to_accept_or_ignore: Option<StatusCode>,
     ) -> Result<HttpClientResponse>
     where
         S: AsRef<str>,
@@ -1241,11 +1198,13 @@ where
             .basic_auth(&self.username, Some(&self.password))
             .send()
             .await?;
-        let response = self.ok_or_status_code_error(
-            response,
-            client_expect_code_error,
-            server_expect_code_error,
-        )?;
+        let response = self
+            .ok_or_status_code_error(
+                response,
+                client_code_to_accept_or_ignore,
+                server_code_to_accept_or_ignore,
+            )
+            .await?;
         Ok(response)
     }
 
@@ -1253,8 +1212,8 @@ where
         &self,
         path: S,
         payload: &T,
-        client_expect_code_error: Option<StatusCode>,
-        server_expect_code_error: Option<StatusCode>,
+        client_code_to_accept_or_ignore: Option<StatusCode>,
+        server_code_to_accept_or_ignore: Option<StatusCode>,
     ) -> Result<HttpClientResponse>
     where
         S: AsRef<str>,
@@ -1267,11 +1226,13 @@ where
             .basic_auth(&self.username, Some(&self.password))
             .send()
             .await?;
-        let response = self.ok_or_status_code_error(
-            response,
-            client_expect_code_error,
-            server_expect_code_error,
-        )?;
+        let response = self
+            .ok_or_status_code_error(
+                response,
+                client_code_to_accept_or_ignore,
+                server_code_to_accept_or_ignore,
+            )
+            .await?;
         Ok(response)
     }
 
@@ -1279,8 +1240,8 @@ where
         &self,
         path: S,
         payload: &T,
-        client_expect_code_error: Option<StatusCode>,
-        server_expect_code_error: Option<StatusCode>,
+        client_code_to_accept_or_ignore: Option<StatusCode>,
+        server_code_to_accept_or_ignore: Option<StatusCode>,
     ) -> Result<HttpClientResponse>
     where
         S: AsRef<str>,
@@ -1293,19 +1254,21 @@ where
             .basic_auth(&self.username, Some(&self.password))
             .send()
             .await?;
-        let response = self.ok_or_status_code_error(
-            response,
-            client_expect_code_error,
-            server_expect_code_error,
-        )?;
+        let response = self
+            .ok_or_status_code_error(
+                response,
+                client_code_to_accept_or_ignore,
+                server_code_to_accept_or_ignore,
+            )
+            .await?;
         Ok(response)
     }
 
     async fn http_delete<S>(
         &self,
         path: S,
-        client_expect_code_error: Option<StatusCode>,
-        server_expect_code_error: Option<StatusCode>,
+        client_code_to_accept_or_ignore: Option<StatusCode>,
+        server_code_to_accept_or_ignore: Option<StatusCode>,
     ) -> Result<HttpClientResponse>
     where
         S: AsRef<str>,
@@ -1316,11 +1279,13 @@ where
             .basic_auth(&self.username, Some(&self.password))
             .send()
             .await?;
-        let response = self.ok_or_status_code_error(
-            response,
-            client_expect_code_error,
-            server_expect_code_error,
-        )?;
+        let response = self
+            .ok_or_status_code_error(
+                response,
+                client_code_to_accept_or_ignore,
+                server_code_to_accept_or_ignore,
+            )
+            .await?;
         Ok(response)
     }
 
@@ -1328,8 +1293,8 @@ where
         &self,
         path: S,
         headers: HeaderMap,
-        client_expect_code_error: Option<StatusCode>,
-        server_expect_code_error: Option<StatusCode>,
+        client_code_to_accept_or_ignore: Option<StatusCode>,
+        server_code_to_accept_or_ignore: Option<StatusCode>,
     ) -> Result<HttpClientResponse>
     where
         S: AsRef<str>,
@@ -1341,43 +1306,63 @@ where
             .headers(headers)
             .send()
             .await?;
-        let response = self.ok_or_status_code_error(
-            response,
-            client_expect_code_error,
-            server_expect_code_error,
-        )?;
+        let response = self
+            .ok_or_status_code_error(
+                response,
+                client_code_to_accept_or_ignore,
+                server_code_to_accept_or_ignore,
+            )
+            .await?;
         Ok(response)
     }
 
-    fn ok_or_status_code_error(
+    async fn ok_or_status_code_error(
         &self,
         response: HttpClientResponse,
-        client_expect_code_error: Option<StatusCode>,
-        server_expect_code_error: Option<StatusCode>,
+        client_code_to_accept_or_ignore: Option<StatusCode>,
+        server_code_to_accept_or_ignore: Option<StatusCode>,
     ) -> Result<HttpClientResponse> {
         let status = response.status();
+        if status == StatusCode::NOT_FOUND {
+            return Err(NotFound);
+        }
+
         if status.is_client_error() {
-            match client_expect_code_error {
+            match client_code_to_accept_or_ignore {
                 Some(expect) if status == expect => {}
                 _ => {
+                    let url = response.url().clone();
+                    let headers = response.headers().clone();
+                    // this consumes `self` and makes the response largely useless to the caller,
+                    // so we copy the key parts into the error first
+                    let body = response.text().await?;
                     return Err(ClientErrorResponse {
-                        response: Some(response),
+                        url: Some(url),
+                        body: Some(body),
+                        headers: Some(headers),
                         status_code: status,
                         backtrace: Backtrace::new(),
-                    })
+                    });
                 }
             }
         }
 
         if status.is_server_error() {
-            match server_expect_code_error {
+            match server_code_to_accept_or_ignore {
                 Some(expect) if status == expect => {}
                 _ => {
+                    let url = response.url().clone();
+                    let headers = response.headers().clone();
+                    // this consumes `self` and makes the response largely useless to the caller,
+                    // so we copy the key parts into the error first
+                    let body = response.text().await?;
                     return Err(ServerErrorResponse {
-                        response: Some(response),
+                        url: Some(url),
+                        body: Some(body),
+                        headers: Some(headers),
                         status_code: status,
                         backtrace: Backtrace::new(),
-                    })
+                    });
                 }
             }
         }
