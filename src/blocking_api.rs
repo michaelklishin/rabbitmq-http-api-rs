@@ -19,8 +19,8 @@ use crate::{
     commons::{BindingDestinationType, UserLimitTarget, VirtualHostLimitTarget},
     path,
     requests::{
-        self, EnforcedLimitParams, ExchangeParams, Permissions, PolicyParams, QueueParams,
-        RuntimeParameterDefinition, UserParams, VirtualHostParams, XArguments,
+        self, BulkUserDelete, EnforcedLimitParams, ExchangeParams, Permissions, PolicyParams,
+        QueueParams, RuntimeParameterDefinition, UserParams, VirtualHostParams, XArguments,
     },
     responses::{self, BindingInfo, DefinitionSet},
 };
@@ -557,6 +557,12 @@ where
             None
         };
         let _response = self.http_delete(path!("users", username), excludes, None)?;
+        Ok(())
+    }
+
+    pub fn delete_users(&self, usernames: Vec<&str>) -> Result<()> {
+        let delete = BulkUserDelete { usernames };
+        let _response = self.http_post(path!("users", "bulk-delete"), &delete, None, None)?;
         Ok(())
     }
 

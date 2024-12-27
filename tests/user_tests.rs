@@ -109,3 +109,34 @@ fn test_user_deletion() {
     let result2 = rc.delete_user(name, false);
     assert!(result2.is_ok());
 }
+
+#[test]
+fn test_bulk_user_deletion() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let salt = password_hashing::salt();
+    let password_hash =
+        password_hashing::base64_encoded_salted_password_hash_sha256(&salt, "del3te_me");
+
+    let name1 = "del3te_me_1";
+    let params1 = UserParams {
+        name: name1,
+        password_hash: &password_hash,
+        tags: "management",
+    };
+    let result1 = rc.create_user(&params1);
+    assert!(result1.is_ok());
+
+    let name2 = "del3te_me_2";
+    let params2 = UserParams {
+        name: name2,
+        password_hash: &password_hash,
+        tags: "management",
+    };
+    let result2 = rc.create_user(&params2);
+    assert!(result2.is_ok());
+
+    let result2 = rc.delete_users(vec![name1, name2]);
+    assert!(result2.is_ok());
+}

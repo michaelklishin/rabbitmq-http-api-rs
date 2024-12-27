@@ -29,8 +29,8 @@ use crate::{
     commons::{BindingDestinationType, UserLimitTarget, VirtualHostLimitTarget},
     path,
     requests::{
-        self, EnforcedLimitParams, ExchangeParams, Permissions, PolicyParams, QueueParams,
-        RuntimeParameterDefinition, UserParams, VirtualHostParams, XArguments,
+        self, BulkUserDelete, EnforcedLimitParams, ExchangeParams, Permissions, PolicyParams,
+        QueueParams, RuntimeParameterDefinition, UserParams, VirtualHostParams, XArguments,
     },
     responses::{self, BindingInfo, DefinitionSet},
 };
@@ -237,6 +237,16 @@ where
     /// Lists users in the internal database.
     pub async fn list_users(&self) -> Result<Vec<responses::User>> {
         let response = self.http_get("users", None, None).await?;
+        let response = response.json().await?;
+        Ok(response)
+    }
+
+    /// Lists users in the internal database that do not have access
+    /// to any virtual hosts.
+    pub async fn list_users_without_permissions(&self) -> Result<Vec<responses::User>> {
+        let response = self
+            .http_get("users/without-permissions", None, None)
+            .await?;
         let response = response.json().await?;
         Ok(response)
     }
@@ -610,6 +620,14 @@ where
         };
         let _response = self
             .http_delete(path!("users", username), excludes, None)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn delete_users(&self, usernames: Vec<&str>) -> Result<()> {
+        let delete = BulkUserDelete { usernames };
+        let _response = self
+            .http_post(path!("users", "bulk-delete"), &delete, None, None)
             .await?;
         Ok(())
     }

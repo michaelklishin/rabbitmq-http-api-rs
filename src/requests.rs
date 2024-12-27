@@ -321,6 +321,12 @@ impl<'a> ExchangeParams<'a> {
     }
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct BulkUserDelete<'a> {
+    #[serde(borrow, rename = "users")]
+    pub usernames: Vec<&'a str>,
+}
+
 pub type RuntimeParameterValue = Map<String, Value>;
 
 /// Represents a [runtime parameter](https://rabbitmq.com/docs/parameters/).
