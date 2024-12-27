@@ -240,6 +240,14 @@ where
         Ok(response)
     }
 
+    /// Lists users in the internal database that do not have access
+    /// to any virtual hosts.
+    pub fn list_users_without_permissions(&self) -> Result<Vec<responses::User>> {
+        let response = self.http_get("users/without-permissions", None, None)?;
+        let response = response.json()?;
+        Ok(response)
+    }
+
     /// Lists all client connections across the cluster.
     pub fn list_connections(&self) -> Result<Vec<responses::Connection>> {
         let response = self.http_get("connections", None, None)?;
@@ -1169,8 +1177,14 @@ where
         server_code_to_accept_or_ignore: Option<StatusCode>,
     ) -> Result<HttpClientResponse> {
         let status = response.status();
-        if status == StatusCode::NOT_FOUND {
-            return Err(NotFound);
+
+        match client_code_to_accept_or_ignore {
+            Some(status_code) if status_code == StatusCode::NOT_FOUND => {}
+            _ => {
+                if status == StatusCode::NOT_FOUND {
+                    return Err(NotFound);
+                }
+            }
         }
 
         if status.is_client_error() {

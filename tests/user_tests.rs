@@ -28,6 +28,37 @@ fn test_list_users() {
 }
 
 #[test]
+fn test_list_users_without_permissions() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+    let test_name = "test_list_users_without_permissions";
+
+    let username = format!("{}.1", test_name);
+    rc.delete_user(&username, true)
+        .expect("failed to delete a user");
+
+    let salt = password_hashing::salt();
+    let password_hash = password_hashing::base64_encoded_salted_password_hash_sha256(
+        &salt,
+        "test_list_users_without_permissions.1",
+    );
+    let params = UserParams {
+        name: &username,
+        password_hash: &password_hash,
+        tags: "",
+    };
+    rc.create_user(&params).expect("failed to create a user");
+
+    let result1 = rc.list_users_without_permissions();
+    assert!(result1.is_ok());
+    let vec = result1.unwrap();
+    assert!(vec.iter().any(|u| u.name == username));
+
+    rc.delete_user(&username, true)
+        .expect("failed to delete a user");
+}
+
+#[test]
 fn test_get_user() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
