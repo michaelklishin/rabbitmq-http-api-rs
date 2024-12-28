@@ -39,3 +39,15 @@ fn test_get_node_info() {
     assert!(node.uptime >= 1);
     assert!(node.total_erlang_processes >= 1);
 }
+
+#[test]
+fn test_get_node_memory_footprint() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+    let nodes = rc.list_nodes().unwrap();
+    let name = nodes.first().unwrap().name.clone();
+    let footprint = &rc.get_node_memory_footprint(&name).unwrap();
+
+    assert!(footprint.breakdown.metadata_store >= 1);
+    assert!(footprint.breakdown.quorum_queue_procs >= 1);
+}

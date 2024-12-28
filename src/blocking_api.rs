@@ -408,6 +408,13 @@ where
         Ok(response)
     }
 
+    /// Returns information about a cluster node.
+    pub fn get_node_memory_footprint(&self, name: &str) -> Result<responses::NodeMemoryFootprint> {
+        let response = self.http_get(path!("nodes", name, "memory"), None, None)?;
+        let response = response.json()?;
+        Ok(response)
+    }
+
     /// Returns information about a virtual host.
     pub fn get_vhost(&self, name: &str) -> Result<responses::VirtualHost> {
         let response = self.http_get(path!("vhosts", name), None, None)?;

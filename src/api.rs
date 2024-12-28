@@ -445,6 +445,18 @@ where
         Ok(response)
     }
 
+    /// Returns information about a cluster node.
+    pub async fn get_node_memory_footprint(
+        &self,
+        name: &str,
+    ) -> Result<responses::NodeMemoryFootprint> {
+        let response = self
+            .http_get(path!("nodes", name, "memory"), None, None)
+            .await?;
+        let response = response.json().await?;
+        Ok(response)
+    }
+
     /// Returns information about a virtual host.
     pub async fn get_vhost(&self, name: &str) -> Result<responses::VirtualHost> {
         let response = self.http_get(path!("vhosts", name), None, None).await?;

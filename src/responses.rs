@@ -112,6 +112,125 @@ impl fmt::Display for NodeList {
     }
 }
 
+#[derive(Debug, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+#[allow(dead_code)]
+pub struct NodeMemoryFootprint {
+    #[serde(rename = "memory")]
+    pub breakdown: NodeMemoryBreakdown,
+}
+
+type MemoryFootprintMetric = u64;
+
+#[derive(Debug, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+#[allow(dead_code)]
+pub struct NodeMemoryBreakdown {
+    pub connection_readers: MemoryFootprintMetric,
+    pub connection_writers: MemoryFootprintMetric,
+    pub connection_channels: MemoryFootprintMetric,
+    pub connection_other: MemoryFootprintMetric,
+    #[serde(rename = "queue_procs")]
+    pub classic_queue_procs: MemoryFootprintMetric,
+    pub quorum_queue_procs: MemoryFootprintMetric,
+    pub stream_queue_procs: MemoryFootprintMetric,
+    pub stream_queue_replica_reader_procs: MemoryFootprintMetric,
+    pub stream_queue_coordinator_procs: MemoryFootprintMetric,
+    pub plugins: MemoryFootprintMetric,
+    pub metadata_store: MemoryFootprintMetric,
+    #[serde(rename = "other_proc")]
+    pub other_procs: MemoryFootprintMetric,
+    pub metrics: MemoryFootprintMetric,
+    #[serde(rename = "mgmt_db")]
+    pub management_db: MemoryFootprintMetric,
+    pub mnesia: MemoryFootprintMetric,
+    #[serde(rename = "quorum_ets")]
+    pub quorum_queue_ets_tables: MemoryFootprintMetric,
+    #[serde(rename = "metadata_store_ets")]
+    pub metadata_store_ets_tables: MemoryFootprintMetric,
+    #[serde(rename = "other_ets")]
+    pub other_ets_tables: MemoryFootprintMetric,
+    #[serde(rename = "binary")]
+    pub binary_heap: MemoryFootprintMetric,
+    #[serde(rename = "msg_index")]
+    pub message_indices: MemoryFootprintMetric,
+    pub code: MemoryFootprintMetric,
+    #[serde(rename = "atom")]
+    pub atom_table: MemoryFootprintMetric,
+    pub other_system: MemoryFootprintMetric,
+    #[serde(rename = "allocated_unused")]
+    pub allocated_but_unused: MemoryFootprintMetric,
+    #[serde(rename = "reserved_unallocated")]
+    pub reserved_but_unallocated: MemoryFootprintMetric,
+    #[serde(rename = "strategy")]
+    pub calculation_strategy: String,
+}
+
+impl fmt::Display for NodeMemoryBreakdown {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let data = [
+            ("Connection readers".to_owned(), self.connection_readers),
+            ("Connection writers".to_owned(), self.connection_writers),
+            ("AMQP 0-9-1 channels".to_owned(), self.connection_channels),
+            (
+                "Other connection processes".to_owned(),
+                self.connection_other,
+            ),
+            (
+                "Classic queue replica processes".to_owned(),
+                self.classic_queue_procs,
+            ),
+            (
+                "Quorum queue replica processes".to_owned(),
+                self.quorum_queue_procs,
+            ),
+            (
+                "Stream replica processes".to_owned(),
+                self.stream_queue_procs,
+            ),
+            (
+                "Stream replica reader processes".to_owned(),
+                self.stream_queue_replica_reader_procs,
+            ),
+            (
+                "Stream coordinator processes".to_owned(),
+                self.stream_queue_coordinator_procs,
+            ),
+            ("Plugins".to_owned(), self.plugins),
+            ("Metadata store".to_owned(), self.metadata_store),
+            ("Other processes:".to_owned(), self.other_procs),
+            ("Metrics".to_owned(), self.metrics),
+            ("Management stats database".to_owned(), self.management_db),
+            ("Mnesia".to_owned(), self.mnesia),
+            (
+                "Quorum queue ETS tables".to_owned(),
+                self.quorum_queue_ets_tables,
+            ),
+            (
+                "Metadata store ETS tables".to_owned(),
+                self.metadata_store_ets_tables,
+            ),
+            ("Other ETS tables".to_owned(), self.other_ets_tables),
+            ("Binary heap".to_owned(), self.binary_heap),
+            ("Message indices".to_owned(), self.message_indices),
+            ("Code modules".to_owned(), self.code),
+            ("Atom table".to_owned(), self.atom_table),
+            ("Other system footprint".to_owned(), self.other_system),
+            ("Allocated but unused".to_owned(), self.allocated_but_unused),
+            (
+                "Reserved but unallocated".to_owned(),
+                self.reserved_but_unallocated,
+            ),
+        ];
+
+        for (k, v) in data {
+            writeln!(f, "{}: {}", k, v)?;
+        }
+
+        Ok(())
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 #[allow(dead_code)]
 pub struct VirtualHostMetadata {
