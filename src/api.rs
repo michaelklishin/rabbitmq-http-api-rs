@@ -1176,8 +1176,16 @@ where
     // Deprecated Features
     //
 
-    pub async fn list_deprecated_features(&self) -> Result<DeprecatedFeatureList> {
+    pub async fn list_all_deprecated_features(&self) -> Result<DeprecatedFeatureList> {
         let response = self.http_get("deprecated-features", None, None).await?;
+        let response = response.json().await?;
+        Ok(response)
+    }
+
+    pub async fn list_deprecated_features_in_use(&self) -> Result<DeprecatedFeatureList> {
+        let response = self
+            .http_get("deprecated-features/used", None, None)
+            .await?;
         let response = response.json().await?;
         Ok(response)
     }

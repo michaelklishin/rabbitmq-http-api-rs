@@ -1033,8 +1033,14 @@ where
     // Deprecated Features
     //
 
-    pub fn list_deprecated_features(&self) -> Result<DeprecatedFeatureList> {
+    pub fn list_all_deprecated_features(&self) -> Result<DeprecatedFeatureList> {
         let response = self.http_get("deprecated-features", None, None)?;
+        let response = response.json()?;
+        Ok(response)
+    }
+
+    pub fn list_deprecated_features_in_use(&self) -> Result<DeprecatedFeatureList> {
+        let response = self.http_get("deprecated-features/used", None, None)?;
         let response = response.json()?;
         Ok(response)
     }

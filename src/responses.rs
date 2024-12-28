@@ -994,6 +994,8 @@ pub struct DeprecatedFeature {
     #[serde(rename = "desc")]
     pub description: String,
     pub deprecation_phase: DeprecationPhase,
+    pub doc_url: String,
+    pub provided_by: String,
 }
 
 impl Display for DeprecatedFeature {
