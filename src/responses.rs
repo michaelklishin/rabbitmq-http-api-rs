@@ -231,6 +231,14 @@ impl fmt::Display for NodeMemoryBreakdown {
     }
 }
 
+/// Represents a number of key OAuth 2 configuration settings.
+#[derive(Serialize, Deserialize)]
+pub struct OAuthConfiguration {
+    pub oauth_enabled: bool,
+    pub oauth_client_id: Option<String>,
+    pub oauth_provider_url: Option<String>,
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 #[allow(dead_code)]
 pub struct VirtualHostMetadata {

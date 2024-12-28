@@ -15,6 +15,7 @@
 
 use crate::error::Error;
 use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
+use crate::responses::OAuthConfiguration;
 use crate::{
     commons::{BindingDestinationType, UserLimitTarget, VirtualHostLimitTarget},
     path,
@@ -1025,6 +1026,17 @@ where
     pub fn overview(&self) -> Result<responses::Overview> {
         let response = self.http_get("overview", None, None)?;
         let response = response.json()?;
+        Ok(response)
+    }
+
+    //
+    // OAuth 2 Configuration
+    //
+
+    pub fn oauth_configuration(&self) -> Result<OAuthConfiguration> {
+        let response = self.http_get("auth", None, None)?;
+        let response = response.json()?;
+
         Ok(response)
     }
 
