@@ -926,13 +926,67 @@ pub struct Overview {
     pub churn_rates: ChurnRates,
 }
 
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum FeatureFlagState {
+    Enabled,
+    Disabled,
+    StateChanging,
+    Unavailable,
+}
+
+impl From<&str> for FeatureFlagState {
+    fn from(value: &str) -> Self {
+        match value {
+            "enabled" => FeatureFlagState::Enabled,
+            "disabled" => FeatureFlagState::Disabled,
+            "state_changing" => FeatureFlagState::StateChanging,
+            _ => FeatureFlagState::Unavailable,
+        }
+    }
+}
+
+impl From<String> for FeatureFlagState {
+    fn from(value: String) -> Self {
+        match value.as_str() {
+            "enabled" => FeatureFlagState::Enabled,
+            "disabled" => FeatureFlagState::Disabled,
+            "state_changing" => FeatureFlagState::StateChanging,
+            _ => FeatureFlagState::Unavailable,
+        }
+    }
+}
+
+impl From<FeatureFlagState> for String {
+    fn from(value: FeatureFlagState) -> Self {
+        match value {
+            FeatureFlagState::Enabled => "enabled".to_owned(),
+            FeatureFlagState::Disabled => "disbled".to_owned(),
+            FeatureFlagState::StateChanging => "state_changing".to_owned(),
+            FeatureFlagState::Unavailable => "unavailable".to_owned(),
+        }
+    }
+}
+
+impl fmt::Display for FeatureFlagState {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            FeatureFlagState::Enabled => writeln!(f, "enabled")?,
+            FeatureFlagState::Disabled => writeln!(f, "disabled")?,
+            FeatureFlagState::StateChanging => writeln!(f, "state_changing")?,
+            FeatureFlagState::Unavailable => writeln!(f, "unavailable")?,
+        }
+
+        Ok(())
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct FeatureFlag {
     pub name: String,
-    // TODO: enabled | state_changing | disabled | unavailable
-    pub state: String,
+    pub state: FeatureFlagState,
     #[serde(rename = "desc")]
     pub description: String,
     pub doc_url: String,
