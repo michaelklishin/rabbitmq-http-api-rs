@@ -15,7 +15,7 @@
 
 use crate::error::Error;
 use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
-use crate::responses::{DeprecatedFeatureList, OAuthConfiguration};
+use crate::responses::{DeprecatedFeatureList, FeatureFlagList, OAuthConfiguration};
 use crate::{
     commons::{BindingDestinationType, UserLimitTarget, VirtualHostLimitTarget},
     path,
@@ -1025,6 +1025,16 @@ where
 
     pub fn overview(&self) -> Result<responses::Overview> {
         let response = self.http_get("overview", None, None)?;
+        let response = response.json()?;
+        Ok(response)
+    }
+
+    //
+    // Feature flags
+    //
+
+    pub fn list_feature_flags(&self) -> Result<FeatureFlagList> {
+        let response = self.http_get("feature-flags", None, None)?;
         let response = response.json()?;
         Ok(response)
     }

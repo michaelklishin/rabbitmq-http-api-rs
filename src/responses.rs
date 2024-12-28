@@ -926,6 +926,47 @@ pub struct Overview {
     pub churn_rates: ChurnRates,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+#[allow(dead_code)]
+pub struct FeatureFlag {
+    pub name: String,
+    // TODO: enabled | state_changing | disabled | unavailable
+    pub state: String,
+    #[serde(rename = "desc")]
+    pub description: String,
+    pub doc_url: String,
+    // TODO: required | stable | experimental
+    pub stability: String,
+    pub provided_by: String,
+}
+
+impl Display for FeatureFlag {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "name: {}", self.name)?;
+        writeln!(f, "description: {}", self.description)?;
+        writeln!(f, "doc URL: {}", self.doc_url)?;
+        writeln!(f, "stability: {}", self.stability)?;
+        writeln!(f, "provided by: {}", self.provided_by)?;
+
+        Ok(())
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(transparent)]
+pub struct FeatureFlagList(pub Vec<FeatureFlag>);
+
+impl Display for FeatureFlagList {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for ff in &self.0 {
+            writeln!(f, "{}", ff)?;
+        }
+
+        Ok(())
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum DeprecationPhase {
