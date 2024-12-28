@@ -5,8 +5,11 @@
 ### Enhancements
 
  * `Client#list_all_deprecated_features` and `Client#list_deprecated_features_in_use`
-   are new functions for listing all deprecated features and only those whose use is
+   are new functions for listing all [deprecated features](https://www.rabbitmq.com/docs/deprecated-features) and only those whose use is
    detected in the cluster.
+
+ * `Client#list_feature_flags` is a new function that lists all [feature flags](https://www.rabbitmq.com/docs/feature-flags)
+   in the cluster, including their state and stability.
 
 
 # v0.10.0 (Dec 27, 2024)
