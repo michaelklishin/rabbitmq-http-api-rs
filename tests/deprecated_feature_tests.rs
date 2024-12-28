@@ -40,7 +40,7 @@ fn test_list_deprecated_features_in_use() {
 
     rc.delete_queue(vh, q, true).unwrap();
 
-    let params = QueueParams::new(&q, QueueType::Classic, false, false, None);
+    let params = QueueParams::new(q, QueueType::Classic, false, false, None);
     rc.declare_queue(vh, &params).unwrap();
 
     let result2 = rc.list_deprecated_features_in_use();
