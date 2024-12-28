@@ -17,7 +17,7 @@ use serde::{Deserialize, Serialize};
 
 /// Exchange types. Most variants are for exchange types included with modern RabbitMQ distributions.
 /// For custom types provided by 3rd party plugins, use the `Plugin(String)` variant.
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 #[serde(rename_all(serialize = "lowercase", deserialize = "PascalCase"))]
 pub enum ExchangeType {
     /// Fanout exchange
@@ -116,7 +116,7 @@ impl From<ExchangeType> for String {
     }
 }
 
-#[derive(Debug, Serialize, Clone, Copy)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 #[serde(rename_all(serialize = "lowercase", deserialize = "PascalCase"))]
 pub enum QueueType {
     Classic,

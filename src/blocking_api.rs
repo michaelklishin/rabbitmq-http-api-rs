@@ -15,7 +15,7 @@
 
 use crate::error::Error;
 use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
-use crate::responses::OAuthConfiguration;
+use crate::responses::{DeprecatedFeatureList, OAuthConfiguration};
 use crate::{
     commons::{BindingDestinationType, UserLimitTarget, VirtualHostLimitTarget},
     path,
@@ -1025,6 +1025,16 @@ where
 
     pub fn overview(&self) -> Result<responses::Overview> {
         let response = self.http_get("overview", None, None)?;
+        let response = response.json()?;
+        Ok(response)
+    }
+
+    //
+    // Deprecated Features
+    //
+
+    pub fn list_deprecated_features(&self) -> Result<DeprecatedFeatureList> {
+        let response = self.http_get("deprecated-features", None, None)?;
         let response = response.json()?;
         Ok(response)
     }

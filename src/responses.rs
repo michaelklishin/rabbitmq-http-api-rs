@@ -232,10 +232,13 @@ impl fmt::Display for NodeMemoryBreakdown {
 }
 
 /// Represents a number of key OAuth 2 configuration settings.
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
 pub struct OAuthConfiguration {
     pub oauth_enabled: bool,
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
     pub oauth_client_id: Option<String>,
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
     pub oauth_provider_url: Option<String>,
 }
 
@@ -921,6 +924,100 @@ pub struct Overview {
 
     pub statistics_db_event_queue: u64,
     pub churn_rates: ChurnRates,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum DeprecationPhase {
+    PermittedByDefault,
+    DeniedByDefault,
+    Disconnected,
+    Removed,
+    Undefined,
+}
+
+impl From<&str> for DeprecationPhase {
+    fn from(value: &str) -> Self {
+        match value {
+            "permitted_by_default" => DeprecationPhase::PermittedByDefault,
+            "denited_by_default" => DeprecationPhase::DeniedByDefault,
+            "disconnected" => DeprecationPhase::Disconnected,
+            "removed" => DeprecationPhase::Removed,
+            _ => DeprecationPhase::Undefined,
+        }
+    }
+}
+
+impl From<String> for DeprecationPhase {
+    fn from(value: String) -> Self {
+        match value.as_str() {
+            "permitted_by_default" => DeprecationPhase::PermittedByDefault,
+            "denited_by_default" => DeprecationPhase::DeniedByDefault,
+            "disconnected" => DeprecationPhase::Disconnected,
+            "removed" => DeprecationPhase::Removed,
+            _ => DeprecationPhase::Undefined,
+        }
+    }
+}
+
+impl From<DeprecationPhase> for String {
+    fn from(value: DeprecationPhase) -> Self {
+        match value {
+            DeprecationPhase::PermittedByDefault => "permitted_by_default".to_owned(),
+            DeprecationPhase::DeniedByDefault => "denied_by_default".to_owned(),
+            DeprecationPhase::Disconnected => "disconnected".to_owned(),
+            DeprecationPhase::Removed => "removed".to_owned(),
+            DeprecationPhase::Undefined => "undefined".to_owned(),
+        }
+    }
+}
+
+impl fmt::Display for DeprecationPhase {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            DeprecationPhase::PermittedByDefault => writeln!(f, "permitted_by_default")?,
+            DeprecationPhase::DeniedByDefault => writeln!(f, "denied_by_default")?,
+            DeprecationPhase::Disconnected => writeln!(f, "disconnected")?,
+            DeprecationPhase::Removed => writeln!(f, "removed")?,
+            DeprecationPhase::Undefined => writeln!(f, "undefined")?,
+        }
+
+        Ok(())
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+#[allow(dead_code)]
+pub struct DeprecatedFeature {
+    pub name: String,
+    #[serde(rename = "desc")]
+    pub description: String,
+    pub deprecation_phase: DeprecationPhase,
+}
+
+impl Display for DeprecatedFeature {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "name: {}", self.name)?;
+        writeln!(f, "description: {}", self.description)?;
+        writeln!(f, "deprecation_phase: {}", self.deprecation_phase)?;
+
+        Ok(())
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(transparent)]
+pub struct DeprecatedFeatureList(pub Vec<DeprecatedFeature>);
+
+impl Display for DeprecatedFeatureList {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for df in &self.0 {
+            writeln!(f, "{}", df)?;
+        }
+
+        Ok(())
+    }
 }
 
 fn undefined() -> String {

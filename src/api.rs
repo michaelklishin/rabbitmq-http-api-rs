@@ -24,7 +24,7 @@ use std::fmt;
 
 use crate::error::Error;
 use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
-use crate::responses::MessageList;
+use crate::responses::{DeprecatedFeatureList, MessageList};
 use crate::{
     commons::{BindingDestinationType, UserLimitTarget, VirtualHostLimitTarget},
     path,
@@ -1168,6 +1168,16 @@ where
 
     pub async fn overview(&self) -> Result<responses::Overview> {
         let response = self.http_get("overview", None, None).await?;
+        let response = response.json().await?;
+        Ok(response)
+    }
+
+    //
+    // Deprecated Features
+    //
+
+    pub async fn list_deprecated_features(&self) -> Result<DeprecatedFeatureList> {
+        let response = self.http_get("deprecated-features", None, None).await?;
         let response = response.json().await?;
         Ok(response)
     }
