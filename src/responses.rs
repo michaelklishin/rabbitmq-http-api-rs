@@ -981,6 +981,58 @@ impl fmt::Display for FeatureFlagState {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum FeatureFlagStability {
+    Required,
+    Stable,
+    Experimental,
+}
+
+impl From<&str> for FeatureFlagStability {
+    fn from(value: &str) -> Self {
+        match value {
+            "required" => FeatureFlagStability::Required,
+            "stable" => FeatureFlagStability::Stable,
+            "experimental" => FeatureFlagStability::Experimental,
+            _ => FeatureFlagStability::Stable,
+        }
+    }
+}
+
+impl From<String> for FeatureFlagStability {
+    fn from(value: String) -> Self {
+        match value.as_ref() {
+            "required" => FeatureFlagStability::Required,
+            "stable" => FeatureFlagStability::Stable,
+            "experimental" => FeatureFlagStability::Experimental,
+            _ => FeatureFlagStability::Stable,
+        }
+    }
+}
+
+impl From<FeatureFlagStability> for String {
+    fn from(value: FeatureFlagStability) -> Self {
+        match value {
+            FeatureFlagStability::Required => "required".to_owned(),
+            FeatureFlagStability::Stable => "stable".to_owned(),
+            FeatureFlagStability::Experimental => "experimental".to_owned(),
+        }
+    }
+}
+
+impl fmt::Display for FeatureFlagStability {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            FeatureFlagStability::Required => writeln!(f, "required")?,
+            FeatureFlagStability::Stable => writeln!(f, "stable")?,
+            FeatureFlagStability::Experimental => writeln!(f, "experimental")?,
+        }
+
+        Ok(())
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
@@ -990,8 +1042,7 @@ pub struct FeatureFlag {
     #[serde(rename = "desc")]
     pub description: String,
     pub doc_url: String,
-    // TODO: required | stable | experimental
-    pub stability: String,
+    pub stability: FeatureFlagStability,
     pub provided_by: String,
 }
 

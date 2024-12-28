@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-use rabbitmq_http_client::blocking_api::Client;
+use rabbitmq_http_client::{blocking_api::Client, responses::FeatureFlagStability};
 
 mod test_helpers;
 use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
@@ -24,5 +24,8 @@ fn test_list_feature_flags() {
 
     assert!(result.is_ok());
     let vec = result.unwrap();
-    assert!(vec.0.into_iter().any(|ff| ff.name == "rabbitmq_4.0.0"));
+    assert!(vec
+        .0
+        .into_iter()
+        .any(|ff| ff.name == "rabbitmq_4.0.0" && ff.stability == FeatureFlagStability::Stable));
 }
