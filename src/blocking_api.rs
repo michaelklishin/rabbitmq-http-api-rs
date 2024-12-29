@@ -15,7 +15,10 @@
 
 use crate::error::Error;
 use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
-use crate::responses::{DeprecatedFeatureList, FeatureFlagList, OAuthConfiguration};
+use crate::responses::{
+    DeprecatedFeatureList, FeatureFlag, FeatureFlagList, FeatureFlagStability, FeatureFlagState,
+    OAuthConfiguration,
+};
 use crate::{
     commons::{BindingDestinationType, UserLimitTarget, VirtualHostLimitTarget},
     path,
@@ -1037,6 +1040,41 @@ where
         let response = self.http_get("feature-flags", None, None)?;
         let response = response.json()?;
         Ok(response)
+    }
+
+    /// Enables a feature flag.
+    /// This function is idempotent: enabling an already enabled feature flag
+    /// will succeed.
+    pub fn enable_feature_flag(&self, name: &str) -> Result<()> {
+        let body = serde_json::json!({
+            "name": name
+        });
+        let _response = self.http_put(path!("feature-flags", name, "enable"), &body, None, None)?;
+        Ok(())
+    }
+
+    /// Enables all stable feature flags.
+    /// This function is idempotent: enabling an already enabled feature flag
+    /// will succeed.
+    pub fn enable_all_stable_feature_flags(&self) -> Result<()> {
+        // PUT /api/feature-flags/{name}/enable does not support the special 'all' value like 'rabbitmqctl enable_feature_flag' does.
+        // Thus we do what management UI does: discover the stable disabled flags and enable
+        // them one by one.
+        let discovered_flags = self.list_feature_flags()?;
+        let flags_to_enable: Vec<&FeatureFlag> = discovered_flags
+            .0
+            .iter()
+            .filter(|&ff| {
+                ff.state == FeatureFlagState::Disabled
+                    && ff.stability == FeatureFlagStability::Stable
+            })
+            .collect();
+
+        for ff in flags_to_enable {
+            self.enable_feature_flag(&ff.name)?;
+        }
+
+        Ok(())
     }
 
     //

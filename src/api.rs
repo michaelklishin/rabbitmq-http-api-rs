@@ -24,7 +24,10 @@ use std::fmt;
 
 use crate::error::Error;
 use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
-use crate::responses::{DeprecatedFeatureList, FeatureFlagList, MessageList};
+use crate::responses::{
+    DeprecatedFeatureList, FeatureFlag, FeatureFlagList, FeatureFlagStability, FeatureFlagState,
+    MessageList,
+};
 use crate::{
     commons::{BindingDestinationType, UserLimitTarget, VirtualHostLimitTarget},
     path,
@@ -1176,10 +1179,50 @@ where
     // Feature flags
     //
 
+    /// Enables a feature flag.
+    /// This function is idempotent: enabling an already enabled feature flag
+    /// will succeed.
     pub async fn list_feature_flags(&self) -> Result<FeatureFlagList> {
         let response = self.http_get("feature-flags", None, None).await?;
         let response = response.json().await?;
         Ok(response)
+    }
+
+    /// Enables all stable feature flags.
+    /// This function is idempotent: enabling an already enabled feature flag
+    /// will succeed.
+    pub async fn enable_feature_flag(&self, name: &str) -> Result<()> {
+        let body = serde_json::json!({
+            "name": name
+        });
+        let _response = self
+            .http_put(path!("feature-flags", name, "enable"), &body, None, None)
+            .await?;
+        Ok(())
+    }
+
+    /// Enables all stable feature flags.
+    /// This function is idempotent: enabling an already enabled feature flag
+    /// will succeed.
+    pub async fn enable_all_stable_feature_flags(&self) -> Result<()> {
+        // PUT /api/feature-flags/{name}/enable does not support the special 'all' value like 'rabbitmqctl enable_feature_flag' does.
+        // Thus we do what management UI does: discover the stable disabled flags and enable
+        // them one by one.
+        let discovered_flags = self.list_feature_flags().await?;
+        let flags_to_enable: Vec<&FeatureFlag> = discovered_flags
+            .0
+            .iter()
+            .filter(|&ff| {
+                ff.state == FeatureFlagState::Disabled
+                    && ff.stability == FeatureFlagStability::Stable
+            })
+            .collect();
+
+        for ff in flags_to_enable {
+            self.enable_feature_flag(&ff.name).await?;
+        }
+
+        Ok(())
     }
 
     //
