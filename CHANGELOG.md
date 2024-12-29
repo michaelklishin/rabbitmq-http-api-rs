@@ -1,9 +1,16 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-# v0.12.0 (in development)
+# v0.13.0 (in development)
 
 No (documented) changes yet.
 
+
+# v0.12.0 (Dec 28, 2024)
+
+### Enhancements
+
+ * `Client#list_feature_flags`, `Client#enable_feature_flag`, `Client#enable_all_stable_feature_flags` are three
+   new functions for working with [feature flags](https://www.rabbitmq.com/docs/feature-flags)
 
 # v0.11.0 (Dec 28, 2024)
 
