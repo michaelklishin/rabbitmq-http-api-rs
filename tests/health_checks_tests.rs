@@ -42,3 +42,12 @@ fn test_health_check_node_is_quorum_critical() {
     let result1 = rc.health_check_if_node_is_quorum_critical();
     assert!(result1.is_ok());
 }
+
+#[test]
+fn test_health_check_port_listener() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let result1 = rc.health_check_port_listener(15672);
+    assert!(result1.is_ok());
+}

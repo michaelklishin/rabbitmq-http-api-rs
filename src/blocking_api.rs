@@ -963,6 +963,15 @@ where
 
     pub fn health_check_if_node_is_quorum_critical(&self) -> Result<()> {
         let path = "health/checks/node-is-quorum-critical";
+        self.boolean_health_check(path)
+    }
+
+    pub fn health_check_port_listener(&self, port: u16) -> Result<()> {
+        let path = format!("health/checks/port-listener/{}", port);
+        self.boolean_health_check(&path)
+    }
+
+    fn boolean_health_check(&self, path: &str) -> std::result::Result<(), HttpClientError> {
         // we expect that StatusCode::SERVICE_UNAVAILABLE may be return and ignore
         // it here to provide a custom error type later
         let response = self.http_get(path, None, Some(StatusCode::SERVICE_UNAVAILABLE))?;
@@ -983,6 +992,7 @@ where
     //
     // Publish and consume messages
     //
+
     pub fn publish_message(
         &self,
         vhost: &str,

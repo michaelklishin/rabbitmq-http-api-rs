@@ -1100,6 +1100,10 @@ where
 
     pub async fn health_check_if_node_is_quorum_critical(&self) -> Result<()> {
         let path = "health/checks/node-is-quorum-critical";
+        self.boolean_health_check(path).await
+    }
+
+    async fn boolean_health_check(&self, path: &str) -> std::result::Result<(), HttpClientError> {
         // we expect that StatusCode::SERVICE_UNAVAILABLE may be return and ignore
         // it here to provide a custom error type later
         let response = self
@@ -1122,6 +1126,7 @@ where
     //
     // Publish and consume messages
     //
+
     pub async fn publish_message(
         &self,
         vhost: &str,
