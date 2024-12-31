@@ -269,6 +269,22 @@ where
         Ok(response)
     }
 
+    pub async fn get_stream_connection_info(
+        &self,
+        virtual_host: &str,
+        name: &str,
+    ) -> Result<responses::Connection> {
+        let response = self
+            .http_get(
+                path!("stream", "connections", virtual_host, name),
+                None,
+                None,
+            )
+            .await?;
+        let response = response.json().await?;
+        Ok(response)
+    }
+
     pub async fn close_connection(&self, name: &str, reason: Option<&str>) -> Result<()> {
         match reason {
             None => {
@@ -317,6 +333,18 @@ where
     /// Lists all RabbitMQ Stream Protocol client connections across the cluster.
     pub async fn list_stream_connections(&self) -> Result<Vec<responses::Connection>> {
         let response = self.http_get("stream/connections", None, None).await?;
+        let response = response.json().await?;
+        Ok(response)
+    }
+
+    /// Lists RabbitMQ Stream Protocol client connections in the given virtual host.
+    pub async fn list_stream_connections_in(
+        &self,
+        virtual_host: &str,
+    ) -> Result<Vec<responses::Connection>> {
+        let response = self
+            .http_get(path!("stream", "connections", virtual_host), None, None)
+            .await?;
         let response = response.json().await?;
         Ok(response)
     }
