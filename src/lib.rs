@@ -16,8 +16,12 @@
 //!
 //! This library is Rust client for the [RabbitMQ HTTP API](https://rabbitmq.com/docs/management/#http-api).
 //!
-//! It can be used for [monitoring](https://www.rabbitmq.com/monitoring.html) and automation of provisioning or maintenance of RabbitMQ clusters
+//! It can be used for [monitoring](https://www.rabbitmq.com/docs/monitoring) and automation of provisioning or maintenance of RabbitMQ clusters
 //! and topologies used by applications.
+//!
+//! There are two varions of this client:
+//! 1. `blocking_api` is the blocking version of the client
+//! 2. `api` is the non-blocking (async) version
 //!
 //! ## License
 //!
