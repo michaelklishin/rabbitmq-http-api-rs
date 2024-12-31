@@ -377,6 +377,25 @@ where
         Ok(response)
     }
 
+    /// Lists all stream consumers across the cluster.
+    pub fn list_stream_consumers(&self) -> Result<Vec<responses::StreamConsumer>> {
+        let response = self.http_get(path!("stream", "consumers"), None, None)?;
+
+        let response = response.json()?;
+        Ok(response)
+    }
+
+    /// Lists stream consumers on connections in the given virtual host.
+    pub fn list_stream_consumers_in(
+        &self,
+        virtual_host: &str,
+    ) -> Result<Vec<responses::StreamConsumer>> {
+        let response = self.http_get(path!("stream", "consumers", virtual_host), None, None)?;
+
+        let response = response.json()?;
+        Ok(response)
+    }
+
     /// Lists all queues and streams across the cluster.
     pub fn list_queues(&self) -> Result<Vec<responses::QueueInfo>> {
         let response = self.http_get("queues", None, None)?;

@@ -81,7 +81,6 @@ fn test_list_user_limits() {
     assert!(result2.is_ok());
 
     let result3 = rc.list_user_limits(params.name);
-    dbg!(&result3);
     assert!(result3.is_ok());
     let vec = result3.unwrap();
 

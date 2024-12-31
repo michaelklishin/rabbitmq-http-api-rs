@@ -94,6 +94,21 @@ pub struct StreamPublisher {
     pub errored: u64,
 }
 
+#[derive(Debug, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+#[allow(dead_code)]
+pub struct StreamConsumer {
+    #[cfg_attr(feature = "tabled", tabled(skip))]
+    pub connection_details: ConnectionDetails,
+    pub queue: NameAndVirtualHost,
+    pub subscription_id: u32,
+    pub credits: u64,
+    pub consumed: u64,
+    pub offset_lag: u64,
+    pub offset: u64,
+    pub properties: XArguments,
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 #[serde(transparent)]
 pub struct RuntimeParameterValue(pub Map<String, serde_json::Value>);
