@@ -252,7 +252,7 @@ where
         Ok(response)
     }
 
-    /// Lists all client connections across the cluster.
+    /// Lists all AMQP 1.0 and 0-9-1 client connections across the cluster.
     pub fn list_connections(&self) -> Result<Vec<responses::Connection>> {
         let response = self.http_get("connections", None, None)?;
         let response = response.json()?;
@@ -292,6 +292,13 @@ where
     /// Lists all connections of a specific user.
     pub fn list_user_connections(&self, username: &str) -> Result<Vec<responses::UserConnection>> {
         let response = self.http_get(path!("connections", "username", username), None, None)?;
+        let response = response.json()?;
+        Ok(response)
+    }
+
+    /// Lists all RabbitMQ Stream Protocol client connections across the cluster.
+    pub fn list_stream_connections(&self) -> Result<Vec<responses::Connection>> {
+        let response = self.http_get("stream/connections", None, None)?;
         let response = response.json()?;
         Ok(response)
     }

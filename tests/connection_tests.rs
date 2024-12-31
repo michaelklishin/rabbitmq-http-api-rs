@@ -51,3 +51,16 @@ fn test_list_virtual_host_connections() {
         result1
     );
 }
+
+#[test]
+fn test_list_stream_connections() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let result1 = rc.list_stream_connections();
+    assert!(
+        result1.is_ok(),
+        "list_stream_connections returned {:?}",
+        result1
+    );
+}
