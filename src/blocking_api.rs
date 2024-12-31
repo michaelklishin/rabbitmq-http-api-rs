@@ -20,7 +20,7 @@ use crate::responses::{
     OAuthConfiguration,
 };
 use crate::{
-    commons::{BindingDestinationType, UserLimitTarget, VirtualHostLimitTarget, SupportedProtocol},
+    commons::{BindingDestinationType, SupportedProtocol, UserLimitTarget, VirtualHostLimitTarget},
     path,
     requests::{
         self, BulkUserDelete, EnforcedLimitParams, ExchangeParams, Permissions, PolicyParams,
