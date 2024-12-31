@@ -22,12 +22,14 @@ call %RABBITHOLE_RABBITMQCTL% eval "supervisor2:terminate_child(rabbit_mgmt_agen
 call %RABBITHOLE_RABBITMQCTL% add_vhost "rabbit/hole"
 call %RABBITHOLE_RABBITMQCTL% set_permissions -p "rabbit/hole" guest ".*" ".*" ".*"
 
-REM Enable shovel plugin
+REM Enable the plugins
 call %RABBITHOLE_RABBITMQ_PLUGINS% enable rabbitmq_shovel
 call %RABBITHOLE_RABBITMQ_PLUGINS% enable rabbitmq_shovel_management
 
-REM Enable shovel plugin
 call %RABBITHOLE_RABBITMQ_PLUGINS% enable rabbitmq_federation
 call %RABBITHOLE_RABBITMQ_PLUGINS% enable rabbitmq_federation_management
+
+call %RABBITHOLE_RABBITMQ_PLUGINS% enable rabbitmq_stream
+call %RABBITHOLE_RABBITMQ_PLUGINS% enable rabbitmq_stream_management
 
 set GOMEGA_DEFAULT_EVENTUALLY_TIMEOUT=5s
