@@ -350,7 +350,7 @@ where
         Ok(response)
     }
 
-    /// Lists stream publishers on connections in the given virtual host.
+    /// Lists stream publishers publishing to the given stream.
     pub fn list_stream_publishers_in(
         &self,
         virtual_host: &str,
@@ -377,6 +377,22 @@ where
         Ok(response)
     }
 
+    /// Lists stream publishers on the given stream connection.
+    pub fn list_stream_publishers_on_connection(
+        &self,
+        virtual_host: &str,
+        name: &str,
+    ) -> Result<Vec<responses::StreamPublisher>> {
+        let response = self.http_get(
+            path!("stream", "connections", virtual_host, name, "publishers"),
+            None,
+            None,
+        )?;
+
+        let response = response.json()?;
+        Ok(response)
+    }
+
     /// Lists all stream consumers across the cluster.
     pub fn list_stream_consumers(&self) -> Result<Vec<responses::StreamConsumer>> {
         let response = self.http_get(path!("stream", "consumers"), None, None)?;
@@ -391,6 +407,22 @@ where
         virtual_host: &str,
     ) -> Result<Vec<responses::StreamConsumer>> {
         let response = self.http_get(path!("stream", "consumers", virtual_host), None, None)?;
+
+        let response = response.json()?;
+        Ok(response)
+    }
+
+    /// Lists stream consumers on the given stream connection.
+    pub fn list_stream_consumers_on_connection(
+        &self,
+        virtual_host: &str,
+        name: &str,
+    ) -> Result<Vec<responses::StreamConsumer>> {
+        let response = self.http_get(
+            path!("stream", "connections", virtual_host, name, "consumers"),
+            None,
+            None,
+        )?;
 
         let response = response.json()?;
         Ok(response)

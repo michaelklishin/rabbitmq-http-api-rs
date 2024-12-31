@@ -386,7 +386,7 @@ where
         Ok(response)
     }
 
-    /// Lists stream publishers of the given stream.
+    /// Lists stream publishers publishing to the given stream.
     pub async fn list_stream_publishers_of(
         &self,
         virtual_host: &str,
@@ -399,6 +399,24 @@ where
                 None,
             )
             .await?;
+        let response = response.json().await?;
+        Ok(response)
+    }
+
+    /// Lists stream publishers on the given stream connection.
+    pub async fn list_stream_publishers_on_connection(
+        &self,
+        virtual_host: &str,
+        name: &str,
+    ) -> Result<Vec<responses::StreamPublisher>> {
+        let response = self
+            .http_get(
+                path!("stream", "connections", virtual_host, name, "publishers"),
+                None,
+                None,
+            )
+            .await?;
+
         let response = response.json().await?;
         Ok(response)
     }
@@ -420,6 +438,24 @@ where
         let response = self
             .http_get(path!("stream", "consumers", virtual_host), None, None)
             .await?;
+        let response = response.json().await?;
+        Ok(response)
+    }
+
+    /// Lists stream consumers on the given stream connection.
+    pub async fn list_stream_consumers_on_connection(
+        &self,
+        virtual_host: &str,
+        name: &str,
+    ) -> Result<Vec<responses::StreamConsumer>> {
+        let response = self
+            .http_get(
+                path!("stream", "connections", virtual_host, name, "consumers"),
+                None,
+                None,
+            )
+            .await?;
+
         let response = response.json().await?;
         Ok(response)
     }
