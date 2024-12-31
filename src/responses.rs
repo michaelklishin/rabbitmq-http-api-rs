@@ -765,6 +765,8 @@ pub struct DefinitionSet {
 pub enum HealthCheckFailureDetails {
     AlarmCheck(ClusterAlarmCheckDetails),
     NodeIsQuorumCritical(QuorumCriticalityCheckDetails),
+    NoActivePortListener(NoActivePortListenerDetails),
+    NoActiveProtocolListener(NoActiveProtocolListenerDetails),
 }
 
 impl HealthCheckFailureDetails {
@@ -772,6 +774,8 @@ impl HealthCheckFailureDetails {
         match self {
             HealthCheckFailureDetails::AlarmCheck(details) => details.reason.clone(),
             HealthCheckFailureDetails::NodeIsQuorumCritical(details) => details.reason.clone(),
+            HealthCheckFailureDetails::NoActivePortListener(details) => details.reason.clone(),
+            HealthCheckFailureDetails::NoActiveProtocolListener(details) => details.reason.clone(),
         }
     }
 }
@@ -792,6 +796,26 @@ pub struct ResourceAlarm {
 pub struct QuorumCriticalityCheckDetails {
     pub reason: String,
     pub queues: Vec<QuorumEndangeredQueue>,
+}
+
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+pub struct NoActivePortListenerDetails {
+    pub status: String,
+    pub reason: String,
+    #[serde(rename(deserialize = "missing"))]
+    #[serde(default)]
+    pub inactive_port: u16,
+}
+
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+pub struct NoActiveProtocolListenerDetails {
+    pub status: String,
+    pub reason: String,
+    #[serde(rename(deserialize = "missing"))]
+    // Note: switching this to SupportedProtocol will break serde's
+    //       detection of various HealthCheckFailureDetails variants since
+    //       that enum is untagged
+    pub inactive_protocol: String,
 }
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]

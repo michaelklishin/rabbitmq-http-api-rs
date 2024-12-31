@@ -29,7 +29,7 @@ use crate::responses::{
     MessageList,
 };
 use crate::{
-    commons::{BindingDestinationType, UserLimitTarget, VirtualHostLimitTarget},
+    commons::{BindingDestinationType, UserLimitTarget, VirtualHostLimitTarget, SupportedProtocol},
     path,
     requests::{
         self, BulkUserDelete, EnforcedLimitParams, ExchangeParams, Permissions, PolicyParams,
@@ -1231,6 +1231,18 @@ where
     pub async fn health_check_if_node_is_quorum_critical(&self) -> Result<()> {
         let path = "health/checks/node-is-quorum-critical";
         self.boolean_health_check(path).await
+    }
+
+    pub async fn health_check_port_listener(&self, port: u16) -> Result<()> {
+        let port_s = port.to_string();
+        let path = path!("health", "checks", "port-listener", port_s);
+        self.boolean_health_check(&path).await
+    }
+
+    pub async fn health_check_protocol_listener(&self, protocol: SupportedProtocol) -> Result<()> {
+        let proto: String = String::from(protocol);
+        let path = path!("health", "checks", "protocol-listener", proto);
+        self.boolean_health_check(&path).await
     }
 
     async fn boolean_health_check(&self, path: &str) -> std::result::Result<(), HttpClientError> {

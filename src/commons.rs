@@ -15,6 +15,185 @@ use std::fmt;
 
 use serde::{Deserialize, Serialize};
 
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all(serialize = "lowercase", deserialize = "PascalCase"))]
+pub enum SupportedProtocol {
+    Clustering,
+    /// Represents both AMQP 1.0 and AMQP 0-9-1 because they share a listener
+    #[serde(rename = "amqp")]
+    AMQP,
+    /// Represents both AMQP 1.0 with TLS enabled and AMQP 0-9-1 with TLS enabled
+    #[serde(rename = "amqp/ssl")]
+    AMQPWithTLS,
+    /// Represents the RabbitMQ Stream protocol
+    #[serde(rename = "stream")]
+    Stream,
+    /// Represents the RabbitMQ Stream protocol with TLS enabled
+    #[serde(rename = "stream/ssl")]
+    StreamWithTLS,
+    #[serde(rename = "mqtt")]
+    MQTT,
+    #[serde(rename = "mqtt/ssl")]
+    MQTTWithTLS,
+    #[serde(rename = "stomp")]
+    STOMP,
+    #[serde(rename = "stomp/ssl")]
+    STOMPWithTLS,
+    #[serde(rename = "http/web-mqtt")]
+    MQTTOverWebSockets,
+    #[serde(rename = "https/web-mqtt")]
+    MQTTOverWebSocketsWithTLS,
+    #[serde(rename = "http/web-stomp")]
+    STOMPOverWebsockets,
+    #[serde(rename = "https/web-stomp")]
+    STOMPOverWebsocketsWithTLS,
+    #[serde(rename = "http/prometheus")]
+    Prometheus,
+    #[serde(rename = "https/prometheus")]
+    PrometheusWithTLS,
+    #[serde(rename = "http")]
+    HTTP,
+    #[serde(rename = "https")]
+    HTTPWithTLS,
+    Other(String),
+}
+
+const SUPPORTED_PROTOCOL_CLUSTERING: &str = "clustering";
+
+const SUPPORTED_PROTOCOL_AMQP: &str = "amqp";
+const SUPPORTED_PROTOCOL_AMQP_WITH_TLS: &str = "amqps";
+
+const SUPPORTED_PROTOCOL_STREAM: &str = "stream";
+const SUPPORTED_PROTOCOL_STREAM_WITH_TLS: &str = "stream/ssl";
+
+const SUPPORTED_PROTOCOL_MQTT: &str = "mqtt";
+const SUPPORTED_PROTOCOL_MQTT_WITH_TLS: &str = "mqtt/ssl";
+const SUPPORTED_PROTOCOL_MQTT_OVER_WEBSOCKETS: &str = "http/web-mqtt";
+const SUPPORTED_PROTOCOL_MQTT_OVER_WEBSOCKETS_WITH_TLS: &str = "https/web-mqtt";
+
+const SUPPORTED_PROTOCOL_STOMP: &str = "stomp";
+const SUPPORTED_PROTOCOL_STOMP_WITH_TLS: &str = "stomp/ssl";
+const SUPPORTED_PROTOCOL_STOMP_OVER_WEBSOCKETS: &str = "http/stomp-mqtt";
+const SUPPORTED_PROTOCOL_STOMP_OVER_WEBSOCKETS_WITH_TLS: &str = "https/stomp-mqtt";
+
+const SUPPORTED_PROTOCOL_PROMETHEUS: &str = "http/prometheus";
+const SUPPORTED_PROTOCOL_PROMETHEUS_WITH_TLS: &str = "https/prometheus";
+
+const SUPPORTED_PROTOCOL_HTTP: &str = "http";
+const SUPPORTED_PROTOCOL_HTTP_WITH_TLS: &str = "https";
+
+impl From<&str> for SupportedProtocol {
+    fn from(value: &str) -> Self {
+        match value {
+            SUPPORTED_PROTOCOL_CLUSTERING => SupportedProtocol::Clustering,
+            SUPPORTED_PROTOCOL_AMQP => SupportedProtocol::AMQP,
+            SUPPORTED_PROTOCOL_AMQP_WITH_TLS => SupportedProtocol::AMQPWithTLS,
+            SUPPORTED_PROTOCOL_STREAM => SupportedProtocol::Stream,
+            SUPPORTED_PROTOCOL_STREAM_WITH_TLS => SupportedProtocol::StreamWithTLS,
+            SUPPORTED_PROTOCOL_MQTT => SupportedProtocol::MQTT,
+            SUPPORTED_PROTOCOL_MQTT_WITH_TLS => SupportedProtocol::MQTTWithTLS,
+            SUPPORTED_PROTOCOL_STOMP => SupportedProtocol::STOMP,
+            SUPPORTED_PROTOCOL_STOMP_WITH_TLS => SupportedProtocol::STOMPWithTLS,
+            SUPPORTED_PROTOCOL_MQTT_OVER_WEBSOCKETS => SupportedProtocol::MQTTOverWebSockets,
+            SUPPORTED_PROTOCOL_MQTT_OVER_WEBSOCKETS_WITH_TLS => {
+                SupportedProtocol::MQTTOverWebSocketsWithTLS
+            }
+            SUPPORTED_PROTOCOL_STOMP_OVER_WEBSOCKETS => SupportedProtocol::STOMPOverWebsockets,
+            SUPPORTED_PROTOCOL_STOMP_OVER_WEBSOCKETS_WITH_TLS => {
+                SupportedProtocol::STOMPOverWebsocketsWithTLS
+            }
+            SUPPORTED_PROTOCOL_PROMETHEUS => SupportedProtocol::Prometheus,
+            SUPPORTED_PROTOCOL_PROMETHEUS_WITH_TLS => SupportedProtocol::PrometheusWithTLS,
+            SUPPORTED_PROTOCOL_HTTP => SupportedProtocol::HTTP,
+            SUPPORTED_PROTOCOL_HTTP_WITH_TLS => SupportedProtocol::HTTPWithTLS,
+            other => SupportedProtocol::Other(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for SupportedProtocol {
+    fn from(value: String) -> Self {
+        SupportedProtocol::from(value.as_str())
+    }
+}
+
+impl From<SupportedProtocol> for String {
+    fn from(value: SupportedProtocol) -> String {
+        match value {
+            SupportedProtocol::Clustering => SUPPORTED_PROTOCOL_CLUSTERING.to_owned(),
+            SupportedProtocol::AMQP => SUPPORTED_PROTOCOL_AMQP.to_owned(),
+            SupportedProtocol::AMQPWithTLS => SUPPORTED_PROTOCOL_AMQP_WITH_TLS.to_owned(),
+            SupportedProtocol::Stream => SUPPORTED_PROTOCOL_STREAM.to_owned(),
+            SupportedProtocol::StreamWithTLS => SUPPORTED_PROTOCOL_STREAM_WITH_TLS.to_owned(),
+            SupportedProtocol::MQTT => SUPPORTED_PROTOCOL_MQTT.to_owned(),
+            SupportedProtocol::MQTTWithTLS => SUPPORTED_PROTOCOL_MQTT_WITH_TLS.to_owned(),
+            SupportedProtocol::STOMP => SUPPORTED_PROTOCOL_STOMP.to_owned(),
+            SupportedProtocol::STOMPWithTLS => SUPPORTED_PROTOCOL_STOMP_WITH_TLS.to_owned(),
+            SupportedProtocol::MQTTOverWebSockets => {
+                SUPPORTED_PROTOCOL_MQTT_OVER_WEBSOCKETS.to_owned()
+            }
+            SupportedProtocol::MQTTOverWebSocketsWithTLS => {
+                SUPPORTED_PROTOCOL_MQTT_OVER_WEBSOCKETS_WITH_TLS.to_owned()
+            }
+            SupportedProtocol::STOMPOverWebsockets => {
+                SUPPORTED_PROTOCOL_STOMP_OVER_WEBSOCKETS.to_owned()
+            }
+            SupportedProtocol::STOMPOverWebsocketsWithTLS => {
+                SUPPORTED_PROTOCOL_STOMP_OVER_WEBSOCKETS_WITH_TLS.to_owned()
+            }
+            SupportedProtocol::Prometheus => SUPPORTED_PROTOCOL_PROMETHEUS.to_owned(),
+            SupportedProtocol::PrometheusWithTLS => {
+                SUPPORTED_PROTOCOL_PROMETHEUS_WITH_TLS.to_owned()
+            }
+            SupportedProtocol::HTTP => SUPPORTED_PROTOCOL_HTTP.to_owned(),
+            SupportedProtocol::HTTPWithTLS => SUPPORTED_PROTOCOL_HTTP_WITH_TLS.to_owned(),
+            SupportedProtocol::Other(s) => s,
+        }
+    }
+}
+
+impl From<&SupportedProtocol> for String {
+    fn from(value: &SupportedProtocol) -> Self {
+        match value {
+            SupportedProtocol::Clustering => SUPPORTED_PROTOCOL_CLUSTERING.to_owned(),
+            SupportedProtocol::AMQP => SUPPORTED_PROTOCOL_AMQP.to_owned(),
+            SupportedProtocol::AMQPWithTLS => SUPPORTED_PROTOCOL_AMQP_WITH_TLS.to_owned(),
+            SupportedProtocol::Stream => SUPPORTED_PROTOCOL_STREAM.to_owned(),
+            SupportedProtocol::StreamWithTLS => SUPPORTED_PROTOCOL_STREAM_WITH_TLS.to_owned(),
+            SupportedProtocol::MQTT => SUPPORTED_PROTOCOL_MQTT.to_owned(),
+            SupportedProtocol::MQTTWithTLS => SUPPORTED_PROTOCOL_MQTT_WITH_TLS.to_owned(),
+            SupportedProtocol::STOMP => SUPPORTED_PROTOCOL_STOMP.to_owned(),
+            SupportedProtocol::STOMPWithTLS => SUPPORTED_PROTOCOL_STOMP_WITH_TLS.to_owned(),
+            SupportedProtocol::MQTTOverWebSockets => {
+                SUPPORTED_PROTOCOL_MQTT_OVER_WEBSOCKETS.to_owned()
+            }
+            SupportedProtocol::MQTTOverWebSocketsWithTLS => {
+                SUPPORTED_PROTOCOL_MQTT_OVER_WEBSOCKETS_WITH_TLS.to_owned()
+            }
+            SupportedProtocol::STOMPOverWebsockets => {
+                SUPPORTED_PROTOCOL_STOMP_OVER_WEBSOCKETS.to_owned()
+            }
+            SupportedProtocol::STOMPOverWebsocketsWithTLS => {
+                SUPPORTED_PROTOCOL_STOMP_OVER_WEBSOCKETS_WITH_TLS.to_owned()
+            }
+            SupportedProtocol::Prometheus => SUPPORTED_PROTOCOL_PROMETHEUS.to_owned(),
+            SupportedProtocol::PrometheusWithTLS => {
+                SUPPORTED_PROTOCOL_PROMETHEUS_WITH_TLS.to_owned()
+            }
+            SupportedProtocol::HTTP => SUPPORTED_PROTOCOL_HTTP.to_owned(),
+            SupportedProtocol::HTTPWithTLS => SUPPORTED_PROTOCOL_HTTP_WITH_TLS.to_owned(),
+            SupportedProtocol::Other(s) => (*s).clone(),
+        }
+    }
+}
+
+impl fmt::Display for SupportedProtocol {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let proto: String = self.into();
+        write!(f, "{}", proto)
+    }
+}
+
 /// Exchange types. Most variants are for exchange types included with modern RabbitMQ distributions.
 /// For custom types provided by 3rd party plugins, use the `Plugin(String)` variant.
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
