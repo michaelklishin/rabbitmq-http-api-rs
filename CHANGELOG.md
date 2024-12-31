@@ -1,8 +1,17 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-# v0.13.0 (in development)
+# v0.14.0 (in development)
 
 No (documented) changes yet.
+
+
+# v0.13.0 (Dec 31, 2024)
+
+### Enhancements
+
+ * New functions for listing [stream](https://www.rabbitmq.com/docs/streams) connections, publishers and consumers: `Client#list_stream_publishers`, `Client#list_stream_publishers_in`, `Client#list_stream_publishers_of`, `Client#list_stream_publishers_on_connection`, `Client#list_stream_consumers`, `Client#list_stream_consumers_in`, `Client#list_stream_consumers_on_connection`, `Client#list_stream_connections`, `Client#list_stream_connections_in`
+
+ * New [health check](https://www.rabbitmq.com/docs/monitoring#health-checks) function: `Client#health_check_port_listene`
 
 
 # v0.12.0 (Dec 28, 2024)
@@ -11,6 +20,7 @@ No (documented) changes yet.
 
  * `Client#list_feature_flags`, `Client#enable_feature_flag`, `Client#enable_all_stable_feature_flags` are three
    new functions for working with [feature flags](https://www.rabbitmq.com/docs/feature-flags)
+
 
 # v0.11.0 (Dec 28, 2024)
 
