@@ -365,6 +365,44 @@ where
         Ok(response)
     }
 
+    /// Lists all stream publishers across the cluster.
+    pub async fn list_stream_publishers(&self) -> Result<Vec<responses::StreamPublisher>> {
+        let response = self
+            .http_get(path!("stream", "publishers"), None, None)
+            .await?;
+        let response = response.json().await?;
+        Ok(response)
+    }
+
+    /// Lists stream publishers on connections in the given virtual host.
+    pub async fn list_stream_publishers_in(
+        &self,
+        virtual_host: &str,
+    ) -> Result<Vec<responses::StreamPublisher>> {
+        let response = self
+            .http_get(path!("stream", "publishers", virtual_host), None, None)
+            .await?;
+        let response = response.json().await?;
+        Ok(response)
+    }
+
+    /// Lists stream publishers of the given stream.
+    pub async fn list_stream_publishers_of(
+        &self,
+        virtual_host: &str,
+        name: &str,
+    ) -> Result<Vec<responses::StreamPublisher>> {
+        let response = self
+            .http_get(
+                path!("stream", "publishers", virtual_host, name),
+                None,
+                None,
+            )
+            .await?;
+        let response = response.json().await?;
+        Ok(response)
+    }
+
     /// Lists all queues and streams across the cluster.
     pub async fn list_queues(&self) -> Result<Vec<responses::QueueInfo>> {
         let response = self.http_get("queues", None, None).await?;

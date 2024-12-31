@@ -80,6 +80,20 @@ impl fmt::Display for XArguments {
     }
 }
 
+#[derive(Debug, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+#[allow(dead_code)]
+pub struct StreamPublisher {
+    #[cfg_attr(feature = "tabled", tabled(skip))]
+    pub connection_details: ConnectionDetails,
+    pub queue: NameAndVirtualHost,
+    pub reference: String,
+    pub publisher_id: u32,
+    pub published: u64,
+    pub confirmed: u64,
+    pub errored: u64,
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 #[serde(transparent)]
 pub struct RuntimeParameterValue(pub Map<String, serde_json::Value>);
@@ -428,6 +442,7 @@ pub struct Channel {
 }
 
 #[derive(Debug, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct ConnectionDetails {
     pub name: String,
@@ -506,10 +521,18 @@ impl Tabled for Consumer {
 }
 
 #[derive(Debug, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct NameAndVirtualHost {
     pub name: String,
+    #[serde(rename(deserialize = "vhost"))]
     pub vhost: String,
+}
+
+impl fmt::Display for NameAndVirtualHost {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "'{}' in virtual host '{}'", self.name, self.vhost)
+    }
 }
 
 #[derive(Debug, Deserialize, Clone)]
