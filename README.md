@@ -8,6 +8,7 @@ This is not an AMQP 0-9-1 client (see [amqprs](https://github.com/gftea/amqprs))
 
 This library is relatively young, breaking API changes are possible.
 
+
 ## Dependency
 
 ### Blocking Client
@@ -140,6 +141,57 @@ let rc = ClientBuilder::new().with_endpoint(&endpoint).with_basic_auth_credentia
 
 rc.get_queue_info("/", "qq.1").await;
 ```
+
+
+## TLS Support
+
+This client library was designed to make very few assumptions about how the underlying
+HTTP client, `reqwest`, is set up, in particular when it comes to TLS and crypto.
+
+To use TLS connections to the HTTP API, use the [`ClientBuilder`](https://docs.rs/reqwest/latest/reqwest/struct.ClientBuilder.html)
+interface in `reqwest` to configure TLS, then combine the constructed client
+with this library's `blocking_api::ClientBuilder` or `api::ClientBuilder`'s `with_client` function:
+
+```rust
+use reqwest::blocking::Client as HTTPClient;
+
+// this is reqwest's `ClientBuilder`
+let mut b = HTTPClient::builder()
+    .user_agent("my-app")
+    .min_tls_version(reqwest::tls::Version::TLS_1_2)
+    .danger_accept_invalid_certs(false)
+    .danger_accept_invalid_hostnames(false);
+
+// add a CA certificate bundle file to the list of trusted roots
+// for x.509 peer verification
+b.add_root_certificate(ca_certificate_path);
+
+let httpc = b.build()
+let username = "example";
+let password = "ex4mple $eKr37;
+
+// make sure the endpoint uses TLS and the correct port for TLS-enabled connections
+let endpoint = "https://example.domain:15671/api"
+
+// this is this library's `ClientBuilder`
+let client = ClientBuilder::new()
+    .with_endpoint(endpoint)
+    .with_basic_auth_credentials(username, password)
+    // pass in the pre-configured HTTP client
+    .with_client(httpc)
+    .build();
+```
+
+This design decision means that with this HTTP API client, it's up to the user to make
+some key TLS-related choices, for example, [what certificate store to use](https://github.com/rustls/rustls-platform-verifier?tab=readme-ov-file#deployment-considerations) for x.509 peer verification,
+what the acceptable minimum TLS version should be, and so on.
+
+### Defaults
+
+By default this client will use [`native-tls`](https://crates.io/crates/native-tls).
+
+This means that the default list of trusted CA certificates (roots) is managed via the OS-specific mechanisms
+such as the Keychain on macOS or the local `openssl` version and its standard directories for trusted (root) CA certificates.
 
 
 ## License
