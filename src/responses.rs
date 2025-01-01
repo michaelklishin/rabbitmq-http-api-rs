@@ -1,4 +1,3 @@
-use core::fmt::Display;
 // Copyright (C) 2023-2024 RabbitMQ Core Team (teamrabbitmq@gmail.com)
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +12,7 @@ use core::fmt::Display;
 // See the License for the specific language governing permissions and
 // limitations under the License.
 use std::{fmt, ops};
+use core::fmt::Display;
 
 use crate::commons::{BindingDestinationType, PolicyTarget};
 use serde::{
