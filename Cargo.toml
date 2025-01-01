@@ -22,7 +22,7 @@ rbase64 = "2"
 percent-encoding = { version = "2", optional = true }
 tabled = { version = "0.17", features = ["derive", "macros"], optional = true }
 
-reqwest = { version = "0.12.11", features = [
+reqwest = { version = "0.12.12", features = [
     "json",
     "multipart",
 ], optional = true }
