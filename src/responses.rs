@@ -27,6 +27,11 @@ use std::borrow::Cow;
 #[cfg(feature = "tabled")]
 use tabled::Tabled;
 
+#[cfg(windows)]
+const LINE_ENDING: &str = "\r\n";
+#[cfg(not(windows))]
+const LINE_ENDING: &str = "\n";
+
 fn fmt_list(f: &mut fmt::Formatter<'_>, xs: &[String]) -> fmt::Result {
     match xs.len() {
         0 => {
@@ -41,6 +46,23 @@ fn fmt_list(f: &mut fmt::Formatter<'_>, xs: &[String]) -> fmt::Result {
             }
             write!(f, "{}", last_element)?;
             write!(f, "]")?;
+            Ok(())
+        }
+    }
+}
+
+fn fmt_vertical_list(f: &mut fmt::Formatter<'_>, xs: &[String]) -> fmt::Result {
+    match xs.len() {
+        0 => {
+            write!(f, "")
+        }
+        _ => {
+            let mut xs = xs.to_owned();
+            let last_element = xs.pop().unwrap();
+            for elem in xs {
+                write!(f, "* {}{}", elem, LINE_ENDING)?;
+            }
+            write!(f, "* {}", last_element)?;
             Ok(())
         }
     }
@@ -63,6 +85,15 @@ pub struct TagList(pub Vec<String>);
 impl fmt::Display for TagList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt_list(f, &self.0)
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct PluginList(pub Vec<String>);
+
+impl fmt::Display for PluginList {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt_vertical_list(f, &self.0)
     }
 }
 
@@ -684,6 +715,8 @@ pub struct ClusterNode {
     #[serde(rename(deserialize = "disk_free_alarm"))]
     pub has_free_disk_space_alarm_in_effect: bool,
     pub rates_mode: String,
+    pub enabled_plugins: PluginList,
+    pub being_drained: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
