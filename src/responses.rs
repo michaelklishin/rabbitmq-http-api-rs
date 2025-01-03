@@ -130,7 +130,7 @@ fn display_arg_table(xs: &XArguments) -> String {
     let mut s = String::new();
     for (k, v) in xs.0.iter() {
         let line = format!("{}: {}{}", k, v, LINE_ENDING);
-        s = s + line.as_str()
+        s += line.as_str()
     }
 
     s.clone()
