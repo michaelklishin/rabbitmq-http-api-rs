@@ -27,11 +27,6 @@ use std::borrow::Cow;
 #[cfg(feature = "tabled")]
 use tabled::Tabled;
 
-#[cfg(windows)]
-const LINE_ENDING: &str = "\r\n";
-#[cfg(not(windows))]
-const LINE_ENDING: &str = "\n";
-
 #[allow(dead_code)]
 fn fmt_list_as_json_array(f: &mut fmt::Formatter<'_>, xs: &[String]) -> fmt::Result {
     match xs.len() {
@@ -78,7 +73,7 @@ fn fmt_vertical_list_with_bullets(f: &mut fmt::Formatter<'_>, xs: &[String]) -> 
             let mut xs = xs.to_owned();
             let last_element = xs.pop().unwrap();
             for elem in xs {
-                write!(f, "* {}{}", elem, LINE_ENDING)?;
+                write!(f, "* {}", elem)?;
             }
             write!(f, "* {}", last_element)?;
             Ok(())
@@ -95,7 +90,7 @@ fn fmt_vertical_list_without_bullets(f: &mut fmt::Formatter<'_>, xs: &[String]) 
             let mut xs = xs.to_owned();
             let last_element = xs.pop().unwrap();
             for elem in xs {
-                write!(f, "{}{}", elem, LINE_ENDING)?;
+                write!(f, "{}", elem)?;
             }
             write!(f, "{}", last_element)?;
             Ok(())
