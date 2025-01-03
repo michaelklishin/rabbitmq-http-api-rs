@@ -32,7 +32,7 @@ const LINE_ENDING: &str = "\r\n";
 #[cfg(not(windows))]
 const LINE_ENDING: &str = "\n";
 
-fn fmt_list(f: &mut fmt::Formatter<'_>, xs: &[String]) -> fmt::Result {
+fn fmt_list_as_json_array(f: &mut fmt::Formatter<'_>, xs: &[String]) -> fmt::Result {
     match xs.len() {
         0 => {
             write!(f, "[]")
@@ -84,7 +84,7 @@ pub struct TagList(pub Vec<String>);
 
 impl fmt::Display for TagList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt_list(f, &self.0)
+        fmt_list_as_json_array(f, &self.0)
     }
 }
 
@@ -168,7 +168,7 @@ pub struct NodeList(Vec<String>);
 
 impl fmt::Display for NodeList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt_list(f, &self.0)
+        fmt_list_as_json_array(f, &self.0)
     }
 }
 
