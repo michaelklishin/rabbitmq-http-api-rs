@@ -32,6 +32,7 @@ const LINE_ENDING: &str = "\r\n";
 #[cfg(not(windows))]
 const LINE_ENDING: &str = "\n";
 
+#[allow(dead_code)]
 fn fmt_list_as_json_array(f: &mut fmt::Formatter<'_>, xs: &[String]) -> fmt::Result {
     match xs.len() {
         0 => {
@@ -51,7 +52,24 @@ fn fmt_list_as_json_array(f: &mut fmt::Formatter<'_>, xs: &[String]) -> fmt::Res
     }
 }
 
-fn fmt_vertical_list(f: &mut fmt::Formatter<'_>, xs: &[String]) -> fmt::Result {
+fn fmt_comma_separated_list(f: &mut fmt::Formatter<'_>, xs: &[String]) -> fmt::Result {
+    match xs.len() {
+        0 => {
+            write!(f, "")
+        }
+        _ => {
+            let mut xs = xs.to_owned();
+            let last_element = xs.pop().unwrap();
+            for elem in xs {
+                write!(f, "{}, ", elem)?;
+            }
+            write!(f, "{}", last_element)?;
+            Ok(())
+        }
+    }
+}
+
+fn fmt_vertical_list_with_bullets(f: &mut fmt::Formatter<'_>, xs: &[String]) -> fmt::Result {
     match xs.len() {
         0 => {
             write!(f, "")
@@ -68,6 +86,34 @@ fn fmt_vertical_list(f: &mut fmt::Formatter<'_>, xs: &[String]) -> fmt::Result {
     }
 }
 
+fn fmt_vertical_list_without_bullets(f: &mut fmt::Formatter<'_>, xs: &[String]) -> fmt::Result {
+    match xs.len() {
+        0 => {
+            write!(f, "")
+        }
+        _ => {
+            let mut xs = xs.to_owned();
+            let last_element = xs.pop().unwrap();
+            for elem in xs {
+                write!(f, "{}{}", elem, LINE_ENDING)?;
+            }
+            write!(f, "{}", last_element)?;
+            Ok(())
+        }
+    }
+}
+
+fn fmt_map_as_colon_separated_pairs(
+    f: &mut fmt::Formatter<'_>,
+    xs: &Map<String, serde_json::Value>,
+) -> fmt::Result {
+    for (k, v) in xs.iter() {
+        writeln!(f, "{}: {}", k, v)?;
+    }
+
+    Ok(())
+}
+
 #[cfg(feature = "tabled")]
 fn display_option<T>(opt: &Option<T>) -> String
 where
@@ -79,12 +125,23 @@ where
     }
 }
 
+#[cfg(feature = "tabled")]
+fn display_arg_table(xs: &XArguments) -> String {
+    let mut s = String::new();
+    for (k, v) in xs.0.iter() {
+        let line = format!("{}: {}{}", k, v, LINE_ENDING);
+        s = s + line.as_str()
+    }
+
+    s.clone()
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TagList(pub Vec<String>);
 
 impl fmt::Display for TagList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt_list_as_json_array(f, &self.0)
+        fmt_comma_separated_list(f, &self.0)
     }
 }
 
@@ -93,7 +150,7 @@ pub struct PluginList(pub Vec<String>);
 
 impl fmt::Display for PluginList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt_vertical_list(f, &self.0)
+        fmt_vertical_list_with_bullets(f, &self.0)
     }
 }
 
@@ -102,12 +159,7 @@ pub struct XArguments(pub Map<String, serde_json::Value>);
 
 impl fmt::Display for XArguments {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let coll = &self.0;
-        for (k, v) in coll.iter() {
-            writeln!(f, "{}: {}", k, v)?;
-        }
-
-        Ok(())
+        fmt_map_as_colon_separated_pairs(f, &self.0)
     }
 }
 
@@ -137,6 +189,7 @@ pub struct StreamConsumer {
     pub consumed: u64,
     pub offset_lag: u64,
     pub offset: u64,
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_arg_table"))]
     pub properties: XArguments,
 }
 
@@ -168,7 +221,7 @@ pub struct NodeList(Vec<String>);
 
 impl fmt::Display for NodeList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt_list_as_json_array(f, &self.0)
+        fmt_vertical_list_without_bullets(f, &self.0)
     }
 }
 
@@ -592,7 +645,7 @@ pub struct QueueInfo {
     pub durable: bool,
     pub auto_delete: bool,
     pub exclusive: bool,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_arg_table"))]
     pub arguments: XArguments,
 
     #[serde(default = "undefined")]
@@ -669,11 +722,11 @@ pub struct QueueDefinition {
 pub struct ExchangeInfo {
     pub name: String,
     pub vhost: String,
-    #[serde(rename(deserialize = "type"))]
+    #[serde(rename = "type")]
     pub exchange_type: String,
     pub durable: bool,
     pub auto_delete: bool,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_arg_table"))]
     pub arguments: XArguments,
 }
 type ExchangeDefinition = ExchangeInfo;
@@ -687,7 +740,7 @@ pub struct BindingInfo {
     pub destination: String,
     pub destination_type: BindingDestinationType,
     pub routing_key: String,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_arg_table"))]
     pub arguments: XArguments,
     #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
     pub properties_key: Option<String>,
@@ -741,13 +794,11 @@ pub struct PolicyDefinition(pub Option<Map<String, serde_json::Value>>);
 
 impl fmt::Display for PolicyDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(def) = &self.0 {
-            for (k, v) in def.iter() {
-                writeln!(f, "{}: {}", k, v)?;
-            }
+        let maybe_val = self.0.clone();
+        match maybe_val {
+            Some(val) => fmt_map_as_colon_separated_pairs(f, &val),
+            None => Ok(()),
         }
-
-        Ok(())
     }
 }
 
