@@ -73,7 +73,7 @@ fn fmt_vertical_list_with_bullets(f: &mut fmt::Formatter<'_>, xs: &[String]) -> 
             let mut xs = xs.to_owned();
             let last_element = xs.pop().unwrap();
             for elem in xs {
-                write!(f, "* {}", elem)?;
+                writeln!(f, "* {}", elem)?;
             }
             write!(f, "* {}", last_element)?;
             Ok(())
@@ -90,7 +90,7 @@ fn fmt_vertical_list_without_bullets(f: &mut fmt::Formatter<'_>, xs: &[String]) 
             let mut xs = xs.to_owned();
             let last_element = xs.pop().unwrap();
             for elem in xs {
-                write!(f, "{}", elem)?;
+                writeln!(f, "{}", elem)?;
             }
             write!(f, "{}", last_element)?;
             Ok(())
@@ -124,7 +124,7 @@ where
 fn display_arg_table(xs: &XArguments) -> String {
     let mut s = String::new();
     for (k, v) in xs.0.iter() {
-        let line = format!("{}: {}", k, v);
+        let line = format!("{}: {}\n", k, v);
         s += line.as_str()
     }
 
