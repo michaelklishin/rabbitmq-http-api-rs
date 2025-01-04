@@ -202,12 +202,7 @@ impl ops::Deref for RuntimeParameterValue {
 
 impl fmt::Display for RuntimeParameterValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let coll = &self.0;
-        for (k, v) in coll.iter() {
-            writeln!(f, "{}: {}", k, v)?;
-        }
-
-        Ok(())
+        fmt_map_as_colon_separated_pairs(f, &self.0)
     }
 }
 
@@ -229,6 +224,26 @@ pub struct NodeMemoryFootprint {
 }
 
 type MemoryFootprintMetric = u64;
+
+#[derive(Debug, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+#[allow(dead_code)]
+pub struct NodeMemoryTotals {
+    pub rss: MemoryFootprintMetric,
+    pub allocated: MemoryFootprintMetric,
+    #[serde(rename = "erlang")]
+    pub used_by_runtime: MemoryFootprintMetric,
+}
+
+impl fmt::Display for NodeMemoryTotals {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "RSS: {}", self.rss)?;
+        writeln!(f, "allocated: {}", self.allocated)?;
+        writeln!(f, "used by the runtime: {}", self.used_by_runtime)?;
+
+        Ok(())
+    }
+}
 
 #[derive(Debug, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
@@ -272,6 +287,7 @@ pub struct NodeMemoryBreakdown {
     pub reserved_but_unallocated: MemoryFootprintMetric,
     #[serde(rename = "strategy")]
     pub calculation_strategy: String,
+    pub total: NodeMemoryTotals,
 }
 
 impl fmt::Display for NodeMemoryBreakdown {
@@ -397,12 +413,7 @@ impl ops::Deref for EnforcedLimits {
 
 impl fmt::Display for EnforcedLimits {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let coll = &self.0;
-        for (k, v) in coll.iter() {
-            writeln!(f, "{}: {}", k, v)?;
-        }
-
-        Ok(())
+        fmt_map_as_colon_separated_pairs(f, &self.0)
     }
 }
 
@@ -969,11 +980,7 @@ pub struct MessageProperties(pub Map<String, serde_json::Value>);
 
 impl Display for MessageProperties {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for (k, v) in &self.0 {
-            writeln!(f, "{}: {}", k, v)?;
-        }
-
-        Ok(())
+        fmt_map_as_colon_separated_pairs(f, &self.0)
     }
 }
 
