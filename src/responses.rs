@@ -327,6 +327,8 @@ impl NodeMemoryBreakdown {
     percentage_as_text_fn!(connection_writers_percentage, connection_writers);
     percentage_fn!(connection_channels_percentage, connection_channels);
     percentage_as_text_fn!(connection_channels_percentage_as_text, connection_channels);
+    percentage_fn!(connection_other_percentage, connection_other);
+    percentage_as_text_fn!(connection_other_percentage_as_text, connection_other);
 
     percentage_fn!(classic_queue_procs_percentage, classic_queue_procs);
     percentage_as_text_fn!(classic_queue_procs_percentage_as_text, classic_queue_procs);
