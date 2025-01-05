@@ -16,26 +16,31 @@ use rabbitmq_http_client::blocking_api::Client;
 mod test_helpers;
 use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
 
-#[test]
-fn test_list_nodes() {
-    let endpoint = endpoint();
-    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
-    let result = rc.list_nodes();
-
-    assert!(result.is_ok());
-    let vec = result.unwrap();
-    assert!(vec.iter().any(|n| n.name.starts_with("rabbit@")))
-}
+use regex::Regex;
 
 #[test]
-fn test_get_node_info() {
+fn test_get_node_memory_footprint() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let nodes = rc.list_nodes().unwrap();
     let name = nodes.first().unwrap().name.clone();
-    let node = &rc.get_node_info(&name).unwrap();
+    let footprint = &mut rc.get_node_memory_footprint(&name).unwrap();
 
-    assert!(node.processors >= 1);
-    assert!(node.uptime >= 1);
-    assert!(node.total_erlang_processes >= 1);
+    assert!(footprint.breakdown.total.rss >= 1);
+    assert!(footprint.breakdown.total.allocated >= 1);
+    assert!(footprint.breakdown.total.used_by_runtime >= 1);
+    assert!(footprint.breakdown.grand_total() >= 1);
+
+    assert!(footprint.breakdown.metadata_store >= 1);
+    assert!(footprint.breakdown.plugins >= 1);
+
+    assert!(footprint.breakdown.plugins_percentage() >= 1.0);
+
+    let regex = Regex::new(r"\d+\.\d+%").unwrap();
+
+    let metadata_store_percentage_s = footprint.breakdown.metadata_store_percentage_as_text();
+    assert!(regex.is_match(&metadata_store_percentage_s));
+
+    let plugins_percentage_s = footprint.breakdown.plugins_percentage_as_text();
+    assert!(regex.is_match(&plugins_percentage_s));
 }

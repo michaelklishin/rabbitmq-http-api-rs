@@ -15,6 +15,7 @@ use core::fmt::Display;
 use std::{fmt, ops};
 
 use crate::commons::{BindingDestinationType, PolicyTarget};
+use crate::utils::{percentage, percentage_as_text};
 use serde::{
     de::{MapAccess, Visitor},
     Deserialize, Serialize,
@@ -223,16 +224,22 @@ pub struct NodeMemoryFootprint {
     pub breakdown: NodeMemoryBreakdown,
 }
 
-type MemoryFootprintMetric = u64;
-
 #[derive(Debug, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct NodeMemoryTotals {
-    pub rss: MemoryFootprintMetric,
-    pub allocated: MemoryFootprintMetric,
+    pub rss: u64,
+    pub allocated: u64,
     #[serde(rename = "erlang")]
-    pub used_by_runtime: MemoryFootprintMetric,
+    pub used_by_runtime: u64,
+}
+
+impl NodeMemoryTotals {
+    /// Returns the greatest value between the totals computed
+    /// using different mechanisms (RSS, runtime allocator metrics)
+    pub fn max(&self) -> u64 {
+        std::cmp::max(std::cmp::max(self.used_by_runtime, self.rss), self.rss)
+    }
 }
 
 impl fmt::Display for NodeMemoryTotals {
@@ -249,45 +256,162 @@ impl fmt::Display for NodeMemoryTotals {
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct NodeMemoryBreakdown {
-    pub connection_readers: MemoryFootprintMetric,
-    pub connection_writers: MemoryFootprintMetric,
-    pub connection_channels: MemoryFootprintMetric,
-    pub connection_other: MemoryFootprintMetric,
+    pub connection_readers: u64,
+    pub connection_writers: u64,
+    pub connection_channels: u64,
+    pub connection_other: u64,
     #[serde(rename = "queue_procs")]
-    pub classic_queue_procs: MemoryFootprintMetric,
-    pub quorum_queue_procs: MemoryFootprintMetric,
-    pub stream_queue_procs: MemoryFootprintMetric,
-    pub stream_queue_replica_reader_procs: MemoryFootprintMetric,
-    pub stream_queue_coordinator_procs: MemoryFootprintMetric,
-    pub plugins: MemoryFootprintMetric,
-    pub metadata_store: MemoryFootprintMetric,
+    pub classic_queue_procs: u64,
+    pub quorum_queue_procs: u64,
+    pub stream_queue_procs: u64,
+    pub stream_queue_replica_reader_procs: u64,
+    pub stream_queue_coordinator_procs: u64,
+    pub plugins: u64,
+    pub metadata_store: u64,
     #[serde(rename = "other_proc")]
-    pub other_procs: MemoryFootprintMetric,
-    pub metrics: MemoryFootprintMetric,
+    pub other_procs: u64,
+    pub metrics: u64,
     #[serde(rename = "mgmt_db")]
-    pub management_db: MemoryFootprintMetric,
-    pub mnesia: MemoryFootprintMetric,
+    pub management_db: u64,
+    pub mnesia: u64,
     #[serde(rename = "quorum_ets")]
-    pub quorum_queue_ets_tables: MemoryFootprintMetric,
+    pub quorum_queue_ets_tables: u64,
     #[serde(rename = "metadata_store_ets")]
-    pub metadata_store_ets_tables: MemoryFootprintMetric,
+    pub metadata_store_ets_tables: u64,
     #[serde(rename = "other_ets")]
-    pub other_ets_tables: MemoryFootprintMetric,
+    pub other_ets_tables: u64,
     #[serde(rename = "binary")]
-    pub binary_heap: MemoryFootprintMetric,
+    pub binary_heap: u64,
     #[serde(rename = "msg_index")]
-    pub message_indices: MemoryFootprintMetric,
-    pub code: MemoryFootprintMetric,
+    pub message_indices: u64,
+    pub code: u64,
     #[serde(rename = "atom")]
-    pub atom_table: MemoryFootprintMetric,
-    pub other_system: MemoryFootprintMetric,
+    pub atom_table: u64,
+    pub other_system: u64,
     #[serde(rename = "allocated_unused")]
-    pub allocated_but_unused: MemoryFootprintMetric,
+    pub allocated_but_unused: u64,
     #[serde(rename = "reserved_unallocated")]
-    pub reserved_but_unallocated: MemoryFootprintMetric,
+    pub reserved_but_unallocated: u64,
     #[serde(rename = "strategy")]
     pub calculation_strategy: String,
     pub total: NodeMemoryTotals,
+}
+
+macro_rules! percentage_fn {
+    ($fn_name:ident, $field:ident) => {
+        pub fn $fn_name(&mut self) -> f64 {
+            percentage(self.$field, self.grand_total())
+        }
+    };
+}
+
+macro_rules! percentage_as_text_fn {
+    ($fn_name:ident, $field:ident) => {
+        pub fn $fn_name(&mut self) -> String {
+            percentage_as_text(self.$field, self.grand_total())
+        }
+    };
+}
+
+#[allow(dead_code)]
+impl NodeMemoryBreakdown {
+    /// Returns the greatest value between the totals computed
+    /// using different mechanisms (RSS, runtime allocator metrics)
+    pub fn grand_total(&self) -> u64 {
+        self.total.max()
+    }
+
+    percentage_fn!(connection_readers_percentage, connection_readers);
+    percentage_as_text_fn!(connection_readers_percentage_as_text, connection_readers);
+    percentage_fn!(connection_writers_percentage_as_text, connection_writers);
+    percentage_as_text_fn!(connection_writers_percentage, connection_writers);
+    percentage_fn!(connection_channels_percentage, connection_channels);
+    percentage_as_text_fn!(connection_channels_percentage_as_text, connection_channels);
+
+    percentage_fn!(classic_queue_procs_percentage, classic_queue_procs);
+    percentage_as_text_fn!(classic_queue_procs_percentage_as_text, classic_queue_procs);
+    percentage_fn!(quorum_queue_procs_percentage, quorum_queue_procs);
+    percentage_as_text_fn!(quorum_queue_procs_percentage_as_text, quorum_queue_procs);
+    percentage_fn!(stream_queue_procs_percentage, stream_queue_procs);
+    percentage_as_text_fn!(stream_queue_procs_percentage_as_text, stream_queue_procs);
+    percentage_fn!(
+        stream_queue_replica_reader_procs_percentage,
+        stream_queue_replica_reader_procs
+    );
+    percentage_as_text_fn!(
+        stream_queue_replica_reader_procs_percentage_as_text,
+        stream_queue_replica_reader_procs
+    );
+    percentage_fn!(
+        stream_queue_coordinator_procs_percentage,
+        stream_queue_coordinator_procs
+    );
+
+    percentage_fn!(plugins_percentage, plugins);
+    percentage_as_text_fn!(plugins_percentage_as_text, plugins);
+
+    percentage_fn!(metadata_store_percentage, metadata_store);
+    percentage_as_text_fn!(metadata_store_percentage_as_text, metadata_store);
+
+    percentage_fn!(other_procs_percentage, other_procs);
+    percentage_as_text_fn!(other_procs_percentage_as_text, other_procs);
+
+    percentage_fn!(metrics_percentage, metrics);
+    percentage_as_text_fn!(metrics_percentage_as_text, metrics);
+
+    percentage_fn!(management_db_percentage, management_db);
+    percentage_as_text_fn!(management_db_percentage_as_text, management_db);
+
+    percentage_fn!(mnesia_percentage, mnesia);
+    percentage_as_text_fn!(mnesia_percentage_as_text, mnesia);
+
+    percentage_fn!(quorum_queue_ets_tables_percentage, quorum_queue_ets_tables);
+    percentage_as_text_fn!(
+        quorum_queue_ets_tables_percentage_as_text,
+        quorum_queue_ets_tables
+    );
+
+    percentage_fn!(
+        metadata_store_ets_tables_percentage,
+        metadata_store_ets_tables
+    );
+    percentage_as_text_fn!(
+        metadata_store_ets_tables_percentage_as_text,
+        metadata_store_ets_tables
+    );
+
+    percentage_fn!(other_ets_tables_percentage, other_ets_tables);
+    percentage_as_text_fn!(other_ets_tables_percentage_as_text, other_ets_tables);
+
+    percentage_fn!(binary_heap_percentage, binary_heap);
+    percentage_as_text_fn!(binary_heap_percentage_as_text, binary_heap);
+
+    percentage_fn!(message_indices_percentage, message_indices);
+    percentage_as_text_fn!(message_indices_percentage_as_text, message_indices);
+
+    percentage_fn!(code_percentage, code);
+    percentage_as_text_fn!(code_percentage_as_text, code);
+
+    percentage_fn!(atom_table_percentage, atom_table);
+    percentage_as_text_fn!(atom_table_percentage_as_text, atom_table);
+
+    percentage_fn!(other_system_percentage, other_system);
+    percentage_as_text_fn!(other_system_percentage_as_text, other_system);
+
+    percentage_fn!(allocated_but_unused_percentage, allocated_but_unused);
+    percentage_as_text_fn!(
+        allocated_but_unused_percentage_as_text,
+        allocated_but_unused
+    );
+
+    percentage_fn!(
+        reserved_but_unallocated_percentage,
+        reserved_but_unallocated
+    );
+    percentage_as_text_fn!(
+        reserved_but_unallocated_percentage_as_text,
+        reserved_but_unallocated
+    );
 }
 
 impl fmt::Display for NodeMemoryBreakdown {

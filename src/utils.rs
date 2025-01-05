@@ -11,6 +11,16 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+pub fn percentage(a: u64, b: u64) -> f64 {
+    (a as f64 / b as f64) * 100.0
+}
+
+pub fn percentage_as_text(a: u64, b: u64) -> String {
+    let p = percentage(a, b);
+    format!("{:.2}%", p)
+}
+
 #[macro_export]
 macro_rules! path_one_part {
     ($val:expr, $part:literal) => {
