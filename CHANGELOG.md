@@ -1,8 +1,12 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.15.0  (in development)
+## v0.15.0  (Jan 5, 2025)
 
-No (documented) changes yet.
+### Enhancements
+
+ * `Client#get_node_memory_footprint` is a new function that returns a [node memory footprint breakdown](https://www.rabbitmq.com/docs/memory-use).
+   `responses::NodeMemoryFootprint` and `responses::NodeMemoryBreakdown` are the key types that provide
+   access to per-category proportions, both absolute and relative (in percent)
 
 
 ## v0.14.0  (Dec 31, 2024)
