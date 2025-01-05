@@ -32,15 +32,16 @@ fn test_get_node_memory_footprint() {
     assert!(footprint.breakdown.grand_total() >= 1);
 
     assert!(footprint.breakdown.metadata_store >= 1);
-    assert!(footprint.breakdown.plugins >= 1);
+    assert!(footprint.breakdown.code >= 1);
 
-    assert!(footprint.breakdown.plugins_percentage() >= 1.0);
+    assert!(footprint.breakdown.binary_heap_percentage() >= 0.1);
+    assert!(footprint.breakdown.allocated_but_unused_percentage() >= 0.1);
 
     let regex = Regex::new(r"\d+\.\d+%").unwrap();
 
     let metadata_store_percentage_s = footprint.breakdown.metadata_store_percentage_as_text();
     assert!(regex.is_match(&metadata_store_percentage_s));
 
-    let plugins_percentage_s = footprint.breakdown.plugins_percentage_as_text();
-    assert!(regex.is_match(&plugins_percentage_s));
+    let code_percentage_s = footprint.breakdown.code_percentage_as_text();
+    assert!(regex.is_match(&code_percentage_s));
 }
