@@ -323,8 +323,8 @@ impl NodeMemoryBreakdown {
 
     percentage_fn!(connection_readers_percentage, connection_readers);
     percentage_as_text_fn!(connection_readers_percentage_as_text, connection_readers);
-    percentage_fn!(connection_writers_percentage_as_text, connection_writers);
-    percentage_as_text_fn!(connection_writers_percentage, connection_writers);
+    percentage_fn!(connection_writers_percentage, connection_writers);
+    percentage_as_text_fn!(connection_writers_percentage_as_text, connection_writers);
     percentage_fn!(connection_channels_percentage, connection_channels);
     percentage_as_text_fn!(connection_channels_percentage_as_text, connection_channels);
     percentage_fn!(connection_other_percentage, connection_other);
