@@ -348,6 +348,10 @@ impl NodeMemoryBreakdown {
         stream_queue_coordinator_procs_percentage,
         stream_queue_coordinator_procs
     );
+    percentage_as_text_fn!(
+        stream_queue_coordinator_procs_percentage_as_text,
+        stream_queue_coordinator_procs
+    );
 
     percentage_fn!(plugins_percentage, plugins);
     percentage_as_text_fn!(plugins_percentage_as_text, plugins);
