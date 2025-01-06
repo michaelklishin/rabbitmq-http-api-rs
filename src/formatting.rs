@@ -129,7 +129,7 @@ pub fn display_tag_map_option(opt: &Option<TagMap>) -> String {
             let mut s = String::new();
             let iter = val.0.clone().into_iter();
             for (k, v) in iter {
-                let line = format!("{}: {}\n", k, v);
+                let line = format!("\"{}\": {}\n", k, v);
                 s += line.as_str()
             }
 
