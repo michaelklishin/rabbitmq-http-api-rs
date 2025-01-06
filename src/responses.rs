@@ -15,6 +15,7 @@ use core::fmt::Display;
 use std::{fmt, ops};
 
 use crate::commons::{BindingDestinationType, PolicyTarget};
+use crate::formatting::*;
 use crate::utils::{percentage, percentage_as_text};
 use serde::{
     de::{MapAccess, Visitor},
@@ -28,118 +29,8 @@ use std::borrow::Cow;
 #[cfg(feature = "tabled")]
 use tabled::Tabled;
 
-#[allow(dead_code)]
-fn fmt_list_as_json_array(f: &mut fmt::Formatter<'_>, xs: &[String]) -> fmt::Result {
-    match xs.len() {
-        0 => {
-            write!(f, "[]")
-        }
-        _ => {
-            write!(f, "[")?;
-            let mut xs = xs.to_owned();
-            let last_element = xs.pop().unwrap();
-            for elem in xs {
-                write!(f, "{}, ", elem)?;
-            }
-            write!(f, "{}", last_element)?;
-            write!(f, "]")?;
-            Ok(())
-        }
-    }
-}
-
-fn fmt_comma_separated_list(f: &mut fmt::Formatter<'_>, xs: &[String]) -> fmt::Result {
-    match xs.len() {
-        0 => {
-            write!(f, "")
-        }
-        _ => {
-            let mut xs = xs.to_owned();
-            let last_element = xs.pop().unwrap();
-            for elem in xs {
-                write!(f, "{}, ", elem)?;
-            }
-            write!(f, "{}", last_element)?;
-            Ok(())
-        }
-    }
-}
-
-fn fmt_vertical_list_with_bullets(f: &mut fmt::Formatter<'_>, xs: &[String]) -> fmt::Result {
-    match xs.len() {
-        0 => {
-            write!(f, "")
-        }
-        _ => {
-            let mut xs = xs.to_owned();
-            let last_element = xs.pop().unwrap();
-            for elem in xs {
-                writeln!(f, "* {}", elem)?;
-            }
-            write!(f, "* {}", last_element)?;
-            Ok(())
-        }
-    }
-}
-
-fn fmt_vertical_list_without_bullets(f: &mut fmt::Formatter<'_>, xs: &[String]) -> fmt::Result {
-    match xs.len() {
-        0 => {
-            write!(f, "")
-        }
-        _ => {
-            let mut xs = xs.to_owned();
-            let last_element = xs.pop().unwrap();
-            for elem in xs {
-                writeln!(f, "{}", elem)?;
-            }
-            write!(f, "{}", last_element)?;
-            Ok(())
-        }
-    }
-}
-
-fn fmt_map_as_colon_separated_pairs(
-    f: &mut fmt::Formatter<'_>,
-    xs: &Map<String, serde_json::Value>,
-) -> fmt::Result {
-    for (k, v) in xs.iter() {
-        writeln!(f, "{}: {}", k, v)?;
-    }
-
-    Ok(())
-}
-
-#[cfg(feature = "tabled")]
-fn display_option<T>(opt: &Option<T>) -> String
-where
-    T: fmt::Display,
-{
-    match opt {
-        None => "".to_owned(),
-        Some(val) => format!("{}", val).to_owned(),
-    }
-}
-
-#[cfg(feature = "tabled")]
-fn display_arg_table(xs: &XArguments) -> String {
-    let mut s = String::new();
-    for (k, v) in xs.0.iter() {
-        let line = format!("{}: {}\n", k, v);
-        s += line.as_str()
-    }
-
-    s.clone()
-}
-
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TagList(pub Vec<String>);
-
-impl fmt::Display for TagList {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt_comma_separated_list(f, &self.0)
-    }
-}
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PluginList(pub Vec<String>);
@@ -1191,9 +1082,9 @@ pub struct Overview {
     pub product_version: String,
 
     // these two won't be available in 3.13.x
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_tag_map_option"))]
     pub cluster_tags: Option<TagMap>,
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_tag_map_option"))]
     pub node_tags: Option<TagMap>,
 
     pub statistics_db_event_queue: u64,

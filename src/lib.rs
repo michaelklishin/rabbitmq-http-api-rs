@@ -39,6 +39,8 @@ pub mod api;
 pub mod blocking_api;
 /// Types commonly used by API requests and responses
 pub mod commons;
+/// Formatting helpers
+pub mod formatting;
 /// Providers password hashing utilities for user pre-seeding.
 pub mod password_hashing;
 /// Types used to issues API requests (such as `PUT`, `POST`, `DELETE`)
