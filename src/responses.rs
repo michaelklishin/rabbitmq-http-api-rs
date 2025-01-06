@@ -1174,11 +1174,7 @@ pub struct TagMap(pub Map<String, serde_json::Value>);
 
 impl Display for TagMap {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for (k, v) in &self.0 {
-            writeln!(f, "{}: {}", k, v)?;
-        }
-
-        Ok(())
+        fmt_map_as_colon_separated_pairs(f, &self.0)
     }
 }
 
