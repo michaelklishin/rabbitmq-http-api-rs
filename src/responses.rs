@@ -11,7 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-use core::fmt::Display;
 use std::{fmt, ops};
 
 use crate::commons::{BindingDestinationType, PolicyTarget};
@@ -35,20 +34,8 @@ pub struct TagList(pub Vec<String>);
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PluginList(pub Vec<String>);
 
-impl fmt::Display for PluginList {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt_vertical_list_with_bullets(f, &self.0)
-    }
-}
-
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct XArguments(pub Map<String, serde_json::Value>);
-
-impl fmt::Display for XArguments {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt_map_as_colon_separated_pairs(f, &self.0)
-    }
-}
 
 #[derive(Debug, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
@@ -954,31 +941,9 @@ pub struct GetMessage {
     pub payload_encoding: String,
 }
 
-impl Display for GetMessage {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "payload: {}", self.payload)?;
-        writeln!(f, "exchange: {}", self.exchange)?;
-        writeln!(f, "routing key: {}", self.routing_key)?;
-        writeln!(f, "redelivered: {}", self.redelivered)?;
-        writeln!(f, "properties: {}", self.properties)?;
-
-        Ok(())
-    }
-}
-
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(transparent)]
 pub struct MessageList(pub Vec<GetMessage>);
-
-impl Display for MessageList {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for msg in &self.0 {
-            writeln!(f, "{}", msg)?;
-        }
-
-        Ok(())
-    }
-}
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
@@ -986,24 +951,9 @@ pub struct MessageRouted {
     pub routed: bool,
 }
 
-impl Display for MessageRouted {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self.routed {
-            true => write!(f, "Message published and routed successfully"),
-            false => write!(f, "Message published but NOT routed"),
-        }
-    }
-}
-
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Default)]
 #[serde(transparent)]
 pub struct MessageProperties(pub Map<String, serde_json::Value>);
-
-impl Display for MessageProperties {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt_map_as_colon_separated_pairs(f, &self.0)
-    }
-}
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
@@ -1037,16 +987,7 @@ pub struct ObjectTotals {
     pub channels: u64,
     pub queues: u64,
     pub exchanges: u64,
-}
-impl Display for ObjectTotals {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "connections: {}", self.connections)?;
-        writeln!(f, "channels: {}", self.channels)?;
-        writeln!(f, "queues: {}", self.queues)?;
-        writeln!(f, "exchanges: {}", self.exchanges)?;
-
-        Ok(())
-    }
+    pub consumers: u64,
 }
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
@@ -1062,12 +1003,6 @@ pub struct Listener {
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq, Default)]
 #[serde(transparent)]
 pub struct TagMap(pub Map<String, serde_json::Value>);
-
-impl Display for TagMap {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt_map_as_colon_separated_pairs(f, &self.0)
-    }
-}
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
@@ -1089,6 +1024,7 @@ pub struct Overview {
 
     pub statistics_db_event_queue: u64,
     pub churn_rates: ChurnRates,
+    pub object_totals: ObjectTotals,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
@@ -1211,31 +1147,9 @@ pub struct FeatureFlag {
     pub provided_by: String,
 }
 
-impl Display for FeatureFlag {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "name: {}", self.name)?;
-        writeln!(f, "description: {}", self.description)?;
-        writeln!(f, "doc URL: {}", self.doc_url)?;
-        writeln!(f, "stability: {}", self.stability)?;
-        writeln!(f, "provided by: {}", self.provided_by)?;
-
-        Ok(())
-    }
-}
-
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(transparent)]
 pub struct FeatureFlagList(pub Vec<FeatureFlag>);
-
-impl Display for FeatureFlagList {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for ff in &self.0 {
-            writeln!(f, "{}", ff)?;
-        }
-
-        Ok(())
-    }
-}
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 #[serde(rename_all = "snake_case")]
@@ -1309,29 +1223,9 @@ pub struct DeprecatedFeature {
     pub provided_by: String,
 }
 
-impl Display for DeprecatedFeature {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "name: {}", self.name)?;
-        writeln!(f, "description: {}", self.description)?;
-        writeln!(f, "deprecation_phase: {}", self.deprecation_phase)?;
-
-        Ok(())
-    }
-}
-
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(transparent)]
 pub struct DeprecatedFeatureList(pub Vec<DeprecatedFeature>);
-
-impl Display for DeprecatedFeatureList {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for df in &self.0 {
-            writeln!(f, "{}", df)?;
-        }
-
-        Ok(())
-    }
-}
 
 fn undefined() -> String {
     "?".to_string()

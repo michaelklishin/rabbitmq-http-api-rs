@@ -11,13 +11,122 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-use crate::responses::{TagList, TagMap, XArguments};
+use crate::responses::*;
 use serde_json::Map;
 use std::fmt;
+use std::fmt::Display;
 
-impl fmt::Display for TagList {
+impl Display for ObjectTotals {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "connections: {}", self.connections)?;
+        writeln!(f, "channels: {}", self.channels)?;
+        writeln!(f, "queues: {}", self.queues)?;
+        writeln!(f, "exchanges: {}", self.exchanges)?;
+
+        Ok(())
+    }
+}
+
+impl Display for TagList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt_comma_separated_list(f, &self.0)
+    }
+}
+
+impl Display for TagMap {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt_map_as_colon_separated_pairs(f, &self.0)
+    }
+}
+
+impl Display for DeprecatedFeatureList {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for df in &self.0 {
+            writeln!(f, "{}", df)?;
+        }
+
+        Ok(())
+    }
+}
+
+impl Display for DeprecatedFeature {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "name: {}", self.name)?;
+        writeln!(f, "description: {}", self.description)?;
+        writeln!(f, "deprecation_phase: {}", self.deprecation_phase)?;
+
+        Ok(())
+    }
+}
+
+impl Display for PluginList {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt_vertical_list_with_bullets(f, &self.0)
+    }
+}
+
+impl Display for XArguments {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt_map_as_colon_separated_pairs(f, &self.0)
+    }
+}
+
+impl Display for FeatureFlag {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "name: {}", self.name)?;
+        writeln!(f, "description: {}", self.description)?;
+        writeln!(f, "doc URL: {}", self.doc_url)?;
+        writeln!(f, "stability: {}", self.stability)?;
+        writeln!(f, "provided by: {}", self.provided_by)?;
+
+        Ok(())
+    }
+}
+
+impl Display for FeatureFlagList {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for ff in &self.0 {
+            writeln!(f, "{}", ff)?;
+        }
+
+        Ok(())
+    }
+}
+
+impl Display for MessageList {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for msg in &self.0 {
+            writeln!(f, "{}", msg)?;
+        }
+
+        Ok(())
+    }
+}
+
+impl Display for MessageRouted {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self.routed {
+            true => write!(f, "Message published and routed successfully"),
+            false => write!(f, "Message published but NOT routed"),
+        }
+    }
+}
+
+impl Display for MessageProperties {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt_map_as_colon_separated_pairs(f, &self.0)
+    }
+}
+
+impl Display for GetMessage {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "payload: {}", self.payload)?;
+        writeln!(f, "exchange: {}", self.exchange)?;
+        writeln!(f, "routing key: {}", self.routing_key)?;
+        writeln!(f, "redelivered: {}", self.redelivered)?;
+        writeln!(f, "properties: {}", self.properties)?;
+
+        Ok(())
     }
 }
 
