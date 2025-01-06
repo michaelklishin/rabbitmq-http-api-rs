@@ -27,6 +27,31 @@ impl Display for ObjectTotals {
     }
 }
 
+impl Display for Rate {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "{:.2}", self.rate)?;
+        Ok(())
+    }
+}
+
+impl Display for QueueTotals {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "all messages: {}", self.messages)?;
+        writeln!(
+            f,
+            "messages ready for dlievery: {}",
+            self.messages_ready_for_delivery
+        )?;
+        writeln!(
+            f,
+            "messages delivered but unacknowledged by consumer: {}",
+            self.messages_delivered_but_unacknowledged_by_consumers
+        )?;
+
+        Ok(())
+    }
+}
+
 impl Display for TagList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt_comma_separated_list(f, &self.0)

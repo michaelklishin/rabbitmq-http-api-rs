@@ -980,6 +980,13 @@ impl fmt::Display for ChurnRates {
     }
 }
 
+#[derive(Debug, Deserialize, Clone, PartialEq, PartialOrd)]
+#[serde(transparent)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+pub struct Rate {
+    pub rate: f64,
+}
+
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 pub struct ObjectTotals {
@@ -988,6 +995,22 @@ pub struct ObjectTotals {
     pub queues: u64,
     pub exchanges: u64,
     pub consumers: u64,
+}
+
+#[derive(Debug, Deserialize, Clone, PartialEq)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+pub struct QueueTotals {
+    pub messages: u64,
+    #[serde(rename = "messages_ready")]
+    pub messages_ready_for_delivery: u64,
+    #[serde(rename = "messages_unacknowledged")]
+    pub messages_delivered_but_unacknowledged_by_consumers: u64,
+
+    pub message_details: Rate,
+    #[serde(rename = "messages_ready_details")]
+    pub messages_ready_for_delivery_details: Rate,
+    #[serde(rename = "messages_unacknowledged_details")]
+    pub messages_delivered_but_unacknowledged_by_consumers_details: Rate,
 }
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
@@ -1004,7 +1027,7 @@ pub struct Listener {
 #[serde(transparent)]
 pub struct TagMap(pub Map<String, serde_json::Value>);
 
-#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[derive(Debug, Deserialize, Clone, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 pub struct Overview {
     pub cluster_name: String,
@@ -1024,6 +1047,7 @@ pub struct Overview {
 
     pub statistics_db_event_queue: u64,
     pub churn_rates: ChurnRates,
+    pub queue_totals: QueueTotals,
     pub object_totals: ObjectTotals,
 }
 
