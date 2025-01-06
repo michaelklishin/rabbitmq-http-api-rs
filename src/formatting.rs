@@ -39,13 +39,30 @@ impl Display for QueueTotals {
         writeln!(f, "all messages: {}", self.messages)?;
         writeln!(
             f,
-            "messages ready for dlievery: {}",
+            "messages ready for delivery: {}",
             self.messages_ready_for_delivery
         )?;
         writeln!(
             f,
             "messages delivered but unacknowledged by consumer: {}",
             self.messages_delivered_but_unacknowledged_by_consumers
+        )?;
+
+        Ok(())
+    }
+}
+
+impl Display for MessageStats {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(
+            f,
+            "publishing (ingress) rate: {}",
+            self.publishing_details.rate
+        )?;
+        writeln!(
+            f,
+            "delivery plus polling (egress) rate: {}",
+            self.delivery_details.rate
         )?;
 
         Ok(())

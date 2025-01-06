@@ -1011,6 +1011,31 @@ pub struct QueueTotals {
     pub messages_delivered_but_unacknowledged_by_consumers_details: Rate,
 }
 
+#[derive(Debug, Deserialize, Clone, PartialEq)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+pub struct MessageStats {
+    /// Consumder delivery rate plus polling (via 'basic.get') rate
+    #[serde(rename = "deliver_get_details")]
+    pub delivery_details: Rate,
+    #[serde(rename = "publish_details")]
+    pub publishing_details: Rate,
+
+    #[serde(rename = "deliver_no_ack_details")]
+    pub delivery_with_automatic_acknowledgement_details: Rate,
+    #[serde(rename = "redeliver_details")]
+    pub redelivery_details: Rate,
+
+    #[serde(rename = "confirm_details")]
+    pub publisher_confirmation_details: Rate,
+    #[serde(rename = "ack_details")]
+    pub consumer_acknowledgement_details: Rate,
+
+    #[serde(rename = "drop_unroutable_details")]
+    pub unroutable_dropped_message_details: Rate,
+    #[serde(rename = "return_unroutable_details")]
+    pub unroutable_returned_message_details: Rate,
+}
+
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 pub struct Listener {
@@ -1045,8 +1070,10 @@ pub struct Overview {
 
     pub statistics_db_event_queue: u64,
     pub churn_rates: ChurnRates,
+
     pub queue_totals: QueueTotals,
     pub object_totals: ObjectTotals,
+    pub message_stats: MessageStats,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
