@@ -981,7 +981,6 @@ impl fmt::Display for ChurnRates {
 }
 
 #[derive(Debug, Deserialize, Clone, PartialEq, PartialOrd)]
-#[serde(transparent)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 pub struct Rate {
     pub rate: f64,
@@ -1005,8 +1004,7 @@ pub struct QueueTotals {
     pub messages_ready_for_delivery: u64,
     #[serde(rename = "messages_unacknowledged")]
     pub messages_delivered_but_unacknowledged_by_consumers: u64,
-
-    pub message_details: Rate,
+    pub messages_details: Rate,
     #[serde(rename = "messages_ready_details")]
     pub messages_ready_for_delivery_details: Rate,
     #[serde(rename = "messages_unacknowledged_details")]
