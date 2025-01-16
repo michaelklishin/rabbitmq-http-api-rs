@@ -23,6 +23,11 @@ pub fn endpoint() -> String {
 }
 
 #[allow(dead_code)]
+pub fn hostname() -> String {
+    "localhost".to_owned()
+}
+
+#[allow(dead_code)]
 pub fn await_metric_emission(ms: u64) {
     std::thread::sleep(Duration::from_millis(ms));
 }
