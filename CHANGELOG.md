@@ -1,8 +1,10 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.16.0  (in development)
+## v0.16.0  (Jan 15, 2025)
 
-No (documented) changes yet.
+### Bug Fixes
+
+ * `api::Client` now computes API endpoint path correctly (a slash was missing)
 
 
 ## v0.15.0  (Jan 5, 2025)
