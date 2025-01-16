@@ -28,11 +28,12 @@ reqwest = { version = "0.12.12", features = [
 ], optional = true }
 backtrace = { version = "0.3", optional = true }
 thiserror = { version = "2", optional = true }
+tokio = "1.43.0"
 
 
 [dev-dependencies]
 amqprs = {  version = "2"}
-cargo-nextest = "0.9.87"
+cargo-nextest = "0.9.88"
 regex = { version = "1", features = ["std"] }
 
 [features]

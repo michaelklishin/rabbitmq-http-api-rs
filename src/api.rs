@@ -1622,7 +1622,7 @@ where
     where
         S: AsRef<str>,
     {
-        format!("{}{}", self.endpoint, path.as_ref())
+        format!("{}/{}", self.endpoint, path.as_ref())
     }
 }
 
