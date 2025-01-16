@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-use rabbitmq_http_client::blocking_api::Client;
+use rabbitmq_http_client::api::Client;
 
 mod test_helpers;
 use crate::test_helpers::{await_metric_emission, endpoint, PASSWORD, USERNAME};
@@ -19,11 +19,11 @@ use rabbitmq_http_client::commons::PolicyTarget;
 use rabbitmq_http_client::requests::{ExchangeParams, PolicyParams, QueueParams};
 use serde_json::{json, Map, Value};
 
-#[test]
-fn test_export_definitions_as_string() {
+#[tokio::test]
+async fn test_asyncexport_definitions_as_string() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
-    let result = rc.export_definitions_as_string();
+    let result = rc.export_definitions_as_string().await;
 
     assert!(
         result.is_ok(),
@@ -32,8 +32,8 @@ fn test_export_definitions_as_string() {
     );
 }
 
-#[test]
-fn test_export_definitions_as_data() {
+#[tokio::test]
+async fn test_asyncexport_definitions_as_data() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -42,29 +42,33 @@ fn test_export_definitions_as_data() {
     x_args_m.insert("x-alternate-exchange".to_owned(), json!("amq.fanout"));
     let x_args = Some(x_args_m);
     let xp = ExchangeParams::durable_fanout(x_name, x_args);
-    let _ = rc.declare_exchange("/", &xp);
+    let _ = rc.declare_exchange("/", &xp).await;
 
     let qq_pol_name = "definitions_test.policies.qq.length";
     let mut qq_pol_def_m = Map::<String, Value>::new();
     qq_pol_def_m.insert("max-length".to_string(), json!(99));
-    let pol_result = rc.declare_policy(&PolicyParams {
-        vhost: "/",
-        name: qq_pol_name,
-        pattern: "definitions.qq.limited",
-        apply_to: PolicyTarget::QuorumQueues,
-        priority: 1,
-        definition: Some(qq_pol_def_m),
-    });
+    let pol_result = rc
+        .declare_policy(&PolicyParams {
+            vhost: "/",
+            name: qq_pol_name,
+            pattern: "definitions.qq.limited",
+            apply_to: PolicyTarget::QuorumQueues,
+            priority: 1,
+            definition: Some(qq_pol_def_m),
+        })
+        .await;
     assert!(pol_result.is_ok());
 
     let q_name = "definitions_test.qq.test_export_definitions_as_data";
-    let q_result = rc.declare_queue("/", &QueueParams::new_durable_classic_queue(q_name, None));
+    let q_result = rc
+        .declare_queue("/", &QueueParams::new_durable_classic_queue(q_name, None))
+        .await;
     assert!(q_result.is_ok(), "failed to declare queue {}", q_name);
 
-    let _ = rc.bind_queue("/", q_name, x_name, None, None);
+    let _ = rc.bind_queue("/", q_name, x_name, None, None).await;
     await_metric_emission(1000);
 
-    let result = rc.export_definitions_as_data();
+    let result = rc.export_definitions_as_data().await;
 
     assert!(
         result.is_ok(),
@@ -118,11 +122,11 @@ fn test_export_definitions_as_data() {
     let _ = rc.delete_policy("/", qq_pol_name);
 }
 
-#[test]
-fn test_import_definitions() {
+#[tokio::test]
+async fn test_asyncimport_definitions() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
-    let _ = rc.delete_queue("/", "imported_queue", false);
+    let _ = rc.delete_queue("/", "imported_queue", false).await;
     let defs = json!({  "queues": [
       {
         "auto_delete": false,
@@ -132,10 +136,10 @@ fn test_import_definitions() {
       }
     ]});
 
-    let result = rc.import_definitions(defs);
+    let result = rc.import_definitions(defs).await;
     assert!(result.is_ok(), "import_definitions returned {:?}", result);
 
-    let result1 = rc.get_queue_info("/", "imported_queue");
+    let result1 = rc.get_queue_info("/", "imported_queue").await;
     assert!(
         result1.is_ok(),
         "can't get the imported queue: {:?}",
