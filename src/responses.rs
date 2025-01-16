@@ -1014,7 +1014,7 @@ pub struct QueueTotals {
 #[derive(Debug, Deserialize, Clone, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 pub struct MessageStats {
-    /// Consumder delivery rate plus polling (via 'basic.get') rate
+    /// Consumer delivery rate plus polling (via 'basic.get') rate
     #[serde(rename = "deliver_get_details")]
     pub delivery_details: Rate,
     #[serde(rename = "publish_details")]

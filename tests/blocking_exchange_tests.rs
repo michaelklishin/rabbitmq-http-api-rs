@@ -83,7 +83,6 @@ fn test_declare_a_durable_exchange_of_type(name: &str, typ: ExchangeType) {
         _ => ExchangeParams::durable_fanout(name, optional_args),
     };
     let result2 = rc.declare_exchange(vhost, &params);
-    println!("{:?}", result2);
     assert!(result2.is_ok());
 
     let _ = rc.delete_exchange(vhost, name, false);
