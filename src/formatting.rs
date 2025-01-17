@@ -57,12 +57,12 @@ impl Display for MessageStats {
         writeln!(
             f,
             "publishing (ingress) rate: {}",
-            self.publishing_details.rate
+            display_option_details_rate(&self.publishing_details)
         )?;
         writeln!(
             f,
             "delivery plus polling (egress) rate: {}",
-            self.delivery_details.rate
+            display_option_details_rate(&self.delivery_details)
         )?;
 
         Ok(())
@@ -256,11 +256,18 @@ pub fn fmt_map_as_colon_separated_pairs(
 
 pub fn display_option<T>(opt: &Option<T>) -> String
 where
-    T: fmt::Display,
+    T: Display,
 {
     match opt {
         None => "".to_owned(),
         Some(val) => format!("{}", val).to_owned(),
+    }
+}
+
+pub fn display_option_details_rate(opt: &Option<Rate>) -> String {
+    match opt {
+        None => "".to_owned(),
+        Some(val) => format!("{}", val.rate).to_owned(),
     }
 }
 

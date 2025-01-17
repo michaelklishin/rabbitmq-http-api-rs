@@ -594,7 +594,9 @@ pub struct Consumer {
     #[serde(rename(deserialize = "consumer_timeout"))]
     pub delivery_ack_timeout: u64,
     pub queue: NameAndVirtualHost,
-    pub channel_details: ChannelDetails,
+
+    #[serde(deserialize_with = "deserialize_object_that_may_be_empty")]
+    pub channel_details: Option<ChannelDetails>,
 }
 
 #[cfg(feature = "tabled")]
@@ -1016,24 +1018,32 @@ pub struct QueueTotals {
 pub struct MessageStats {
     /// Consumer delivery rate plus polling (via 'basic.get') rate
     #[serde(rename = "deliver_get_details")]
-    pub delivery_details: Rate,
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    pub delivery_details: Option<Rate>,
     #[serde(rename = "publish_details")]
-    pub publishing_details: Rate,
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    pub publishing_details: Option<Rate>,
 
     #[serde(rename = "deliver_no_ack_details")]
-    pub delivery_with_automatic_acknowledgement_details: Rate,
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    pub delivery_with_automatic_acknowledgement_details: Option<Rate>,
     #[serde(rename = "redeliver_details")]
-    pub redelivery_details: Rate,
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    pub redelivery_details: Option<Rate>,
 
     #[serde(rename = "confirm_details")]
-    pub publisher_confirmation_details: Rate,
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    pub publisher_confirmation_details: Option<Rate>,
     #[serde(rename = "ack_details")]
-    pub consumer_acknowledgement_details: Rate,
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    pub consumer_acknowledgement_details: Option<Rate>,
 
     #[serde(rename = "drop_unroutable_details")]
-    pub unroutable_dropped_message_details: Rate,
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    pub unroutable_dropped_message_details: Option<Rate>,
     #[serde(rename = "return_unroutable_details")]
-    pub unroutable_returned_message_details: Rate,
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    pub unroutable_returned_message_details: Option<Rate>,
 }
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
@@ -1333,4 +1343,29 @@ where
     D: serde::Deserializer<'de>,
 {
     deserialize_map_or_seq::<RuntimeParameterValue, D>(deserializer)
+}
+
+pub fn deserialize_object_that_may_be_empty<'de, D, T>(
+    deserializer: D,
+) -> Result<Option<T>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+    T: serde::Deserialize<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(
+        untagged,
+        deny_unknown_fields,
+        expecting = "object, empty object or null"
+    )]
+    enum Helper<T> {
+        Data(T),
+        Empty {},
+        Null,
+    }
+    match Helper::deserialize(deserializer) {
+        Ok(Helper::Data(data)) => Ok(Some(data)),
+        Ok(_) => Ok(None),
+        Err(e) => Err(e),
+    }
 }
