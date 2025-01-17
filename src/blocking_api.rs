@@ -26,7 +26,7 @@ use crate::{
         self, BulkUserDelete, EnforcedLimitParams, ExchangeParams, Permissions, PolicyParams,
         QueueParams, RuntimeParameterDefinition, UserParams, VirtualHostParams, XArguments,
     },
-    responses::{self, BindingInfo, DefinitionSet},
+    responses::{self, BindingInfo, DefinitionSet, SchemaDefinitionSyncStatus},
 };
 use backtrace::Backtrace;
 use reqwest::{
@@ -1233,6 +1233,24 @@ where
 
     pub fn oauth_configuration(&self) -> Result<OAuthConfiguration> {
         let response = self.http_get("auth", None, None)?;
+        let response = response.json()?;
+
+        Ok(response)
+    }
+
+    //
+    // Schema Definition Sync (Tanzu RabbitMQ)
+    //
+
+    pub fn schema_definition_sync_status(&self, node: Option<&str>) -> Result<SchemaDefinitionSyncStatus> {
+        let response = match node {
+            Some(val) => {
+                self.http_get(path!("tanzu", "osr", "schema", "status", val), None, None)?
+            }
+            None => {
+                self.http_get("tanzu/osr/schema/status", None, None)?
+            }
+        };
         let response = response.json()?;
 
         Ok(response)

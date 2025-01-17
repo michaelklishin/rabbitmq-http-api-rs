@@ -1121,7 +1121,7 @@ impl From<FeatureFlagState> for String {
     fn from(value: FeatureFlagState) -> Self {
         match value {
             FeatureFlagState::Enabled => "enabled".to_owned(),
-            FeatureFlagState::Disabled => "disbled".to_owned(),
+            FeatureFlagState::Disabled => "disabled".to_owned(),
             FeatureFlagState::StateChanging => "state_changing".to_owned(),
             FeatureFlagState::Unavailable => "unavailable".to_owned(),
         }
@@ -1224,7 +1224,7 @@ impl From<&str> for DeprecationPhase {
     fn from(value: &str) -> Self {
         match value {
             "permitted_by_default" => DeprecationPhase::PermittedByDefault,
-            "denited_by_default" => DeprecationPhase::DeniedByDefault,
+            "denied_by_default" => DeprecationPhase::DeniedByDefault,
             "disconnected" => DeprecationPhase::Disconnected,
             "removed" => DeprecationPhase::Removed,
             _ => DeprecationPhase::Undefined,
@@ -1236,7 +1236,7 @@ impl From<String> for DeprecationPhase {
     fn from(value: String) -> Self {
         match value.as_str() {
             "permitted_by_default" => DeprecationPhase::PermittedByDefault,
-            "denited_by_default" => DeprecationPhase::DeniedByDefault,
+            "denied_by_default" => DeprecationPhase::DeniedByDefault,
             "disconnected" => DeprecationPhase::Disconnected,
             "removed" => DeprecationPhase::Removed,
             _ => DeprecationPhase::Undefined,
@@ -1285,6 +1285,18 @@ pub struct DeprecatedFeature {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(transparent)]
 pub struct DeprecatedFeatureList(pub Vec<DeprecatedFeature>);
+
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+#[allow(dead_code)]
+pub struct SchemaDefinitionSyncStatus {
+    pub node: String,
+    pub upstream_username: String,
+}
+
+//
+// Implementation
+//
 
 fn undefined() -> String {
     "?".to_string()
