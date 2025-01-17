@@ -1242,14 +1242,15 @@ where
     // Schema Definition Sync (Tanzu RabbitMQ)
     //
 
-    pub fn schema_definition_sync_status(&self, node: Option<&str>) -> Result<SchemaDefinitionSyncStatus> {
+    pub fn schema_definition_sync_status(
+        &self,
+        node: Option<&str>,
+    ) -> Result<SchemaDefinitionSyncStatus> {
         let response = match node {
             Some(val) => {
                 self.http_get(path!("tanzu", "osr", "schema", "status", val), None, None)?
             }
-            None => {
-                self.http_get("tanzu/osr/schema/status", None, None)?
-            }
+            None => self.http_get("tanzu/osr/schema/status", None, None)?,
         };
         let response = response.json()?;
 
