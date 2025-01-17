@@ -118,8 +118,8 @@ async fn test_asyncexport_definitions_as_data() {
         q_name
     );
 
-    let _ = rc.delete_exchange("/", x_name, false);
-    let _ = rc.delete_policy("/", qq_pol_name);
+    let _ = rc.delete_exchange("/", x_name, false).await;
+    let _ = rc.delete_policy("/", qq_pol_name).await;
 }
 
 #[tokio::test]
