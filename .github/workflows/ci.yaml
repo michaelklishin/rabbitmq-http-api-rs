@@ -21,7 +21,7 @@ env:
 jobs:
   lint:
     name: Lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v4
@@ -37,10 +37,15 @@ jobs:
 
   build:
     name: Build and test
-    runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust-version: [ stable ]
+        rust-version:
+          - stable
+          - beta
+        runner:
+          - "ubuntu-24.04"
+          - "ubuntu-24.04-arm"
+    runs-on: ${{ matrix.runner }}
 
     services:
       rabbitmq:
@@ -51,7 +56,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Rust
+      - name: Set up Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{ matrix.rust-version }}
