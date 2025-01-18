@@ -66,8 +66,8 @@ jobs:
       - name: Wait for node to start booting
         run: sleep 15
 
-      - name: Configure broker
+      - name: Pre-configure the node
         run: RUST_HTTP_API_CLIENT_RABBITMQCTL=DOCKER:${{job.services.rabbitmq.id}} bin/ci/before_build.sh
 
-      - name: Run tests
+      - name: Run all tests
         run: RUST_BACKTRACE=1 TEST_STATS_DELAY=1500 NEXTEST_RETRIES=4 cargo nextest run --workspace --no-fail-fast --all-features
