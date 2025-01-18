@@ -20,6 +20,11 @@ use std::time::Duration;
 use amqprs::channel::BasicPublishArguments;
 use amqprs::connection::{Connection, OpenConnectionArguments};
 use amqprs::BasicProperties;
+use tokio::time;
+
+//
+// Common
+//
 
 pub const ENDPOINT: &str = "http://localhost:15672/api";
 pub const USERNAME: &str = "guest";
@@ -35,11 +40,28 @@ pub fn hostname() -> String {
     "localhost".to_owned()
 }
 
+//
+// Blocking client tests
+//
+
 pub fn await_metric_emission(ms: u64) {
     std::thread::sleep(Duration::from_millis(ms));
 }
 
 pub fn await_queue_metric_emission() {
+    let delay = env::var("TEST_STATS_DELAY").unwrap_or("500".to_owned());
+    await_metric_emission(delay.parse::<u64>().unwrap());
+}
+
+//
+// Async client tests
+//
+
+pub async fn async_await_metric_emission(ms: u64) {
+    time::sleep(Duration::from_millis(ms)).await;
+}
+
+pub async fn async_await_queue_metric_emission() {
     let delay = env::var("TEST_STATS_DELAY").unwrap_or("500".to_owned());
     await_metric_emission(delay.parse::<u64>().unwrap());
 }
@@ -62,4 +84,6 @@ pub async fn generate_activity() {
             .await
             .unwrap()
     }
+
+    async_await_queue_metric_emission().await;
 }
