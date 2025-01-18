@@ -1,4 +1,3 @@
-use amqprs::connection::{Connection, OpenConnectionArguments};
 // Copyright (C) 2023-2025 RabbitMQ Core Team (teamrabbitmq@gmail.com)
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +11,7 @@ use amqprs::connection::{Connection, OpenConnectionArguments};
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+use amqprs::connection::{Connection, OpenConnectionArguments};
 use rabbitmq_http_client::api::Client;
 
 mod test_helpers;
