@@ -169,6 +169,7 @@ impl<'a> QueueParams<'a> {
 /// Exchange properties used at queue declaration time
 #[derive(Debug, Serialize)]
 pub struct ExchangeParams<'a> {
+    #[serde(skip_serializing)]
     pub name: &'a str,
     #[serde(rename(serialize = "type"))]
     pub exchange_type: ExchangeType,

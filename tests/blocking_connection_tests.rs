@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 use rabbitmq_http_client::blocking_api::Client;
+use rabbitmq_http_client::requests::VirtualHostParams;
 
 mod test_helpers;
 use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
@@ -43,13 +44,20 @@ fn test_list_virtual_host_connections() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
-    let vh_name = "/";
-    let result1 = rc.list_connections_in(vh_name);
+    let vh = "rust/http/api/blocking/test_list_virtual_host_connections";
+    let _ = rc.delete_vhost(vh, true).unwrap();
+
+    let vh_params = VirtualHostParams::named(vh);
+    rc.create_vhost(&vh_params).unwrap();
+
+    let result1 = rc.list_connections_in(vh);
     assert!(
         result1.is_ok(),
         "list_connections_in returned {:?}",
         result1
     );
+
+    let _ = rc.delete_vhost(vh, true).unwrap();
 }
 
 #[test]

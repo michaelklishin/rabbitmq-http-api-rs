@@ -13,6 +13,7 @@
 // limitations under the License.
 use amqprs::connection::{Connection, OpenConnectionArguments};
 use rabbitmq_http_client::api::Client;
+use rabbitmq_http_client::requests::VirtualHostParams;
 
 mod test_helpers;
 use crate::test_helpers::{endpoint, hostname, PASSWORD, USERNAME};
@@ -50,13 +51,20 @@ async fn test_async_list_virtual_host_connections() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
-    let vh_name = "/";
-    let result1 = rc.list_connections_in(vh_name).await;
+    let vh = "rust/http/api/async/test_list_virtual_host_connections";
+    let _ = rc.delete_vhost(vh, true).await.unwrap();
+
+    let vh_params = VirtualHostParams::named(vh);
+    rc.create_vhost(&vh_params).await.unwrap();
+
+    let result1 = rc.list_connections_in(vh).await;
     assert!(
         result1.is_ok(),
         "list_connections_in returned {:?}",
         result1
     );
+
+    let _ = rc.delete_vhost(vh, true).await.unwrap();
 }
 
 #[tokio::test]

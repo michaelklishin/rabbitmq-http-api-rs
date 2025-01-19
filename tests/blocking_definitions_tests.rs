@@ -16,13 +16,16 @@ use rabbitmq_http_client::blocking_api::Client;
 mod test_helpers;
 use crate::test_helpers::{await_metric_emission, endpoint, PASSWORD, USERNAME};
 use rabbitmq_http_client::commons::PolicyTarget;
-use rabbitmq_http_client::requests::{ExchangeParams, PolicyParams, QueueParams};
+use rabbitmq_http_client::requests::{
+    ExchangeParams, PolicyParams, QueueParams, VirtualHostParams,
+};
 use serde_json::{json, Map, Value};
 
 #[test]
 fn test_export_definitions_as_string() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
     let result = rc.export_definitions_as_string();
 
     assert!(
@@ -37,18 +40,24 @@ fn test_export_definitions_as_data() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
+    let vh = "rust/http/api/blocking/definitions";
+    let _ = rc.delete_vhost(vh, true).unwrap();
+
+    let vh_params = VirtualHostParams::named(vh);
+    rc.create_vhost(&vh_params).unwrap();
+
     let x_name = "definitions_test.x.fanout";
     let mut x_args_m = Map::<String, Value>::new();
     x_args_m.insert("x-alternate-exchange".to_owned(), json!("amq.fanout"));
     let x_args = Some(x_args_m);
     let xp = ExchangeParams::durable_fanout(x_name, x_args);
-    let _ = rc.declare_exchange("/", &xp);
+    let _ = rc.declare_exchange(vh_params.name, &xp).unwrap();
 
     let qq_pol_name = "definitions_test.policies.qq.length";
     let mut qq_pol_def_m = Map::<String, Value>::new();
     qq_pol_def_m.insert("max-length".to_string(), json!(99));
     let pol_result = rc.declare_policy(&PolicyParams {
-        vhost: "/",
+        vhost: vh_params.name,
         name: qq_pol_name,
         pattern: "definitions.qq.limited",
         apply_to: PolicyTarget::QuorumQueues,
@@ -58,10 +67,13 @@ fn test_export_definitions_as_data() {
     assert!(pol_result.is_ok());
 
     let q_name = "definitions_test.qq.test_export_definitions_as_data";
-    let q_result = rc.declare_queue("/", &QueueParams::new_durable_classic_queue(q_name, None));
+    let q_result = rc.declare_queue(
+        vh_params.name,
+        &QueueParams::new_durable_classic_queue(q_name, None),
+    );
     assert!(q_result.is_ok(), "failed to declare queue {}", q_name);
 
-    let _ = rc.bind_queue("/", q_name, x_name, None, None);
+    let _ = rc.bind_queue(vh_params.name, q_name, x_name, None, None);
     await_metric_emission(1000);
 
     let result = rc.export_definitions_as_data();
@@ -114,8 +126,9 @@ fn test_export_definitions_as_data() {
         q_name
     );
 
-    let _ = rc.delete_exchange("/", x_name, false);
-    let _ = rc.delete_policy("/", qq_pol_name);
+    let _ = rc.delete_exchange(vh, x_name, false).unwrap();
+    let _ = rc.delete_policy(vh, qq_pol_name).unwrap();
+    let _ = rc.delete_vhost(vh, true).unwrap();
 }
 
 #[test]
