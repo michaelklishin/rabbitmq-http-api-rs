@@ -24,10 +24,7 @@ use std::fmt;
 
 use crate::error::Error;
 use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
-use crate::responses::{
-    DeprecatedFeatureList, FeatureFlag, FeatureFlagList, FeatureFlagStability, FeatureFlagState,
-    MessageList,
-};
+use crate::responses::{DeprecatedFeatureList, FeatureFlag, FeatureFlagList, FeatureFlagStability, FeatureFlagState, MessageList, OAuthConfiguration};
 use crate::{
     commons::{BindingDestinationType, SupportedProtocol, UserLimitTarget, VirtualHostLimitTarget},
     path,
@@ -1387,6 +1384,17 @@ where
             .http_get("deprecated-features/used", None, None)
             .await?;
         let response = response.json().await?;
+        Ok(response)
+    }
+
+    //
+    // OAuth 2 Configuration
+    //
+
+    pub async fn oauth_configuration(&self) -> Result<OAuthConfiguration> {
+        let response = self.http_get("auth", None, None).await?;
+        let response = response.json().await?;
+
         Ok(response)
     }
 

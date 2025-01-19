@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-use rabbitmq_http_client::blocking_api::Client;
+use rabbitmq_http_client::api::Client;
 
 mod test_helpers;
 use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
@@ -20,11 +20,11 @@ use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
 // Authentication configuration info
 //
 
-#[test]
-pub fn test_oauth_configuration() {
+#[tokio::test]
+pub async fn test_async_oauth_configuration() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
-    let result = rc.oauth_configuration();
+    let result = rc.oauth_configuration().await;
     assert!(result.is_ok());
 }
