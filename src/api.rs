@@ -24,7 +24,10 @@ use std::fmt;
 
 use crate::error::Error;
 use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
-use crate::responses::{DeprecatedFeatureList, FeatureFlag, FeatureFlagList, FeatureFlagStability, FeatureFlagState, MessageList, OAuthConfiguration};
+use crate::responses::{
+    DeprecatedFeatureList, FeatureFlag, FeatureFlagList, FeatureFlagStability, FeatureFlagState,
+    MessageList, OAuthConfiguration,
+};
 use crate::{
     commons::{BindingDestinationType, SupportedProtocol, UserLimitTarget, VirtualHostLimitTarget},
     path,

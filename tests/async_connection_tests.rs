@@ -29,7 +29,7 @@ async fn test_async_list_connections() {
     let result1 = rc.list_connections().await;
     assert!(result1.is_ok(), "list_connections returned {:?}", result1);
 
-    conn.clone().close().await.unwrap();
+    conn.close().await.unwrap();
 }
 
 #[tokio::test]

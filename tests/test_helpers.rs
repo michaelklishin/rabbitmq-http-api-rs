@@ -86,4 +86,6 @@ pub async fn generate_activity() {
     }
 
     async_await_queue_metric_emission().await;
+
+    conn.close().await.unwrap()
 }
