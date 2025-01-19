@@ -18,6 +18,8 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 #[serde(rename_all(serialize = "lowercase", deserialize = "PascalCase"))]
 pub enum SupportedProtocol {
+    /// Represents the inter-node and CLI tool communication protocol
+    /// (a.k.a. the Erlang distributions protocol)
     Clustering,
     /// Represents both AMQP 1.0 and AMQP 0-9-1 because they share a listener
     #[serde(rename = "amqp")]
@@ -31,36 +33,50 @@ pub enum SupportedProtocol {
     /// Represents the RabbitMQ Stream protocol with TLS enabled
     #[serde(rename = "stream/ssl")]
     StreamWithTLS,
+    /// Represents both MQTTv5 and MQTTv3
     #[serde(rename = "mqtt")]
     MQTT,
+    /// Represents both MQTTv5 and MQTTv3 with TLS enabled
     #[serde(rename = "mqtt/ssl")]
     MQTTWithTLS,
+    /// Represents STOMP 1.0 through 1.2
     #[serde(rename = "stomp")]
     STOMP,
+    /// Represents STOMP 1.0 through 1.2 with TLS enabled
     #[serde(rename = "stomp/ssl")]
     STOMPWithTLS,
+    /// Represents AMQP 1.0 over WebSockets
     #[serde(rename = "http/web-amqp")]
-    // Represents AMQP 1.0 over WebSockets
     AMQPOverWebSockets,
-    // Represents AMQP 1.0 over WebSockets with TLS enabled
+    /// Represents AMQP 1.0 over WebSockets with TLS enabled
     #[serde(rename = "https/web-amqp")]
     AMQPOverWebSocketsWithTLS,
+    /// Represents both MQTTv5 and MQTTv3 over WebSockets
     #[serde(rename = "http/web-mqtt")]
     MQTTOverWebSockets,
+    /// Represents both MQTTv5 and MQTTv3 over WebSockets with TLS enabled
     #[serde(rename = "https/web-mqtt")]
     MQTTOverWebSocketsWithTLS,
+    /// Represents STOMP 1.0 through 1.2 over WebSockets
     #[serde(rename = "http/web-stomp")]
     STOMPOverWebsockets,
+    /// Represents STOMP 1.0 through 1.2 over WebSockets with TLS enabled
     #[serde(rename = "https/web-stomp")]
     STOMPOverWebsocketsWithTLS,
+    /// Represents an HTTP endpoint for Prometheus scraping
     #[serde(rename = "http/prometheus")]
     Prometheus,
+    /// Represents an HTTP endpoint for Prometheus scraping with TLS enabled
     #[serde(rename = "https/prometheus")]
     PrometheusWithTLS,
+
+    /// Represents an HTTP API endpoint
     #[serde(rename = "http")]
     HTTP,
+    /// Represents an HTTP API endpoint with TLS enabled
     #[serde(rename = "https")]
     HTTPWithTLS,
+    /// All other protocols, e.g. those coming from 3rd party plugins
     Other(String),
 }
 
