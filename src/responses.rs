@@ -947,6 +947,17 @@ pub struct GetMessage {
 #[serde(transparent)]
 pub struct MessageList(pub Vec<GetMessage>);
 
+#[allow(clippy::partialeq_ne_impl)]
+impl PartialEq for MessageList {
+    fn eq(&self, other: &Self) -> bool {
+        self.0.eq(&other.0)
+    }
+
+    fn ne(&self, other: &Self) -> bool {
+        self.0.ne(&other.0)
+    }
+}
+
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 pub struct MessageRouted {
