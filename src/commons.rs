@@ -88,6 +88,9 @@ const SUPPORTED_PROTOCOL_AMQP_WITH_TLS: &str = "amqps";
 const SUPPORTED_PROTOCOL_STREAM: &str = "stream";
 const SUPPORTED_PROTOCOL_STREAM_WITH_TLS: &str = "stream/ssl";
 
+const SUPPORTED_PROTOCOL_AMQP_OVER_WEBSOCKETS: &str = "http/web-amqp";
+const SUPPORTED_PROTOCOL_AMQP_OVER_WEBSOCKETS_WITH_TLS: &str = "https/web-amqp";
+
 const SUPPORTED_PROTOCOL_MQTT: &str = "mqtt";
 const SUPPORTED_PROTOCOL_MQTT_WITH_TLS: &str = "mqtt/ssl";
 const SUPPORTED_PROTOCOL_MQTT_OVER_WEBSOCKETS: &str = "http/web-mqtt";
@@ -116,6 +119,10 @@ impl From<&str> for SupportedProtocol {
             SUPPORTED_PROTOCOL_MQTT_WITH_TLS => SupportedProtocol::MQTTWithTLS,
             SUPPORTED_PROTOCOL_STOMP => SupportedProtocol::STOMP,
             SUPPORTED_PROTOCOL_STOMP_WITH_TLS => SupportedProtocol::STOMPWithTLS,
+            SUPPORTED_PROTOCOL_AMQP_OVER_WEBSOCKETS => SupportedProtocol::AMQPOverWebSockets,
+            SUPPORTED_PROTOCOL_AMQP_OVER_WEBSOCKETS_WITH_TLS => {
+                SupportedProtocol::AMQPOverWebSockets
+            }
             SUPPORTED_PROTOCOL_MQTT_OVER_WEBSOCKETS => SupportedProtocol::MQTTOverWebSockets,
             SUPPORTED_PROTOCOL_MQTT_OVER_WEBSOCKETS_WITH_TLS => {
                 SupportedProtocol::MQTTOverWebSocketsWithTLS
@@ -151,6 +158,12 @@ impl From<SupportedProtocol> for String {
             SupportedProtocol::MQTTWithTLS => SUPPORTED_PROTOCOL_MQTT_WITH_TLS.to_owned(),
             SupportedProtocol::STOMP => SUPPORTED_PROTOCOL_STOMP.to_owned(),
             SupportedProtocol::STOMPWithTLS => SUPPORTED_PROTOCOL_STOMP_WITH_TLS.to_owned(),
+            SupportedProtocol::AMQPOverWebSockets => {
+                SUPPORTED_PROTOCOL_AMQP_OVER_WEBSOCKETS.to_owned()
+            }
+            SupportedProtocol::AMQPOverWebSocketsWithTLS => {
+                SUPPORTED_PROTOCOL_AMQP_OVER_WEBSOCKETS_WITH_TLS.to_owned()
+            }
             SupportedProtocol::MQTTOverWebSockets => {
                 SUPPORTED_PROTOCOL_MQTT_OVER_WEBSOCKETS.to_owned()
             }
@@ -186,6 +199,12 @@ impl From<&SupportedProtocol> for String {
             SupportedProtocol::MQTTWithTLS => SUPPORTED_PROTOCOL_MQTT_WITH_TLS.to_owned(),
             SupportedProtocol::STOMP => SUPPORTED_PROTOCOL_STOMP.to_owned(),
             SupportedProtocol::STOMPWithTLS => SUPPORTED_PROTOCOL_STOMP_WITH_TLS.to_owned(),
+            SupportedProtocol::AMQPOverWebSockets => {
+                SUPPORTED_PROTOCOL_AMQP_OVER_WEBSOCKETS.to_owned()
+            }
+            SupportedProtocol::AMQPOverWebSocketsWithTLS => {
+                SUPPORTED_PROTOCOL_AMQP_OVER_WEBSOCKETS_WITH_TLS.to_owned()
+            }
             SupportedProtocol::MQTTOverWebSockets => {
                 SUPPORTED_PROTOCOL_MQTT_OVER_WEBSOCKETS.to_owned()
             }
