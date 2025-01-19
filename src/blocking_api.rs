@@ -17,7 +17,7 @@ use crate::error::Error;
 use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
 use crate::responses::{
     DeprecatedFeatureList, FeatureFlag, FeatureFlagList, FeatureFlagStability, FeatureFlagState,
-    MessageList, OAuthConfiguration,
+    GetMessage, OAuthConfiguration,
 };
 use crate::{
     commons::{BindingDestinationType, SupportedProtocol, UserLimitTarget, VirtualHostLimitTarget},
@@ -1148,8 +1148,8 @@ where
         queue: &str,
         count: u32,
         ack_mode: &str,
-    ) -> Result<MessageList> {
-        let body = serde_json::json!({
+    ) -> Result<Vec<GetMessage>> {
+        let body = json!({
           "count": count,
           "ackmode": ack_mode,
           "encoding": "auto"

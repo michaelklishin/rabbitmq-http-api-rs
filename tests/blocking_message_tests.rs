@@ -11,7 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-use rabbitmq_http_client::responses::MessageList;
 use rabbitmq_http_client::{
     blocking_api::Client,
     requests::{self, QueueParams},
@@ -57,7 +56,7 @@ fn test_publish_and_get() {
     let msg_list = result5.unwrap();
     assert_eq!(
         msg_list,
-        MessageList(vec![GetMessage {
+        vec![GetMessage {
             payload_bytes: 11,
             redelivered: false,
             exchange: "".to_owned(),
@@ -66,7 +65,7 @@ fn test_publish_and_get() {
             properties: MessageProperties::default(),
             payload: "rust test 1".to_owned(),
             payload_encoding: "string".to_owned()
-        }])
+        }]
     );
 
     let result7 = rc.get_messages(vhost, queue, 1, "ack_requeue_false");
@@ -76,7 +75,7 @@ fn test_publish_and_get() {
     let msg_list2 = result7.unwrap();
     assert_eq!(
         msg_list2,
-        MessageList(vec![GetMessage {
+        vec![GetMessage {
             payload_bytes: 11,
             redelivered: false,
             exchange: "".to_owned(),
@@ -85,7 +84,7 @@ fn test_publish_and_get() {
             properties: props,
             payload: "rust test 2".to_owned(),
             payload_encoding: "string".to_owned()
-        }])
+        }]
     );
 
     rc.delete_queue(vhost, queue, false).unwrap();
