@@ -39,6 +39,12 @@ pub enum SupportedProtocol {
     STOMP,
     #[serde(rename = "stomp/ssl")]
     STOMPWithTLS,
+    #[serde(rename = "http/web-amqp")]
+    // Represents AMQP 1.0 over WebSockets
+    AMQPOverWebSockets,
+    // Represents AMQP 1.0 over WebSockets with TLS enabled
+    #[serde(rename = "https/web-amqp")]
+    AMQPOverWebSocketsWithTLS,
     #[serde(rename = "http/web-mqtt")]
     MQTTOverWebSockets,
     #[serde(rename = "https/web-mqtt")]
