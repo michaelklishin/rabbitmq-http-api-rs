@@ -1582,8 +1582,14 @@ where
         server_code_to_accept_or_ignore: Option<StatusCode>,
     ) -> Result<HttpClientResponse> {
         let status = response.status();
-        if status == StatusCode::NOT_FOUND {
-            return Err(NotFound);
+
+        match client_code_to_accept_or_ignore {
+            Some(status_code) if status_code == StatusCode::NOT_FOUND => {}
+            _ => {
+                if status == StatusCode::NOT_FOUND {
+                    return Err(NotFound);
+                }
+            }
         }
 
         if status.is_client_error() {
