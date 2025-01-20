@@ -22,7 +22,7 @@ use rabbitmq_http_client::requests::{
 use serde_json::{json, Map, Value};
 
 #[test]
-fn test_export_definitions_as_string() {
+fn test_blocking_export_definitions_as_string() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -36,7 +36,7 @@ fn test_export_definitions_as_string() {
 }
 
 #[test]
-fn test_export_definitions_as_data() {
+fn test_blocking_export_definitions_as_data() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -132,7 +132,7 @@ fn test_export_definitions_as_data() {
 }
 
 #[test]
-fn test_import_definitions() {
+fn test_blocking_import_definitions() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let _ = rc.delete_queue("/", "imported_queue", false);

@@ -22,7 +22,7 @@ mod test_helpers;
 use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
 
 #[test]
-fn test_publish_and_get() {
+fn test_blocking_publish_and_get() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let vhost = "/";

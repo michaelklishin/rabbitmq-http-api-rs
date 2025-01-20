@@ -22,7 +22,7 @@ mod test_helpers;
 use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
 
 #[test]
-fn test_list_all_user_limits() {
+fn test_blocking_list_all_user_limits() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -60,7 +60,7 @@ fn test_list_all_user_limits() {
 }
 
 #[test]
-fn test_list_user_limits() {
+fn test_blocking_list_user_limits() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 

@@ -18,7 +18,7 @@ mod test_helpers;
 use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
 
 #[test]
-fn test_declare_and_redeclare_a_classic_queue() {
+fn test_blocking_declare_and_redeclare_a_classic_queue() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let vhost = "/";
@@ -45,7 +45,7 @@ fn test_declare_and_redeclare_a_classic_queue() {
 }
 
 #[test]
-fn test_declare_a_quorum_queue() {
+fn test_blocking_declare_a_quorum_queue() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let vhost = "/";
@@ -67,7 +67,7 @@ fn test_declare_a_quorum_queue() {
 }
 
 #[test]
-fn test_declare_a_stream() {
+fn test_blocking_declare_a_stream() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let vhost = "/";
@@ -89,7 +89,7 @@ fn test_declare_a_stream() {
 }
 
 #[test]
-fn test_delete_queue() {
+fn test_blocking_delete_queue() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let vhost = "/";
@@ -110,7 +110,7 @@ fn test_delete_queue() {
 }
 
 #[test]
-fn test_list_all_queues() {
+fn test_blocking_list_all_queues() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -129,7 +129,7 @@ fn test_list_all_queues() {
 }
 
 #[test]
-fn test_list_queues_in_a_virtual_host() {
+fn test_blocking_list_queues_in_a_virtual_host() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 

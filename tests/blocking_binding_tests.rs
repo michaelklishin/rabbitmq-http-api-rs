@@ -21,7 +21,7 @@ mod test_helpers;
 use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
 
 #[test]
-fn test_list_all_bindings() {
+fn test_blocking_list_all_bindings() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -53,7 +53,7 @@ fn test_list_all_bindings() {
 }
 
 #[test]
-fn test_list_only_queue_bindings() {
+fn test_blocking_list_only_queue_bindings() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -85,7 +85,7 @@ fn test_list_only_queue_bindings() {
 }
 
 #[test]
-fn test_list_only_exchange_bindings() {
+fn test_blocking_list_only_exchange_bindings() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -148,7 +148,7 @@ fn test_list_only_exchange_bindings() {
 }
 
 #[test]
-fn test_delete_queue_bindings() {
+fn test_blocking_delete_queue_bindings() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -205,7 +205,7 @@ fn test_delete_queue_bindings() {
 }
 
 #[test]
-fn test_delete_exchange_bindings() {
+fn test_blocking_delete_exchange_bindings() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 

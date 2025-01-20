@@ -17,7 +17,7 @@ mod test_helpers;
 use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
 
 #[test]
-fn test_health_check_cluster_wide_alarms() {
+fn test_blocking_health_check_cluster_wide_alarms() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -26,7 +26,7 @@ fn test_health_check_cluster_wide_alarms() {
 }
 
 #[test]
-fn test_health_check_local_alarms() {
+fn test_blocking_health_check_local_alarms() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -35,7 +35,7 @@ fn test_health_check_local_alarms() {
 }
 
 #[test]
-fn test_health_check_node_is_quorum_critical() {
+fn test_blocking_health_check_node_is_quorum_critical() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -44,7 +44,7 @@ fn test_health_check_node_is_quorum_critical() {
 }
 
 #[test]
-fn test_health_check_port_listener_succeeds() {
+fn test_blocking_health_check_port_listener_succeeds() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -53,7 +53,7 @@ fn test_health_check_port_listener_succeeds() {
 }
 
 #[test]
-fn test_health_check_port_listener_fails() {
+fn test_blocking_health_check_port_listener_fails() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -62,7 +62,7 @@ fn test_health_check_port_listener_fails() {
 }
 
 #[test]
-fn test_health_check_protocol_listener_succeeds() {
+fn test_blocking_health_check_protocol_listener_succeeds() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -77,7 +77,7 @@ fn test_health_check_protocol_listener_succeeds() {
 }
 
 #[test]
-fn test_health_check_protocol_listener_fails() {
+fn test_blocking_health_check_protocol_listener_fails() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 

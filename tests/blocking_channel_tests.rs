@@ -17,7 +17,7 @@ mod test_helpers;
 use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
 
 #[test]
-fn test_list_channels() {
+fn test_blocking_list_channels() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -26,7 +26,7 @@ fn test_list_channels() {
 }
 
 #[test]
-fn test_list_virtual_host_channels() {
+fn test_blocking_list_virtual_host_channels() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 

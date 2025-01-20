@@ -17,7 +17,7 @@ mod test_helpers;
 use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
 
 #[test]
-fn test_list_stream_consumers() {
+fn test_blocking_list_stream_consumers() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -30,7 +30,7 @@ fn test_list_stream_consumers() {
 }
 
 #[test]
-fn test_list_virtual_host_stream_consumers() {
+fn test_blocking_list_virtual_host_stream_consumers() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 

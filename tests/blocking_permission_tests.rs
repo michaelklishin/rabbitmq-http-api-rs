@@ -19,7 +19,7 @@ mod test_helpers;
 use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
 
 #[test]
-fn test_list_permissions() {
+fn test_blocking_list_permissions() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -45,7 +45,7 @@ fn test_list_permissions() {
 }
 
 #[test]
-fn test_list_permissions_in() {
+fn test_blocking_list_permissions_in() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -71,7 +71,7 @@ fn test_list_permissions_in() {
 }
 
 #[test]
-fn test_list_permissions_of() {
+fn test_blocking_list_permissions_of() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -97,7 +97,7 @@ fn test_list_permissions_of() {
 }
 
 #[test]
-fn test_get_permissions() {
+fn test_blocking_get_permissions() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -129,7 +129,7 @@ fn test_get_permissions() {
 }
 
 #[test]
-fn test_grant_permissions() {
+fn test_blocking_grant_permissions() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 

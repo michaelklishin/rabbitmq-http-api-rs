@@ -17,7 +17,7 @@ mod test_helpers;
 use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
 
 #[test]
-fn test_list_users() {
+fn test_blocking_list_users() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let result = rc.list_users();
@@ -28,7 +28,7 @@ fn test_list_users() {
 }
 
 #[test]
-fn test_list_users_without_permissions() {
+fn test_blocking_list_users_without_permissions() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let test_name = "test_list_users_without_permissions";
@@ -59,7 +59,7 @@ fn test_list_users_without_permissions() {
 }
 
 #[test]
-fn test_get_user() {
+fn test_blocking_get_user() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let name = "guest";
@@ -71,7 +71,7 @@ fn test_get_user() {
 }
 
 #[test]
-fn test_user_creation() {
+fn test_blocking_user_creation() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -89,7 +89,7 @@ fn test_user_creation() {
 }
 
 #[test]
-fn test_user_deletion() {
+fn test_blocking_user_deletion() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -111,7 +111,7 @@ fn test_user_deletion() {
 }
 
 #[test]
-fn test_bulk_user_deletion() {
+fn test_blocking_bulk_user_deletion() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 

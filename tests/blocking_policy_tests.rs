@@ -22,7 +22,7 @@ mod test_helpers;
 use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
 
 #[test]
-fn test_message_ttl_policy() {
+fn test_blocking_message_ttl_policy() {
     let endpoint = endpoint();
     let rc = Client::new(endpoint.as_str(), USERNAME, PASSWORD);
 
@@ -49,7 +49,7 @@ fn test_message_ttl_policy() {
 }
 
 #[test]
-fn test_dlx_policy() {
+fn test_blocking_dlx_policy() {
     let endpoint = endpoint();
     let rc = Client::new(endpoint.as_str(), USERNAME, PASSWORD);
 
@@ -76,7 +76,7 @@ fn test_dlx_policy() {
 }
 
 #[test]
-fn test_operator_policy() {
+fn test_blocking_operator_policy() {
     let endpoint = endpoint();
     let rc = Client::new(endpoint.as_str(), USERNAME, PASSWORD);
 

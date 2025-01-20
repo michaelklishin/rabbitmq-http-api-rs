@@ -17,7 +17,7 @@ mod test_helpers;
 use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
 
 #[test]
-fn test_list_nodes() {
+fn test_blocking_list_nodes() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let result = rc.list_nodes();
@@ -28,7 +28,7 @@ fn test_list_nodes() {
 }
 
 #[test]
-fn test_get_node_info() {
+fn test_blocking_get_node_info() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let nodes = rc.list_nodes().unwrap();

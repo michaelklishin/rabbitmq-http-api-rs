@@ -11,6 +11,18 @@ for running tests is [cargo-nextest](https://nexte.st/).
 NEXTEST_RETRIES=3 cargo nextest run --all-features
 ```
 
+### Run All Async Client Tests
+
+```bash
+cargo test async --all-features
+```
+
+### Run All Sync Client Tests
+
+```bash
+cargo test blocking --all-features
+```
+
 ### Run a Specific Test
 
 ``` bash

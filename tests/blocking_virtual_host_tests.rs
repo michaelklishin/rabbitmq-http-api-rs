@@ -17,7 +17,7 @@ mod test_helpers;
 use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
 
 #[test]
-fn test_list_vhosts() {
+fn test_blocking_list_vhosts() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let result = rc.list_vhosts();
@@ -28,7 +28,7 @@ fn test_list_vhosts() {
 }
 
 #[test]
-fn test_get_vhost() {
+fn test_blocking_get_vhost() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let name = "/";
@@ -40,7 +40,7 @@ fn test_get_vhost() {
 }
 
 #[test]
-fn test_create_vhost() {
+fn test_blocking_create_vhost() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let name = "rust_test_create_vhost";
@@ -70,7 +70,7 @@ fn test_create_vhost() {
 }
 
 #[test]
-fn test_update_vhost() {
+fn test_blocking_update_vhost() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let name = "rust_test_update_vhost";
@@ -108,7 +108,7 @@ fn test_update_vhost() {
 }
 
 #[test]
-fn test_delete_vhost() {
+fn test_blocking_delete_vhost() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let name = "rust_test_delete_vhost";

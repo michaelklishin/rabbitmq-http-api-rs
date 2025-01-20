@@ -17,7 +17,7 @@ mod test_helpers;
 use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
 
 #[test]
-fn test_get_cluster_name() {
+fn test_blocking_get_cluster_name() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -30,7 +30,7 @@ fn test_get_cluster_name() {
 }
 
 #[test]
-fn test_set_cluster_name() {
+fn test_blocking_set_cluster_name() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 

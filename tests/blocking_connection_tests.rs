@@ -18,7 +18,7 @@ mod test_helpers;
 use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
 
 #[test]
-fn test_list_connections() {
+fn test_blocking_list_connections() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -27,7 +27,7 @@ fn test_list_connections() {
 }
 
 #[test]
-fn test_list_user_connections() {
+fn test_blocking_list_user_connections() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -40,7 +40,7 @@ fn test_list_user_connections() {
 }
 
 #[test]
-fn test_list_virtual_host_connections() {
+fn test_blocking_list_virtual_host_connections() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -61,7 +61,7 @@ fn test_list_virtual_host_connections() {
 }
 
 #[test]
-fn test_list_stream_connections() {
+fn test_blocking_list_stream_connections() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -74,7 +74,7 @@ fn test_list_stream_connections() {
 }
 
 #[test]
-fn test_list_virtual_host_stream_connections() {
+fn test_blocking_list_virtual_host_stream_connections() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 

@@ -21,7 +21,7 @@ use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
 //
 
 #[test]
-pub fn test_oauth_configuration() {
+pub fn test_blocking_oauth_configuration() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 

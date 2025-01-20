@@ -20,7 +20,7 @@ mod test_helpers;
 use crate::test_helpers::{await_metric_emission, endpoint, PASSWORD, USERNAME};
 
 #[test]
-fn test_upsert_runtime_parameter() {
+fn test_blocking_upsert_runtime_parameter() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -52,7 +52,7 @@ fn test_upsert_runtime_parameter() {
 }
 
 #[test]
-fn test_clear_runtime_parameter() {
+fn test_blocking_clear_runtime_parameter() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -84,7 +84,7 @@ fn test_clear_runtime_parameter() {
 }
 
 #[test]
-fn test_deserialize_sequence_value() {
+fn test_blocking_deserialize_sequence_value() {
     let json = r#"
       {
         "name": "my_param",

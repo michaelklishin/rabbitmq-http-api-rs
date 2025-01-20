@@ -20,7 +20,7 @@ mod test_helpers;
 use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
 
 #[test]
-fn test_list_feature_flags() {
+fn test_blocking_list_feature_flags() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let result = rc.list_feature_flags();
@@ -34,7 +34,7 @@ fn test_list_feature_flags() {
 }
 
 #[test]
-fn test_enable_a_feature_flag() {
+fn test_blocking_enable_a_feature_flag() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let ff_name = "detailed_queues_endpoint";
@@ -53,7 +53,7 @@ fn test_enable_a_feature_flag() {
 }
 
 #[test]
-fn test_enable_all_stable_feature_flags() {
+fn test_blocking_enable_all_stable_feature_flags() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let ff_name = "rabbitmq_4.0.0";

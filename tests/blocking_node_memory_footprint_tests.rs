@@ -19,7 +19,7 @@ use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
 use regex::Regex;
 
 #[test]
-fn test_get_node_memory_footprint() {
+fn test_blocking_get_node_memory_footprint() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let nodes = rc.list_nodes().unwrap();

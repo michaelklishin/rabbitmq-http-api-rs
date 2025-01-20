@@ -18,7 +18,7 @@ mod test_helpers;
 use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
 
 #[test]
-fn test_list_all_deprecated_features() {
+fn test_blocking_list_all_deprecated_features() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let result = rc.list_all_deprecated_features();
@@ -32,7 +32,7 @@ fn test_list_all_deprecated_features() {
 }
 
 #[test]
-fn test_list_deprecated_features_in_use() {
+fn test_blocking_list_deprecated_features_in_use() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let vh = "/";

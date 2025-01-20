@@ -22,32 +22,32 @@ use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
 use rabbitmq_http_client::commons::ExchangeType;
 
 #[test]
-fn test_declare_a_durable_fanout_exchange() {
+fn test_blocking_declare_a_durable_fanout_exchange() {
     test_declare_a_durable_exchange_of_type("rust.tests.fanout.1", ExchangeType::Fanout);
 }
 
 #[test]
-fn test_declare_a_durable_topic_exchange() {
+fn test_blocking_declare_a_durable_topic_exchange() {
     test_declare_a_durable_exchange_of_type("rust.tests.topic.1", ExchangeType::Topic);
 }
 
 #[test]
-fn test_declare_a_durable_direct_exchange() {
+fn test_blocking_declare_a_durable_direct_exchange() {
     test_declare_a_durable_exchange_of_type("rust.tests.direct.1", ExchangeType::Direct);
 }
 
 #[test]
-fn test_declare_a_durable_headers_exchange() {
+fn test_blocking_declare_a_durable_headers_exchange() {
     test_declare_a_durable_exchange_of_type("rust.tests.headers.1", ExchangeType::Headers);
 }
 
 #[test]
-fn test_declare_a_durable_local_random_exchange() {
+fn test_blocking_declare_a_durable_local_random_exchange() {
     test_declare_a_durable_exchange_of_type("rust.tests.local-rnd.1", ExchangeType::LocalRandom);
 }
 
 #[test]
-fn test_declare_a_durable_custom_exchange_type() {
+fn test_blocking_declare_a_durable_custom_exchange_type() {
     // This is a core type that's not in the AMQP 0-9-1 spec,
     // using it requiring additional plugins on the node
     test_declare_a_durable_exchange_of_type(
@@ -89,7 +89,7 @@ fn test_declare_a_durable_exchange_of_type(name: &str, typ: ExchangeType) {
 }
 
 #[test]
-fn test_delete_exchange() {
+fn test_blocking_delete_exchange() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let vhost = "/";
@@ -111,7 +111,7 @@ fn test_delete_exchange() {
 }
 
 #[test]
-fn test_list_all_exchanges() {
+fn test_blocking_list_all_exchanges() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -120,7 +120,7 @@ fn test_list_all_exchanges() {
 }
 
 #[test]
-fn test_list_exchanges_in_a_virtual_host() {
+fn test_blocking_list_exchanges_in_a_virtual_host() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
