@@ -979,19 +979,6 @@ pub struct ChurnRates {
     pub channel_created: u32,
     pub channel_closed: u32,
 }
-impl fmt::Display for ChurnRates {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "connection_created: {}", self.connection_created)?;
-        writeln!(f, "connection_closed: {}", self.connection_closed)?;
-        writeln!(f, "queue_declared: {}", self.queue_declared)?;
-        writeln!(f, "queue_created: {}", self.queue_created)?;
-        writeln!(f, "queue_deleted: {}", self.queue_deleted)?;
-        writeln!(f, "channel_created: {}", self.channel_created)?;
-        writeln!(f, "channel_closed: {}", self.channel_closed)?;
-
-        Ok(())
-    }
-}
 
 #[derive(Debug, Deserialize, Clone, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
@@ -1297,12 +1284,76 @@ pub struct DeprecatedFeature {
 #[serde(transparent)]
 pub struct DeprecatedFeatureList(pub Vec<DeprecatedFeature>);
 
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum OperatingMode {
+    Upstream,
+    Downstream,
+}
+
+impl From<OperatingMode> for String {
+    fn from(value: OperatingMode) -> Self {
+        match value {
+            OperatingMode::Upstream => "upstream".to_string(),
+            OperatingMode::Downstream => "downstream".to_string(),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum SchemaDefinitionSyncState {
+    Recover,
+    Connected,
+    PublisherInitialized,
+    Syncing,
+    Disconnected,
+}
+
+impl From<String> for SchemaDefinitionSyncState {
+    fn from(value: String) -> Self {
+        match value.as_str() {
+            "recover" => SchemaDefinitionSyncState::Recover,
+            "connected" => SchemaDefinitionSyncState::Connected,
+            "publisher_initialized" => SchemaDefinitionSyncState::PublisherInitialized,
+            "syncing" => SchemaDefinitionSyncState::Syncing,
+            "disconnected" => SchemaDefinitionSyncState::Disconnected,
+            _ => SchemaDefinitionSyncState::Recover,
+        }
+    }
+}
+
+impl From<SchemaDefinitionSyncState> for String {
+    fn from(value: SchemaDefinitionSyncState) -> Self {
+        match value {
+            SchemaDefinitionSyncState::Recover => "recover".to_string(),
+            SchemaDefinitionSyncState::Connected => "connected".to_string(),
+            SchemaDefinitionSyncState::PublisherInitialized => "publisher initialized".to_string(),
+            SchemaDefinitionSyncState::Syncing => "syncing".to_string(),
+            SchemaDefinitionSyncState::Disconnected => "disconnected".to_string(),
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+#[serde(transparent)]
+pub struct HostnamePortPairs(pub Vec<String>);
+
+impl From<HostnamePortPairs> for String {
+    fn from(value: HostnamePortPairs) -> Self {
+        value.0.join(", ")
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct SchemaDefinitionSyncStatus {
     pub node: String,
+    pub operating_mode: OperatingMode,
+    pub state: SchemaDefinitionSyncState,
     pub upstream_username: String,
+    pub upstream_endpoints: HostnamePortPairs,
 }
 
 //
@@ -1329,6 +1380,14 @@ where
             formatter.write_str("map")
         }
 
+        fn visit_seq<A>(self, _seq: A) -> Result<Self::Value, A::Error>
+        where
+            A: serde::de::SeqAccess<'de>,
+        {
+            // Treat a sequence as the default for the type.
+            Ok(self.default)
+        }
+
         fn visit_map<A>(self, map: A) -> Result<Self::Value, A::Error>
         where
             A: MapAccess<'de>,
@@ -1336,14 +1395,6 @@ where
             let deserializer = serde::de::value::MapAccessDeserializer::new(map);
             let m = Deserialize::deserialize(deserializer)?;
             Ok(m)
-        }
-
-        fn visit_seq<A>(self, _seq: A) -> Result<Self::Value, A::Error>
-        where
-            A: serde::de::SeqAccess<'de>,
-        {
-            // Treat a sequence as the default for the type.
-            Ok(self.default)
         }
     }
 

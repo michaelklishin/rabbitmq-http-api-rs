@@ -34,6 +34,20 @@ impl Display for Rate {
     }
 }
 
+impl Display for ChurnRates {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "connection_created: {}", self.connection_created)?;
+        writeln!(f, "connection_closed: {}", self.connection_closed)?;
+        writeln!(f, "queue_declared: {}", self.queue_declared)?;
+        writeln!(f, "queue_created: {}", self.queue_created)?;
+        writeln!(f, "queue_deleted: {}", self.queue_deleted)?;
+        writeln!(f, "channel_created: {}", self.channel_created)?;
+        writeln!(f, "channel_closed: {}", self.channel_closed)?;
+
+        Ok(())
+    }
+}
+
 impl Display for QueueTotals {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "all messages: {}", self.messages)?;
@@ -169,6 +183,39 @@ impl Display for GetMessage {
         writeln!(f, "properties: {}", self.properties)?;
 
         Ok(())
+    }
+}
+
+impl Display for SchemaDefinitionSyncState {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            SchemaDefinitionSyncState::Recover => writeln!(f, "recover")?,
+            SchemaDefinitionSyncState::Connected => writeln!(f, "connected")?,
+            SchemaDefinitionSyncState::PublisherInitialized => {
+                writeln!(f, "publisher initialized")?
+            }
+            SchemaDefinitionSyncState::Syncing => writeln!(f, "syncing")?,
+            SchemaDefinitionSyncState::Disconnected => writeln!(f, "disconnected")?,
+        }
+
+        Ok(())
+    }
+}
+
+impl Display for OperatingMode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            OperatingMode::Upstream => writeln!(f, "upstream")?,
+            OperatingMode::Downstream => writeln!(f, "downstream")?,
+        }
+
+        Ok(())
+    }
+}
+
+impl Display for HostnamePortPairs {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt_vertical_list_without_bullets(f, &self.0)
     }
 }
 
