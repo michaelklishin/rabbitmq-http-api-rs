@@ -23,6 +23,8 @@ use serde::{
 use serde_aux::prelude::*;
 use serde_json::Map;
 
+use time::OffsetDateTime;
+
 #[cfg(feature = "tabled")]
 use std::borrow::Cow;
 #[cfg(feature = "tabled")]
@@ -1354,6 +1356,23 @@ pub struct SchemaDefinitionSyncStatus {
     pub state: SchemaDefinitionSyncState,
     pub upstream_username: String,
     pub upstream_endpoints: HostnamePortPairs,
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[serde(default)]
+    pub last_sync_duration: Option<u32>,
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[serde(
+        default,
+        rename = "last_connection_completion_stamp",
+        with = "time::serde::timestamp::option"
+    )]
+    pub last_connection_completion_timestamp: Option<OffsetDateTime>,
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[serde(
+        default,
+        rename = "last_sync_request_stamp",
+        with = "time::serde::timestamp::option"
+    )]
+    pub last_sync_request_timestamp: Option<OffsetDateTime>,
 }
 
 //
