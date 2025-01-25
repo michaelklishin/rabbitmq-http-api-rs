@@ -364,3 +364,12 @@ pub struct Permissions<'a> {
 }
 
 pub type MessageProperties = Map<String, Value>;
+
+#[derive(Serialize, Default)]
+pub struct EmptyPayload;
+
+impl EmptyPayload {
+    pub fn new() -> Self {
+        Self
+    }
+}

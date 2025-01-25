@@ -15,6 +15,7 @@
 
 use crate::error::Error;
 use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
+use crate::requests::EmptyPayload;
 use crate::responses::{
     DeprecatedFeatureList, FeatureFlag, FeatureFlagList, FeatureFlagStability, FeatureFlagState,
     GetMessage, OAuthConfiguration,
@@ -1257,6 +1258,24 @@ where
         Ok(response)
     }
 
+    pub fn enable_schema_definition_sync(&self, node: &str) -> Result<()> {
+        let payload = EmptyPayload::new();
+        self.http_put(
+            path!("tanzu", "osr", "schema", "enable", node),
+            &payload,
+            None,
+            None,
+        )?;
+
+        Ok(())
+    }
+
+    pub fn disable_schema_definition_sync(&self, node: &str) -> Result<()> {
+        self.http_delete(path!("tanzu", "osr", "schema", "disable", node), None, None)?;
+
+        Ok(())
+    }
+
     //
     // Implementation
     //
@@ -1284,7 +1303,7 @@ where
         vhost: &str,
         exchange: &str,
         vertex: BindindVertex,
-    ) -> Result<Vec<responses::BindingInfo>> {
+    ) -> Result<Vec<BindingInfo>> {
         let response = self.http_get(
             path!("exchanges", vhost, exchange, "bindings", vertex),
             None,

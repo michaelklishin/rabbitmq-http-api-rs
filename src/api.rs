@@ -24,9 +24,10 @@ use std::fmt;
 
 use crate::error::Error;
 use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
+use crate::requests::EmptyPayload;
 use crate::responses::{
     DeprecatedFeatureList, FeatureFlag, FeatureFlagList, FeatureFlagStability, FeatureFlagState,
-    GetMessage, OAuthConfiguration,
+    GetMessage, OAuthConfiguration, SchemaDefinitionSyncStatus,
 };
 use crate::{
     commons::{BindingDestinationType, SupportedProtocol, UserLimitTarget, VirtualHostLimitTarget},
@@ -1399,6 +1400,62 @@ where
         let response = response.json().await?;
 
         Ok(response)
+    }
+
+    //
+    // Schema Definition Sync (Tanzu RabbitMQ)
+    //
+
+    pub async fn schema_definition_sync_status(
+        &self,
+        node: Option<&str>,
+    ) -> Result<SchemaDefinitionSyncStatus> {
+        let response = match node {
+            Some(val) => {
+                self.http_get(path!("tanzu", "osr", "schema", "status", val), None, None)
+                    .await?
+            }
+            None => self.http_get("tanzu/osr/schema/status", None, None).await?,
+        };
+        let response = response.json().await?;
+
+        Ok(response)
+    }
+
+    pub async fn enable_schema_definition_sync(&self, node: Option<&str>) -> Result<()> {
+        let payload = EmptyPayload::new();
+        let _ = match node {
+            Some(val) => {
+                self.http_put(
+                    path!("tanzu", "osr", "schema", "enable", val),
+                    &payload,
+                    None,
+                    None,
+                )
+                .await?
+            }
+            None => {
+                self.http_put("tanzu/osr/schema/enable", &payload, None, None)
+                    .await?
+            }
+        };
+
+        Ok(())
+    }
+
+    pub async fn disable_schema_definition_sync(&self, node: Option<&str>) -> Result<()> {
+        let _ = match node {
+            Some(val) => {
+                self.http_delete(path!("tanzu", "osr", "schema", "disable", val), None, None)
+                    .await?
+            }
+            None => {
+                self.http_delete("tanzu/osr/schema/disable", None, None)
+                    .await?
+            }
+        };
+
+        Ok(())
     }
 
     //
