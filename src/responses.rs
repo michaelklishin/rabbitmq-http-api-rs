@@ -1375,6 +1375,65 @@ pub struct SchemaDefinitionSyncStatus {
     pub last_sync_request_timestamp: Option<OffsetDateTime>,
 }
 
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "snake_case")]
+/// Represents a running WSR link state.
+///
+/// There is only one possible option
+/// since stopped links won't be listed by the API.
+pub enum WarmStandbyReplicationLinkState {
+    Running,
+}
+
+impl fmt::Display for WarmStandbyReplicationLinkState {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            WarmStandbyReplicationLinkState::Running => write!(f, "Running"),
+        }
+    }
+}
+
+impl From<String> for WarmStandbyReplicationLinkState {
+    fn from(_value: String) -> Self {
+        // there is only one possible option
+        // since stopped links won't be listed by the API
+        WarmStandbyReplicationLinkState::Running
+    }
+}
+
+impl From<WarmStandbyReplicationLinkState> for String {
+    fn from(value: WarmStandbyReplicationLinkState) -> Self {
+        match value {
+            WarmStandbyReplicationLinkState::Running => "running".to_owned(),
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+#[allow(dead_code)]
+pub struct WarmStandbyReplicationInVirtualHost {
+    pub state: WarmStandbyReplicationLinkState,
+    pub operating_mode: OperatingMode,
+    pub virtual_host: String,
+}
+
+impl fmt::Display for WarmStandbyReplicationInVirtualHost {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "Virtual host: {}", self.virtual_host)?;
+        writeln!(f, "State: {}", self.state)?;
+        writeln!(f, "Operating mode: {}", self.operating_mode)?;
+
+        Ok(())
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+#[serde(transparent)]
+pub struct WarmStandbyReplicationStatus {
+    pub virtual_hosts: Vec<WarmStandbyReplicationInVirtualHost>,
+}
+
 //
 // Implementation
 //

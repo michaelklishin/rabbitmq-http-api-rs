@@ -18,7 +18,7 @@ use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
 use crate::requests::EmptyPayload;
 use crate::responses::{
     DeprecatedFeatureList, FeatureFlag, FeatureFlagList, FeatureFlagStability, FeatureFlagState,
-    GetMessage, OAuthConfiguration,
+    GetMessage, OAuthConfiguration, WarmStandbyReplicationStatus,
 };
 use crate::{
     commons::{BindingDestinationType, SupportedProtocol, UserLimitTarget, VirtualHostLimitTarget},
@@ -1274,6 +1274,17 @@ where
         self.http_delete(path!("tanzu", "osr", "schema", "disable", node), None, None)?;
 
         Ok(())
+    }
+
+    //
+    // Warm Standby Replication (Tanzu RabbitMQ)
+    //
+
+    pub fn warm_standby_replication_status(&self) -> Result<WarmStandbyReplicationStatus> {
+        let response = self.http_get("tanzu/osr/standby/status", None, None)?;
+        let response = response.json()?;
+
+        Ok(response)
     }
 
     //

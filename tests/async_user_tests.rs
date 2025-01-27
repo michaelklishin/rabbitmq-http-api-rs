@@ -31,7 +31,7 @@ async fn test_async_list_users() {
 async fn test_async_list_users_without_permissions() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
-    let test_name = "async_test_list_users_without_permissions";
+    let test_name = "test_async_list_users_without_permissions";
 
     let username = format!("{}.1", test_name);
     rc.delete_user(&username, true)
@@ -41,7 +41,7 @@ async fn test_async_list_users_without_permissions() {
     let salt = password_hashing::salt();
     let password_hash = password_hashing::base64_encoded_salted_password_hash_sha256(
         &salt,
-        "test_list_users_without_permissions.1",
+        "test_async_list_users_without_permissions.1",
     );
     let params = UserParams {
         name: &username,
