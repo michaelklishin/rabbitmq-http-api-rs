@@ -1377,34 +1377,128 @@ pub struct SchemaDefinitionSyncStatus {
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 #[serde(rename_all = "snake_case")]
-/// Represents a running WSR link state.
-///
-/// There is only one possible option
-/// since stopped links won't be listed by the API.
-pub enum WarmStandbyReplicationLinkState {
+/// Represents a running WSR link state
+pub enum WarmStandbyReplicationStateOnUpstream {
     Running,
+    // For all other states. Never returned by the API
+    Unknown,
 }
 
-impl fmt::Display for WarmStandbyReplicationLinkState {
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "snake_case")]
+/// Represents a running WSR link state
+pub enum WarmStandbyReplicationLinkStateOnDownstream {
+    Recover,
+    Connecting,
+    Connected,
+    Disconnected,
+    // For all other states. Never returned by the API
+    Unknown,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(untagged)]
+/// Represents a running WSR link state
+pub enum WarmStandbyReplicationState {
+    Upstream(WarmStandbyReplicationStateOnUpstream),
+    Downstream(WarmStandbyReplicationLinkStateOnDownstream),
+    // For all other states. Never returned by the API
+    Unknown,
+}
+
+impl fmt::Display for WarmStandbyReplicationStateOnUpstream {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            WarmStandbyReplicationLinkState::Running => write!(f, "Running"),
+            WarmStandbyReplicationStateOnUpstream::Running => write!(f, "Running"),
+            WarmStandbyReplicationStateOnUpstream::Unknown => write!(f, "(unknown)"),
         }
     }
 }
 
-impl From<String> for WarmStandbyReplicationLinkState {
-    fn from(_value: String) -> Self {
-        // there is only one possible option
-        // since stopped links won't be listed by the API
-        WarmStandbyReplicationLinkState::Running
+impl fmt::Display for WarmStandbyReplicationLinkStateOnDownstream {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            WarmStandbyReplicationLinkStateOnDownstream::Recover => write!(f, "Recover"),
+            WarmStandbyReplicationLinkStateOnDownstream::Connecting => write!(f, "Connecting"),
+            WarmStandbyReplicationLinkStateOnDownstream::Connected => write!(f, "Connected"),
+            WarmStandbyReplicationLinkStateOnDownstream::Disconnected => write!(f, "Disconnected"),
+            WarmStandbyReplicationLinkStateOnDownstream::Unknown => write!(f, "(unknown)"),
+        }
     }
 }
 
-impl From<WarmStandbyReplicationLinkState> for String {
-    fn from(value: WarmStandbyReplicationLinkState) -> Self {
+impl fmt::Display for WarmStandbyReplicationState {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            WarmStandbyReplicationState::Upstream(val) => write!(f, "{}", val),
+            WarmStandbyReplicationState::Downstream(val) => write!(f, "{}", val),
+            WarmStandbyReplicationState::Unknown => write!(f, "(unknown)"),
+        }
+    }
+}
+
+impl From<String> for WarmStandbyReplicationLinkStateOnDownstream {
+    fn from(value: String) -> Self {
+        match value.as_str() {
+            "recover" => WarmStandbyReplicationLinkStateOnDownstream::Recover,
+            "connecting" => WarmStandbyReplicationLinkStateOnDownstream::Connecting,
+            "connected" => WarmStandbyReplicationLinkStateOnDownstream::Connected,
+            "disconnected" => WarmStandbyReplicationLinkStateOnDownstream::Disconnected,
+            _ => WarmStandbyReplicationLinkStateOnDownstream::Unknown,
+        }
+    }
+}
+
+impl From<String> for WarmStandbyReplicationState {
+    fn from(value: String) -> Self {
+        match value.as_str() {
+            "running" => WarmStandbyReplicationState::Upstream(
+                WarmStandbyReplicationStateOnUpstream::Running,
+            ),
+            "recover" => WarmStandbyReplicationState::Downstream(
+                WarmStandbyReplicationLinkStateOnDownstream::Recover,
+            ),
+            "connecting" => WarmStandbyReplicationState::Downstream(
+                WarmStandbyReplicationLinkStateOnDownstream::Connecting,
+            ),
+            "connected" => WarmStandbyReplicationState::Downstream(
+                WarmStandbyReplicationLinkStateOnDownstream::Connected,
+            ),
+            "disconnected" => WarmStandbyReplicationState::Downstream(
+                WarmStandbyReplicationLinkStateOnDownstream::Disconnected,
+            ),
+            _ => WarmStandbyReplicationState::Unknown,
+        }
+    }
+}
+
+impl From<WarmStandbyReplicationStateOnUpstream> for String {
+    fn from(value: WarmStandbyReplicationStateOnUpstream) -> Self {
         match value {
-            WarmStandbyReplicationLinkState::Running => "running".to_owned(),
+            WarmStandbyReplicationStateOnUpstream::Running => "running".to_owned(),
+            WarmStandbyReplicationStateOnUpstream::Unknown => "(unknown)".to_owned(),
+        }
+    }
+}
+
+impl From<WarmStandbyReplicationLinkStateOnDownstream> for String {
+    fn from(value: WarmStandbyReplicationLinkStateOnDownstream) -> Self {
+        match value {
+            WarmStandbyReplicationLinkStateOnDownstream::Recover => "recover".to_owned(),
+            WarmStandbyReplicationLinkStateOnDownstream::Connecting => "connecting".to_owned(),
+            WarmStandbyReplicationLinkStateOnDownstream::Connected => "connected".to_owned(),
+            WarmStandbyReplicationLinkStateOnDownstream::Disconnected => "disconnected".to_owned(),
+            WarmStandbyReplicationLinkStateOnDownstream::Unknown => "(unknown)".to_owned(),
+        }
+    }
+}
+
+impl From<WarmStandbyReplicationState> for String {
+    fn from(value: WarmStandbyReplicationState) -> Self {
+        match value {
+            WarmStandbyReplicationState::Upstream(val) => String::from(val),
+            WarmStandbyReplicationState::Downstream(val) => String::from(val),
+            WarmStandbyReplicationState::Unknown => "(unknown)".to_owned(),
         }
     }
 }
@@ -1413,12 +1507,25 @@ impl From<WarmStandbyReplicationLinkState> for String {
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct WarmStandbyReplicationInVirtualHost {
-    #[tabled(rename = "Virtual host")]
+    #[cfg_attr(feature = "tabled", tabled(rename = "Virtual host"))]
     pub virtual_host: String,
-    #[tabled(rename = "Operating mode")]
+    #[cfg_attr(feature = "tabled", tabled(rename = "Operating mode"))]
     pub operating_mode: OperatingMode,
-    #[tabled(rename = "Upstream connection state")]
-    pub state: WarmStandbyReplicationLinkState,
+    #[cfg_attr(feature = "tabled", tabled(rename = "Upstream connection state"))]
+    pub state: WarmStandbyReplicationState,
+    #[cfg_attr(
+        feature = "tabled",
+        tabled(display_with = "display_option", rename = "Upstream endpoints")
+    )]
+    pub upstream_endpoints: Option<HostnamePortPairs>,
+    #[cfg_attr(
+        feature = "tabled",
+        tabled(
+            rename = "Upstream connection username",
+            display_with = "display_option"
+        )
+    )]
+    pub upstream_username: Option<String>,
 }
 
 impl fmt::Display for WarmStandbyReplicationInVirtualHost {
