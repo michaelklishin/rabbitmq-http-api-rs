@@ -1413,8 +1413,11 @@ impl From<WarmStandbyReplicationLinkState> for String {
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct WarmStandbyReplicationInVirtualHost {
+    #[tabled(rename = "Virtual host")]
     pub virtual_host: String,
+    #[tabled(rename = "Operating mode")]
     pub operating_mode: OperatingMode,
+    #[tabled(rename = "Upstream connection state")]
     pub state: WarmStandbyReplicationLinkState,
 }
 
