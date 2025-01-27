@@ -1,8 +1,35 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.17.0  (in development)
+## v0.18.0  (in development)
 
 No (documented) changes yet.
+
+
+## v0.17.0  (Jan 27, 2025)
+
+### Enhancements
+
+ * Initial support for Tanzu RabbitMQ Schema Definitions Sync (SDS) operations.
+
+ * Initial support for Tanzu RabbitMQ Warm Standby Replication (WSR) operations.
+
+ * Isolated test suite runs for each client.
+
+   To run only the async client tests, use
+
+   ```bash
+   cargo test async --all-features
+   ```
+
+   To run only the blocking client tests, use
+
+   ```bash
+   cargo test blocking --all-features
+   ```
+
+### Bug Fixes
+
+ *  Async `Client#delete_*` functions now correctly handle `NotFound` responses for idempotent deletes
 
 
 ## v0.16.0  (Jan 15, 2025)
