@@ -1413,9 +1413,9 @@ impl From<WarmStandbyReplicationLinkState> for String {
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct WarmStandbyReplicationInVirtualHost {
-    pub state: WarmStandbyReplicationLinkState,
-    pub operating_mode: OperatingMode,
     pub virtual_host: String,
+    pub operating_mode: OperatingMode,
+    pub state: WarmStandbyReplicationLinkState,
 }
 
 impl fmt::Display for WarmStandbyReplicationInVirtualHost {
