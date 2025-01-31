@@ -2,7 +2,11 @@
 
 ## v0.18.0  (in development)
 
-No (documented) changes yet.
+### Bug Fixes
+
+ * `responses::Connection#channel_max` is now an `Option<u16>` because
+   this metric wont' be available for, say, RabbitMQ Stream Protocol
+   connections
 
 
 ## v0.17.0  (Jan 27, 2025)
