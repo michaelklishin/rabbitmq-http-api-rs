@@ -487,7 +487,8 @@ pub struct Connection {
     #[serde(rename(deserialize = "peer_port"))]
     pub client_port: u32,
     /// Maximum number of channels that can be opened on this connection.
-    pub channel_max: u16,
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    pub channel_max: Option<u16>,
     /// How many channels are opened on this connection.
     #[serde(rename(deserialize = "channels"))]
     #[serde(default)]
