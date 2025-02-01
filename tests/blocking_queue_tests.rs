@@ -67,7 +67,7 @@ fn test_blocking_declare_a_quorum_queue() {
 }
 
 #[test]
-fn test_blocking_declare_a_stream() {
+fn test_blocking_declare_a_stream_with_declare_queue() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let vhost = "/";

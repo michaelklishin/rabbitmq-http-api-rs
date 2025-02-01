@@ -72,8 +72,10 @@ pub struct UserParams<'a> {
 
 pub type XArguments = Option<Map<String, Value>>;
 
-/// [Queue](https://rabbitmq.com/docs/queues/) properties used at queue declaration time
-#[derive(Serialize)]
+/// [Queue](https://rabbitmq.com/docs/queues/) properties used at declaration time.
+/// Prefer constructor functions, they correctly put [`QueueType`] to the optional
+/// argument map.
+#[derive(Serialize, Debug)]
 pub struct QueueParams<'a> {
     /// The name of the queue to declare.
     /// Must be no longer than 255 bytes in length.
@@ -163,6 +165,45 @@ impl<'a> QueueParams<'a> {
         }
 
         Some(result)
+    }
+}
+
+/// [Stream](https://rabbitmq.com/docs/streams/) properties used at declaration time
+#[derive(Serialize, Debug)]
+pub struct StreamParams<'a> {
+    /// The name of the stream to declare.
+    /// Must be no longer than 255 bytes in length.
+    pub name: &'a str,
+    pub expiration: &'a str,
+    pub max_length_bytes: Option<u64>,
+    pub max_segment_length_bytes: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub arguments: XArguments,
+}
+
+impl<'a> StreamParams<'a> {
+    pub fn new(name: &'a str, expiration: &'a str) -> Self {
+        Self {
+            name,
+            expiration,
+            max_length_bytes: None,
+            max_segment_length_bytes: None,
+            arguments: None,
+        }
+    }
+
+    pub fn with_expiration_and_length_limit(
+        name: &'a str,
+        expiration: &'a str,
+        max_length_bytes: u64,
+    ) -> Self {
+        Self {
+            name,
+            expiration,
+            max_length_bytes: Some(max_length_bytes),
+            max_segment_length_bytes: None,
+            arguments: None,
+        }
     }
 }
 

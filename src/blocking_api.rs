@@ -15,7 +15,7 @@
 
 use crate::error::Error;
 use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
-use crate::requests::EmptyPayload;
+use crate::requests::{EmptyPayload, StreamParams};
 use crate::responses::{
     DeprecatedFeatureList, FeatureFlag, FeatureFlagList, FeatureFlagStability, FeatureFlagState,
     GetMessage, OAuthConfiguration, WarmStandbyReplicationStatus,
@@ -558,6 +558,11 @@ where
         Ok(response)
     }
 
+    /// Returns information about a stream.
+    pub fn get_stream_info(&self, virtual_host: &str, name: &str) -> Result<responses::QueueInfo> {
+        self.get_queue_info(virtual_host, name)
+    }
+
     /// Returns information about an exchange.
     pub fn get_exchange_info(
         &self,
@@ -610,6 +615,26 @@ where
 
     pub fn declare_queue(&self, vhost: &str, params: &QueueParams) -> Result<()> {
         let _response = self.http_put(path!("queues", vhost, params.name), params, None, None)?;
+        Ok(())
+    }
+
+    pub fn declare_stream(&self, vhost: &str, params: &StreamParams<'_>) -> Result<()> {
+        let mut m: Map<String, Value> = Map::new();
+
+        if let Some(m2) = params.arguments.clone() {
+            m.extend(m2);
+        };
+
+        if let Some(val) = params.max_length_bytes {
+            m.insert("max_length_bytes".to_owned(), json!(val));
+        };
+        if let Some(val) = params.max_segment_length_bytes {
+            m.insert("max_segment_length_bytes".to_owned(), json!(val));
+        };
+
+        let q_params = QueueParams::new_stream(params.name, Some(m));
+        let _response =
+            self.http_put(path!("queues", vhost, params.name), &q_params, None, None)?;
         Ok(())
     }
 
@@ -713,6 +738,10 @@ where
         };
         let _response = self.http_delete(path!("queues", vhost, name), excludes, None)?;
         Ok(())
+    }
+
+    pub fn delete_stream(&self, vhost: &str, name: &str, idempotently: bool) -> Result<()> {
+        self.delete_queue(vhost, name, idempotently)
     }
 
     pub fn delete_exchange(&self, vhost: &str, name: &str, idempotently: bool) -> Result<()> {

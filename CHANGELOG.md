@@ -8,6 +8,13 @@
    this metric wont' be available for, say, RabbitMQ Stream Protocol
    connections
 
+### Enhancements
+
+ * New convenience functions for working with streams: `Client#get_stream_info`, `Client#delete_stream`
+
+ * `Client#declare_stream` and `requests::StreamParams` for convenient
+   stream declaration
+
 
 ## v0.17.0  (Jan 27, 2025)
 
