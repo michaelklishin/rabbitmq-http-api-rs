@@ -1,8 +1,33 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.19.0  (in development)
+## v0.20.0  (in development)
 
 No (documented) changes yet.
+
+
+## v0.19.0 (Feb 1, 2025)
+
+### Refactoring
+
+* `Client#disable_schema_definition_sync` was renamed to `Client#disable_schema_definition_sync_on_node`.
+
+  This breaking change only applies to a function specific to
+  Tanzu RabbitMQ 4.1, a series currently in development.
+
+* `Client#enable_schema_definition_sync` was renamed to `Client#enable_schema_definition_sync_on_node`.
+
+  This breaking change only applies to a function specific to
+  Tanzu RabbitMQ 4.1, a series currently in development.
+
+### Enhancements
+
+* `Client#disable_schema_definition_sync` now disables SDS on all cluster nodes.
+
+  This function is specific to Tanzu RabbitMQ 4.1, a series currently in development.
+
+* `Client#enable_schema_definition_sync` now enables SDS on all cluster nodes.
+
+  This function is specific to Tanzu RabbitMQ 4.1, a series currently in development.
 
 
 ## v0.18.0  (Feb 1, 2025)

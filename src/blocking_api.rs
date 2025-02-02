@@ -1287,7 +1287,7 @@ where
         Ok(response)
     }
 
-    pub fn enable_schema_definition_sync(&self, node: &str) -> Result<()> {
+    pub fn enable_schema_definition_sync_on_node(&self, node: &str) -> Result<()> {
         let payload = EmptyPayload::new();
         self.http_put(
             path!("tanzu", "osr", "schema", "enable", node),
@@ -1299,8 +1299,30 @@ where
         Ok(())
     }
 
-    pub fn disable_schema_definition_sync(&self, node: &str) -> Result<()> {
+    pub fn disable_schema_definition_sync_on_node(&self, node: &str) -> Result<()> {
         self.http_delete(path!("tanzu", "osr", "schema", "disable", node), None, None)?;
+
+        Ok(())
+    }
+
+    pub fn enable_schema_definition_sync(&self) -> Result<()> {
+        let payload = EmptyPayload::new();
+        self.http_put(
+            path!("tanzu", "osr", "schema", "enable-cluster-wide"),
+            &payload,
+            None,
+            None,
+        )?;
+
+        Ok(())
+    }
+
+    pub fn disable_schema_definition_sync(&self) -> Result<()> {
+        self.http_delete(
+            path!("tanzu", "osr", "schema", "disable-cluster-wide"),
+            None,
+            None,
+        )?;
 
         Ok(())
     }
