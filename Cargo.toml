@@ -33,7 +33,7 @@ time = { version = "0.3.37", features = ["serde-human-readable"] }
 
 [dev-dependencies]
 amqprs = {  version = "2"}
-cargo-nextest = { version = "0.9.88", optional = true }
+cargo-nextest = "0.9.88"
 regex = { version = "1", features = ["std"] }
 
 [features]
