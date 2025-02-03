@@ -2,7 +2,10 @@
 
 ## v0.20.0  (in development)
 
-No (documented) changes yet.
+### Enhancements
+
+ * `Client#.close_user_connections` is a new function that closes all connections
+    that authenticated with a specific username
 
 
 ## v0.19.0 (Feb 1, 2025)

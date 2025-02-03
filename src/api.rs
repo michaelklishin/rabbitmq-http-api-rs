@@ -307,6 +307,32 @@ where
         Ok(())
     }
 
+    pub async fn close_user_connections(&self, username: &str, reason: Option<&str>) -> Result<()> {
+        match reason {
+            None => {
+                self.http_delete(
+                    path!("connections", "username", username),
+                    Some(StatusCode::NOT_FOUND),
+                    None,
+                )
+                .await?
+            }
+            Some(value) => {
+                let mut headers = HeaderMap::new();
+                let hdr = HeaderValue::from_str(value)?;
+                headers.insert("X-Reason", hdr);
+                self.http_delete_with_headers(
+                    path!("connections", "username", username),
+                    headers,
+                    None,
+                    None,
+                )
+                .await?
+            }
+        };
+        Ok(())
+    }
+
     /// Lists all connections in the given virtual host.
     pub async fn list_connections_in(
         &self,

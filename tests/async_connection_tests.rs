@@ -1,3 +1,4 @@
+use std::time::Duration;
 // Copyright (C) 2023-2025 RabbitMQ Core Team (teamrabbitmq@gmail.com)
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -92,4 +93,29 @@ async fn test_async_list_virtual_host_stream_connections() {
         "list_stream_connections returned {:?}",
         result1
     );
+}
+
+#[tokio::test]
+async fn test_async_close_user_connections() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let args = OpenConnectionArguments::new(&hostname(), 5672, USERNAME, PASSWORD);
+    let conn = Connection::open(&args).await.unwrap();
+    assert!(conn.is_open());
+
+    let result1 = rc
+        .close_user_connections(
+            USERNAME,
+            Some("closed in test_async_close_user_connections"),
+        )
+        .await;
+    assert!(
+        result1.is_ok(),
+        "close_user_connections returned {:?}",
+        result1
+    );
+
+    tokio::time::sleep(Duration::from_millis(50)).await;
+    assert!(!conn.is_open());
 }

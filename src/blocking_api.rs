@@ -297,6 +297,28 @@ where
         Ok(())
     }
 
+    pub fn close_user_connections(&self, username: &str, reason: Option<&str>) -> Result<()> {
+        match reason {
+            None => self.http_delete(
+                path!("connections", "username", username),
+                Some(StatusCode::NOT_FOUND),
+                None,
+            )?,
+            Some(value) => {
+                let mut headers = HeaderMap::new();
+                let hdr = HeaderValue::from_str(value)?;
+                headers.insert("X-Reason", hdr);
+                self.http_delete_with_headers(
+                    path!("connections", "username", username),
+                    headers,
+                    None,
+                    None,
+                )?
+            }
+        };
+        Ok(())
+    }
+
     /// Lists all connections in the given virtual host.
     pub fn list_connections_in(&self, virtual_host: &str) -> Result<Vec<responses::Connection>> {
         let response = self.http_get(path!("vhosts", virtual_host, "connections"), None, None)?;
