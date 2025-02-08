@@ -20,7 +20,7 @@ No (documented) changes yet.
 
 ### Breaking Changes
 
- * `responses::ClusterDefinitionSet` was renamed to `responses::ClusterDefinitionSet` to
+ * `responses::DefinitionSet` was renamed to `responses::ClusterDefinitionSet` to
    differentiate it from virtual host-specific definitions, which are from now on
    represented by `responses::VirtualHostDefinitionSet`
 
