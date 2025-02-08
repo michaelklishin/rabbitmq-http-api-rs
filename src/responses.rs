@@ -735,6 +735,20 @@ pub struct QueueDefinition {
     pub arguments: XArguments,
 }
 
+/// Used in virtual host-specific definitions.
+/// The virtual host is omitted so that such objects can
+/// be imported into an arbitrary virtual host.
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+#[allow(dead_code)]
+pub struct QueueDefinitionWithoutVirtualHost {
+    pub name: String,
+    pub durable: bool,
+    pub auto_delete: bool,
+    #[cfg_attr(feature = "tabled", tabled(skip))]
+    pub arguments: XArguments,
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
@@ -748,13 +762,45 @@ pub struct ExchangeInfo {
     #[cfg_attr(feature = "tabled", tabled(display_with = "display_arg_table"))]
     pub arguments: XArguments,
 }
-type ExchangeDefinition = ExchangeInfo;
+
+/// Used in virtual host-specific definitions.
+/// The virtual host is omitted so that such objects can
+/// be imported into an arbitrary virtual host.
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+#[allow(dead_code)]
+pub struct ExchangeInfoWithoutVirtualHost {
+    pub name: String,
+    #[serde(rename = "type")]
+    pub exchange_type: String,
+    pub durable: bool,
+    pub auto_delete: bool,
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_arg_table"))]
+    pub arguments: XArguments,
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct BindingInfo {
     pub vhost: String,
+    pub source: String,
+    pub destination: String,
+    pub destination_type: BindingDestinationType,
+    pub routing_key: String,
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_arg_table"))]
+    pub arguments: XArguments,
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    pub properties_key: Option<String>,
+}
+
+/// Used in virtual host-specific definitions.
+/// The virtual host is omitted so that such objects can
+/// be imported into an arbitrary virtual host.
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+#[allow(dead_code)]
+pub struct BindingInfoWithoutVirtualHost {
     pub source: String,
     pub destination: String,
     pub destination_type: BindingDestinationType,
@@ -802,6 +848,19 @@ pub struct RuntimeParameter {
     pub value: RuntimeParameterValue,
 }
 
+/// Used in virtual host-specific definitions.
+/// The virtual host is omitted so that such objects can
+/// be imported into an arbitrary virtual host.
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+#[allow(dead_code)]
+pub struct RuntimeParameterWithoutVirtualHost {
+    pub name: String,
+    pub component: String,
+    #[serde(deserialize_with = "deserialize_runtime_parameter_value")]
+    pub value: RuntimeParameterValue,
+}
+
 #[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct ClusterIdentity {
@@ -834,6 +893,21 @@ pub struct Policy {
     pub definition: PolicyDefinition,
 }
 
+/// Used in virtual host-specific definitions.
+/// The virtual host is omitted so that such objects can
+/// be imported into an arbitrary virtual host.
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+#[allow(dead_code)]
+pub struct PolicyWithoutVirtualHost {
+    pub name: String,
+    pub pattern: String,
+    #[serde(rename(deserialize = "apply-to"))]
+    pub apply_to: PolicyTarget,
+    pub priority: i16,
+    pub definition: PolicyDefinition,
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
@@ -845,9 +919,10 @@ pub struct Permissions {
     pub write: String,
 }
 
+/// Represents definitions of an entire cluster (all virtual hosts).
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[allow(dead_code)]
-pub struct DefinitionSet {
+pub struct ClusterDefinitionSet {
     #[serde(rename(deserialize = "rabbitmq_version"))]
     pub server_version: String,
     pub users: Vec<User>,
@@ -859,8 +934,25 @@ pub struct DefinitionSet {
     pub policies: Vec<Policy>,
 
     pub queues: Vec<QueueDefinition>,
-    pub exchanges: Vec<ExchangeDefinition>,
+    pub exchanges: Vec<ExchangeInfo>,
     pub bindings: Vec<BindingInfo>,
+}
+
+/// Represents definitions of a single virtual host.
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[allow(dead_code)]
+pub struct VirtualHostDefinitionSet {
+    #[serde(rename(deserialize = "rabbitmq_version"))]
+    pub server_version: String,
+    /// All virtual host metadata combined
+    pub metadata: VirtualHostMetadata,
+
+    pub parameters: Vec<RuntimeParameterWithoutVirtualHost>,
+    pub policies: Vec<PolicyWithoutVirtualHost>,
+
+    pub queues: Vec<QueueDefinitionWithoutVirtualHost>,
+    pub exchanges: Vec<ExchangeInfoWithoutVirtualHost>,
+    pub bindings: Vec<BindingInfoWithoutVirtualHost>,
 }
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]

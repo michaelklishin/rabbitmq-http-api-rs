@@ -27,7 +27,8 @@ use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
 use crate::requests::{EmptyPayload, StreamParams};
 use crate::responses::{
     DeprecatedFeatureList, FeatureFlag, FeatureFlagList, FeatureFlagStability, FeatureFlagState,
-    GetMessage, OAuthConfiguration, SchemaDefinitionSyncStatus, WarmStandbyReplicationStatus,
+    GetMessage, OAuthConfiguration, SchemaDefinitionSyncStatus, VirtualHostDefinitionSet,
+    WarmStandbyReplicationStatus,
 };
 use crate::{
     commons::{BindingDestinationType, SupportedProtocol, UserLimitTarget, VirtualHostLimitTarget},
@@ -36,7 +37,7 @@ use crate::{
         self, BulkUserDelete, EnforcedLimitParams, ExchangeParams, Permissions, PolicyParams,
         QueueParams, RuntimeParameterDefinition, UserParams, VirtualHostParams, XArguments,
     },
-    responses::{self, BindingInfo, DefinitionSet},
+    responses::{self, BindingInfo, ClusterDefinitionSet},
 };
 
 pub type HttpClientResponse = reqwest::Response;
@@ -1255,18 +1256,41 @@ where
     //
     // Definitions
 
-    pub async fn export_definitions(&self) -> Result<String> {
-        self.export_definitions_as_string().await
+    pub async fn export_cluster_wide_definitions(&self) -> Result<String> {
+        self.export_cluster_wide_definitions_as_string().await
     }
 
-    pub async fn export_definitions_as_string(&self) -> Result<String> {
+    pub async fn export_cluster_wide_definitions_as_string(&self) -> Result<String> {
         let response = self.http_get("definitions", None, None).await?;
         let response = response.text().await?;
         Ok(response)
     }
 
-    pub async fn export_definitions_as_data(&self) -> Result<DefinitionSet> {
+    pub async fn export_cluster_wide_definitions_as_data(&self) -> Result<ClusterDefinitionSet> {
         let response = self.http_get("definitions", None, None).await?;
+        let response = response.json().await?;
+        Ok(response)
+    }
+
+    pub async fn export_vhost_definitions(&self, vhost: &str) -> Result<String> {
+        self.export_vhost_definitions_as_string(vhost).await
+    }
+
+    pub async fn export_vhost_definitions_as_string(&self, vhost: &str) -> Result<String> {
+        let response = self
+            .http_get(path!("definitions", vhost), None, None)
+            .await?;
+        let response = response.text().await?;
+        Ok(response)
+    }
+
+    pub async fn export_vhost_definitions_as_data(
+        &self,
+        vhost: &str,
+    ) -> Result<VirtualHostDefinitionSet> {
+        let response = self
+            .http_get(path!("definitions", vhost), None, None)
+            .await?;
         let response = response.json().await?;
         Ok(response)
     }

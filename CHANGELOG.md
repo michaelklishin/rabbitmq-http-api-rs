@@ -1,8 +1,32 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.21.0  (in development)
+## v0.22.0  (in development)
 
 No (documented) changes yet.
+
+
+## v0.21.0  (Feb 8, 2025)
+
+### Enhancements
+
+ * `responses::VirtualHostDefinitionSet` is an equivalent of `responses::ClusterDefinitionSet` but adapted
+   for the specific of virtual host-specific definitions, namely the fact that they do not contain
+   virtual hosts, users, or permissions, and objects such as queues or bindings do not have the
+   virtual host field to make it possible to import them into a virtual host with any name
+
+ * `Client#export_vhost_definitions`, `Client#export_vhost_definitions_as_string` and
+   `Client#export_vhost_definitions_as_data` are new functions that export virtual host-specific
+    definitions (as opposed to cluster-wide ones)
+
+### Breaking Changes
+
+ * `responses::ClusterDefinitionSet` was renamed to `responses::ClusterDefinitionSet` to
+   differentiate it from virtual host-specific definitions, which are from now on
+   represented by `responses::VirtualHostDefinitionSet`
+
+ * `Client#export_definitions` was renamed to `Client#export_cluster_wide_definitions`
+ * `Client#export_definitions_as_string` was renamed to `Client#export_cluster_wide_definitions_as_string`
+ * `Client#export_definitions_as_data` was renamed to `Client#export_cluster_wide_definitions_as_data`
 
 
 ## v0.20.0  (Feb 2, 2025)

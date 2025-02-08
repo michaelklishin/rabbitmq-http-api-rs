@@ -18,7 +18,7 @@ use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
 use crate::requests::{EmptyPayload, StreamParams};
 use crate::responses::{
     DeprecatedFeatureList, FeatureFlag, FeatureFlagList, FeatureFlagStability, FeatureFlagState,
-    GetMessage, OAuthConfiguration, WarmStandbyReplicationStatus,
+    GetMessage, OAuthConfiguration, VirtualHostDefinitionSet, WarmStandbyReplicationStatus,
 };
 use crate::{
     commons::{BindingDestinationType, SupportedProtocol, UserLimitTarget, VirtualHostLimitTarget},
@@ -27,7 +27,7 @@ use crate::{
         self, BulkUserDelete, EnforcedLimitParams, ExchangeParams, Permissions, PolicyParams,
         QueueParams, RuntimeParameterDefinition, UserParams, VirtualHostParams, XArguments,
     },
-    responses::{self, BindingInfo, DefinitionSet, SchemaDefinitionSyncStatus},
+    responses::{self, BindingInfo, ClusterDefinitionSet, SchemaDefinitionSyncStatus},
 };
 use backtrace::Backtrace;
 use reqwest::{
@@ -1097,18 +1097,37 @@ where
     //
     // Definitions
 
-    pub fn export_definitions(&self) -> Result<String> {
-        self.export_definitions_as_string()
+    pub fn export_cluster_wide_definitions(&self) -> Result<String> {
+        self.export_cluster_wide_definitions_as_string()
     }
 
-    pub fn export_definitions_as_string(&self) -> Result<String> {
+    pub fn export_cluster_wide_definitions_as_string(&self) -> Result<String> {
         let response = self.http_get("definitions", None, None)?;
         let response = response.text()?;
         Ok(response)
     }
 
-    pub fn export_definitions_as_data(&self) -> Result<DefinitionSet> {
+    pub fn export_cluster_wide_definitions_as_data(&self) -> Result<ClusterDefinitionSet> {
         let response = self.http_get("definitions", None, None)?;
+        let response = response.json()?;
+        Ok(response)
+    }
+
+    pub fn export_vhost_definitions(&self, vhost: &str) -> Result<String> {
+        self.export_vhost_definitions_as_string(vhost)
+    }
+
+    pub fn export_vhost_definitions_as_string(&self, vhost: &str) -> Result<String> {
+        let response = self.http_get(path!("definitions", vhost), None, None)?;
+        let response = response.text()?;
+        Ok(response)
+    }
+
+    pub fn export_vhost_definitions_as_data(
+        &self,
+        vhost: &str,
+    ) -> Result<VirtualHostDefinitionSet> {
+        let response = self.http_get(path!("definitions", vhost), None, None)?;
         let response = response.json()?;
         Ok(response)
     }

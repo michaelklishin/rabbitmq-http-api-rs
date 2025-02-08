@@ -26,8 +26,7 @@ fn test_blocking_export_definitions_as_string() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
-    let result = rc.export_definitions_as_string();
-
+    let result = rc.export_cluster_wide_definitions_as_string();
     assert!(
         result.is_ok(),
         "export_definitions_as_string returned {:?}",
@@ -36,7 +35,7 @@ fn test_blocking_export_definitions_as_string() {
 }
 
 #[test]
-fn test_blocking_export_definitions_as_data() {
+fn test_blocking_export_cluster_wide_definitions_as_data() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -76,8 +75,7 @@ fn test_blocking_export_definitions_as_data() {
     let _ = rc.bind_queue(vh_params.name, q_name, x_name, None, None);
     await_metric_emission(1000);
 
-    let result = rc.export_definitions_as_data();
-
+    let result = rc.export_cluster_wide_definitions_as_data();
     assert!(
         result.is_ok(),
         "export_definitions_as_data returned {:?}",
@@ -101,6 +99,90 @@ fn test_blocking_export_definitions_as_data() {
 
     let u_found = defs.users.iter().any(|x| x.name == "rust3");
     assert!(u_found, "expected to find user {} in definitions", "rust3");
+
+    let x_found = defs.exchanges.iter().any(|x| x.name == x_name);
+    assert!(
+        x_found,
+        "expected to find exchange {} in definitions",
+        x_name
+    );
+
+    let qq_pol_found = defs.policies.iter().any(|p| p.name == qq_pol_name);
+    assert!(
+        qq_pol_found,
+        "expected to find policy {} in definitions",
+        qq_pol_name
+    );
+
+    let b_found = defs
+        .bindings
+        .iter()
+        .any(|b| b.destination_type == "queue".into() && b.destination == q_name);
+    assert!(
+        b_found,
+        "expected to find a binding for queue {} in definitions",
+        q_name
+    );
+
+    let _ = rc.delete_exchange(vh, x_name, false).unwrap();
+    let _ = rc.delete_policy(vh, qq_pol_name).unwrap();
+    let _ = rc.delete_vhost(vh, true).unwrap();
+}
+
+#[test]
+fn test_blocking_export_vhost_definitions_as_data() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let vh = "rust/http/api/blocking/vhost.definitions";
+    let _ = rc.delete_vhost(vh, true).unwrap();
+
+    let vh_params = VirtualHostParams::named(vh);
+    rc.create_vhost(&vh_params).unwrap();
+
+    let x_name = "vhost.definitions_test.x.fanout";
+    let mut x_args_m = Map::<String, Value>::new();
+    x_args_m.insert("x-alternate-exchange".to_owned(), json!("amq.fanout"));
+    let x_args = Some(x_args_m);
+    let xp = ExchangeParams::durable_fanout(x_name, x_args);
+    let _ = rc.declare_exchange(vh_params.name, &xp).unwrap();
+
+    let qq_pol_name = "vhost.definitions_test.policies.qq.length";
+    let mut qq_pol_def_m = Map::<String, Value>::new();
+    qq_pol_def_m.insert("max-length".to_string(), json!(99));
+    let pol_result = rc.declare_policy(&PolicyParams {
+        vhost: vh_params.name,
+        name: qq_pol_name,
+        pattern: "vhost.definitions.qq.limited",
+        apply_to: PolicyTarget::QuorumQueues,
+        priority: 1,
+        definition: Some(qq_pol_def_m),
+    });
+    assert!(pol_result.is_ok());
+
+    let q_name = "vhost.definitions_test.qq.test_export_definitions_as_data";
+    let q_result = rc.declare_queue(
+        vh_params.name,
+        &QueueParams::new_durable_classic_queue(q_name, None),
+    );
+    assert!(q_result.is_ok(), "failed to declare queue {}", q_name);
+
+    let _ = rc.bind_queue(vh_params.name, q_name, x_name, None, None);
+    await_metric_emission(1000);
+
+    let result = rc.export_vhost_definitions_as_data(vh);
+    assert!(
+        result.is_ok(),
+        "export_definitions_as_data returned {:?}",
+        result
+    );
+
+    let defs = result.unwrap();
+
+    assert!(
+        !defs.exchanges.is_empty(),
+        "expected more than zero exchanges in definitions"
+    );
 
     let x_found = defs.exchanges.iter().any(|x| x.name == x_name);
     assert!(
