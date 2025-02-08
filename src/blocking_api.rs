@@ -1133,7 +1133,16 @@ where
     }
 
     pub fn import_definitions(&self, definitions: Value) -> Result<()> {
+        self.import_cluster_wide_definitions(definitions)
+    }
+
+    pub fn import_cluster_wide_definitions(&self, definitions: Value) -> Result<()> {
         self.http_post("definitions", &definitions, None, None)?;
+        Ok(())
+    }
+
+    pub fn import_vhost_definitions(&self, vhost: &str, definitions: Value) -> Result<()> {
+        self.http_post(path!("definitions", vhost), &definitions, None, None)?;
         Ok(())
     }
 

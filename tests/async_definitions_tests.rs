@@ -14,7 +14,9 @@
 use rabbitmq_http_client::api::Client;
 
 mod test_helpers;
-use crate::test_helpers::{await_metric_emission, endpoint, PASSWORD, USERNAME};
+use crate::test_helpers::{
+    await_metric_emission, await_queue_metric_emission, endpoint, PASSWORD, USERNAME,
+};
 use rabbitmq_http_client::commons::PolicyTarget;
 use rabbitmq_http_client::requests::{
     ExchangeParams, PolicyParams, QueueParams, VirtualHostParams,
@@ -227,7 +229,7 @@ async fn test_async_export_vhost_definitions_as_data() {
 }
 
 #[tokio::test]
-async fn test_async_import_definitions() {
+async fn test_async_import_cluster_definitions() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let _ = rc.delete_queue("/", "imported_queue", false).await;
@@ -240,8 +242,12 @@ async fn test_async_import_definitions() {
       }
     ]});
 
-    let result = rc.import_definitions(defs).await;
-    assert!(result.is_ok(), "import_definitions returned {:?}", result);
+    let result = rc.import_cluster_wide_definitions(defs).await;
+    assert!(
+        result.is_ok(),
+        "import_cluster_wide_definitions returned {:?}",
+        result
+    );
 
     let result1 = rc.get_queue_info("/", "imported_queue").await;
     assert!(
@@ -249,4 +255,43 @@ async fn test_async_import_definitions() {
         "can't get the imported queue: {:?}",
         result1
     );
+}
+
+#[tokio::test]
+async fn test_async_import_vhost_definitions() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let vh = "rust/http/api/async/vhost.definitions.import";
+    let _ = rc.delete_vhost(vh, true).await.unwrap();
+
+    let vh_params = VirtualHostParams::named(vh);
+    rc.create_vhost(&vh_params).await.unwrap();
+
+    let q = "imported_queue";
+    let defs = json!({  "queues": [
+      {
+        "auto_delete": false,
+        "durable": true,
+        "name": q,
+      }
+    ]});
+
+    let result = rc.import_vhost_definitions(vh, defs).await;
+    assert!(
+        result.is_ok(),
+        "import_vhost_definitions returned {:?}",
+        result
+    );
+
+    await_queue_metric_emission();
+
+    let result1 = rc.get_queue_info(vh, q).await;
+    assert!(
+        result1.is_ok(),
+        "can't get the imported queue: {:?}",
+        result1
+    );
+
+    let _ = rc.delete_vhost(vh, true).await.unwrap();
 }

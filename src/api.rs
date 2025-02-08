@@ -1296,7 +1296,17 @@ where
     }
 
     pub async fn import_definitions(&self, definitions: Value) -> Result<()> {
+        self.import_cluster_wide_definitions(definitions).await
+    }
+
+    pub async fn import_cluster_wide_definitions(&self, definitions: Value) -> Result<()> {
         self.http_post("definitions", &definitions, None, None)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn import_vhost_definitions(&self, vhost: &str, definitions: Value) -> Result<()> {
+        self.http_post(path!("definitions", vhost), &definitions, None, None)
             .await?;
         Ok(())
     }

@@ -1,11 +1,22 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.22.0  (in development)
+## v0.23.0  (in development)
 
 No (documented) changes yet.
 
 
-## v0.21.0  (Feb 8, 2025)
+## v0.22.0 (Feb 8, 2025)
+
+### Enhancements
+
+ * `Client#import_vhost_definitions` is a new function that imports virtual host-specific
+   definition files (as opposed to cluster-wide ones) into the target virtual host
+
+ * `Client#import_cluster_wide_definitions` is an alias to `Client#import_definitions`
+   to better reflect what it does
+
+
+## v0.21.0 (Feb 8, 2025)
 
 ### Enhancements
 

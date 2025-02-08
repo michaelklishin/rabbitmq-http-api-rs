@@ -14,25 +14,25 @@ This library is relatively young, breaking API changes are possible.
 ### Blocking Client
 
 ```toml
-rabbitmq_http_client = { version = "0.21.0", features = ["core", "blocking"] }
+rabbitmq_http_client = { version = "0.22.0", features = ["core", "blocking"] }
 ```
 
 ### Async Client
 
 ```toml
-rabbitmq_http_client = { version = "0.21.0", features = ["core", "async"] }
+rabbitmq_http_client = { version = "0.22.0", features = ["core", "async"] }
 ```
 
 ### Blocking Client with Tabled Support
 
 ```toml
-rabbitmq_http_client = { version = "0.21.0", features = ["core", "blocking", "tabled"] }
+rabbitmq_http_client = { version = "0.22.0", features = ["core", "blocking", "tabled"] }
 ```
 
 ### Async Client with Tabled Support
 
 ```toml
-rabbitmq_http_client = { version = "0.21.0", features = ["core", "async", "tabled"] }
+rabbitmq_http_client = { version = "0.22.0", features = ["core", "async", "tabled"] }
 ```
 
 
