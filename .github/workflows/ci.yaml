@@ -21,7 +21,12 @@ env:
 jobs:
   lint:
     name: Lint
-    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        runner:
+          - "ubuntu-22.04"
+          - "ubuntu-24.04"
+    runs-on: ${{ matrix.runner }}
 
     steps:
       - uses: actions/checkout@v4
@@ -43,6 +48,7 @@ jobs:
           - stable
           - beta
         runner:
+          - "ubuntu-22.04"
           - "ubuntu-24.04"
           - "ubuntu-24.04-arm"
     runs-on: ${{ matrix.runner }}
