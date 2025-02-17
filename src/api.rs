@@ -1361,6 +1361,16 @@ where
     }
 
     //
+    // Shovels
+    //
+
+    pub async fn list_shovels(&self) -> crate::blocking_api::Result<Vec<responses::Shovel>> {
+        let response = self.http_get("shovels", None, None).await?;
+        let response = response.json().await?;
+        Ok(response)
+    }
+
+    //
     // Publish and consume messages
     //
 

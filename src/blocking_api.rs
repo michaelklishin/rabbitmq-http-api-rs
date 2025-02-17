@@ -1194,6 +1194,16 @@ where
     }
 
     //
+    // Shovels
+    //
+
+    pub fn list_shovels(&self) -> Result<Vec<responses::Shovel>> {
+        let response = self.http_get("shovels", None, None)?;
+        let response = response.json()?;
+        Ok(response)
+    }
+
+    //
     // Publish and consume messages
     //
 

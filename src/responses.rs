@@ -1440,6 +1440,187 @@ impl From<HostnamePortPairs> for String {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+pub enum MessagingProtocol {
+    #[serde(rename = "amqp091")]
+    Amqp091,
+    #[serde(rename = "amqp10")]
+    Amqp10,
+}
+
+impl fmt::Display for MessagingProtocol {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            MessagingProtocol::Amqp091 => write!(f, "AMQP 0-9-1"),
+            MessagingProtocol::Amqp10 => write!(f, "AMQP 1.0"),
+        }
+    }
+}
+
+impl From<String> for MessagingProtocol {
+    fn from(value: String) -> Self {
+        match value.as_str() {
+            "amqp091" => Self::Amqp091,
+            "amqp10" => Self::Amqp10,
+            _ => Self::Amqp10,
+        }
+    }
+}
+
+impl From<MessagingProtocol> for String {
+    fn from(value: MessagingProtocol) -> Self {
+        match value {
+            MessagingProtocol::Amqp091 => "amqp091".to_owned(),
+            MessagingProtocol::Amqp10 => "amqp10".to_owned(),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum ShovelType {
+    Dynamic,
+    Static,
+}
+
+impl fmt::Display for ShovelType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ShovelType::Dynamic => write!(f, "dynamic"),
+            ShovelType::Static => write!(f, "static"),
+        }
+    }
+}
+
+impl From<String> for ShovelType {
+    fn from(value: String) -> Self {
+        match value.as_str() {
+            "dynamic" => ShovelType::Dynamic,
+            "static" => ShovelType::Static,
+            _ => ShovelType::Dynamic,
+        }
+    }
+}
+
+impl From<ShovelType> for String {
+    fn from(value: ShovelType) -> Self {
+        match value {
+            ShovelType::Dynamic => "dynamic".to_owned(),
+            ShovelType::Static => "static".to_owned(),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum ShovelState {
+    Starting,
+    Running,
+    Unknown,
+}
+
+impl fmt::Display for ShovelState {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ShovelState::Starting => write!(f, "starting"),
+            ShovelState::Running => write!(f, "running"),
+            ShovelState::Unknown => write!(f, "unknown"),
+        }
+    }
+}
+
+impl From<String> for ShovelState {
+    fn from(value: String) -> Self {
+        match value.as_str() {
+            "starting" => ShovelState::Starting,
+            "running" => ShovelState::Running,
+            _ => ShovelState::Unknown,
+        }
+    }
+}
+
+impl From<ShovelState> for String {
+    fn from(value: ShovelState) -> Self {
+        match value {
+            ShovelState::Starting => "starting".to_owned(),
+            ShovelState::Running => "running".to_owned(),
+            ShovelState::Unknown => "unknown".to_owned(),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum ShovelPublishingState {
+    Running,
+    Blocked,
+    Unknown,
+}
+
+impl fmt::Display for ShovelPublishingState {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ShovelPublishingState::Running => write!(f, "running"),
+            ShovelPublishingState::Blocked => write!(f, "blocked"),
+            ShovelPublishingState::Unknown => write!(f, "unknown"),
+        }
+    }
+}
+
+impl From<String> for ShovelPublishingState {
+    fn from(value: String) -> Self {
+        match value.as_str() {
+            "running" => ShovelPublishingState::Running,
+            "blocked" => ShovelPublishingState::Blocked,
+            _ => ShovelPublishingState::Unknown,
+        }
+    }
+}
+
+impl From<ShovelPublishingState> for String {
+    fn from(value: ShovelPublishingState) -> Self {
+        match value {
+            ShovelPublishingState::Running => "running".to_owned(),
+            ShovelPublishingState::Blocked => "blocked".to_owned(),
+            ShovelPublishingState::Unknown => "unknown".to_owned(),
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+#[allow(dead_code)]
+pub struct Shovel {
+    pub node: String,
+    pub name: String,
+    pub vhost: String,
+    #[serde(rename = "type")]
+    #[cfg_attr(feature = "tabled", tabled(rename = "type"))]
+    pub typ: ShovelType,
+    pub state: ShovelState,
+
+    #[serde(rename = "src_uri")]
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    pub source_uri: Option<String>,
+    #[serde(rename = "dest_uri")]
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    pub destination_uri: Option<String>,
+    #[serde(rename = "src_queue")]
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    pub source: Option<String>,
+    #[serde(rename = "dest_queue")]
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    pub destination: Option<String>,
+
+    #[serde(rename = "src_protocol")]
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    pub source_protocol: Option<MessagingProtocol>,
+
+    #[serde(rename = "dest_protocol")]
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    pub destination_protocol: Option<MessagingProtocol>,
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
