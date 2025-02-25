@@ -21,7 +21,6 @@ use amqprs::channel::BasicPublishArguments;
 use amqprs::connection::{Connection, OpenConnectionArguments};
 use amqprs::BasicProperties;
 use tokio::time;
-
 //
 // Common
 //
@@ -29,6 +28,8 @@ use tokio::time;
 pub const ENDPOINT: &str = "http://localhost:15672/api";
 pub const USERNAME: &str = "guest";
 pub const PASSWORD: &str = "guest";
+
+pub const AMQP_ENDPOINT: &str = "amqp://localhost:5672";
 
 pub type APIClient<'a> = GenericAPIClient<&'a str, &'a str, &'a str>;
 
@@ -38,6 +39,14 @@ pub fn endpoint() -> String {
 
 pub fn hostname() -> String {
     "localhost".to_owned()
+}
+
+pub fn amqp_endpoint() -> String {
+    AMQP_ENDPOINT.to_owned()
+}
+
+pub fn amqp_endpoint_with_vhost(name: &str) -> String {
+    format!("{0}/{1}", AMQP_ENDPOINT, name).to_owned()
 }
 
 //

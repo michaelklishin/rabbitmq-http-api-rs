@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-use crate::commons::{ExchangeType, PolicyTarget, QueueType};
+use crate::commons::{ExchangeType, PolicyTarget, QueueType, ShovelAcknowledgementMode};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 
@@ -373,10 +373,10 @@ pub type RuntimeParameterValue = Map<String, Value>;
 
 /// Represents a [runtime parameter](https://rabbitmq.com/docs/parameters/).
 #[derive(Serialize, Deserialize)]
-pub struct RuntimeParameterDefinition {
-    pub name: String,
-    pub vhost: String,
-    pub component: String,
+pub struct RuntimeParameterDefinition<'a> {
+    pub name: &'a str,
+    pub vhost: &'a str,
+    pub component: &'a str,
     pub value: RuntimeParameterValue,
 }
 
@@ -402,6 +402,136 @@ pub struct Permissions<'a> {
     pub configure: &'a str,
     pub read: &'a str,
     pub write: &'a str,
+}
+
+pub(crate) const SHOVEL_COMPONENT: &str = "shovel";
+
+/// Represents a dynamic shovel definition.
+#[derive(Serialize)]
+pub struct Amqp091ShovelParams<'a> {
+    pub name: &'a str,
+    pub vhost: &'a str,
+
+    pub acknowledgement_mode: ShovelAcknowledgementMode,
+    pub reconnect_delay: Option<u16>,
+
+    pub source: Amqp091ShovelSourceParams<'a>,
+    pub destination: Amqp091ShovelDestinationParams<'a>,
+}
+
+impl<'a> From<Amqp091ShovelParams<'a>> for RuntimeParameterDefinition<'a> {
+    fn from(params: Amqp091ShovelParams<'a>) -> Self {
+        let mut value = Map::new();
+
+        value.insert("src-uri".to_owned(), json!(params.source.source_uri));
+        if let Some(sq) = params.source.source_queue {
+            value.insert("src-queue".to_owned(), json!(sq));
+        }
+        if let Some(sx) = params.source.source_exchange {
+            value.insert("src-exchange".to_owned(), json!(sx));
+        }
+        if let Some(sxrk) = params.source.source_exchange_routing_key {
+            value.insert("src-exchange-key".to_owned(), json!(sxrk));
+        }
+
+        value.insert(
+            "dest-uri".to_owned(),
+            json!(params.destination.destination_uri),
+        );
+        value.insert("ack-mode".to_owned(), json!(params.acknowledgement_mode));
+
+        if let Some(dq) = params.destination.destination_queue {
+            value.insert("dest-queue".to_owned(), json!(dq));
+        }
+        if let Some(dx) = params.destination.destination_exchange {
+            value.insert("dest-exchange".to_owned(), json!(dx));
+        }
+        if let Some(dxrk) = params.destination.destination_exchange_routing_key {
+            value.insert("dest-exchange-key".to_owned(), json!(dxrk));
+        }
+
+        if let Some(val) = params.reconnect_delay {
+            value.insert("reconnect-delay".to_owned(), json!(val));
+        }
+
+        Self {
+            name: params.name,
+            vhost: params.vhost,
+            component: SHOVEL_COMPONENT,
+            value,
+        }
+    }
+}
+
+#[derive(Serialize)]
+pub struct Amqp091ShovelSourceParams<'a> {
+    pub source_uri: &'a str,
+
+    pub source_queue: Option<&'a str>,
+
+    pub source_exchange: Option<&'a str>,
+    pub source_exchange_routing_key: Option<&'a str>,
+}
+
+impl<'a> Amqp091ShovelSourceParams<'a> {
+    pub fn queue_source(source_uri: &'a str, source_queue: &'a str) -> Self {
+        Self {
+            source_uri,
+            source_queue: Some(source_queue),
+
+            source_exchange: None,
+            source_exchange_routing_key: None,
+        }
+    }
+
+    pub fn exchange_source(
+        source_uri: &'a str,
+        source_exchange: &'a str,
+        source_exchange_routing_key: Option<&'a str>,
+    ) -> Self {
+        Self {
+            source_uri,
+            source_exchange: Some(source_exchange),
+            source_exchange_routing_key,
+
+            source_queue: None,
+        }
+    }
+}
+
+#[derive(Serialize)]
+pub struct Amqp091ShovelDestinationParams<'a> {
+    pub destination_uri: &'a str,
+
+    pub destination_queue: Option<&'a str>,
+    pub destination_exchange: Option<&'a str>,
+    pub destination_exchange_routing_key: Option<&'a str>,
+}
+
+impl<'a> Amqp091ShovelDestinationParams<'a> {
+    pub fn queue_destination(destination_uri: &'a str, destination_queue: &'a str) -> Self {
+        Self {
+            destination_uri,
+            destination_queue: Some(destination_queue),
+
+            destination_exchange: None,
+            destination_exchange_routing_key: None,
+        }
+    }
+
+    pub fn exchange_destination(
+        destination_uri: &'a str,
+        destination_exchange: &'a str,
+        destination_exchange_routing_key: Option<&'a str>,
+    ) -> Self {
+        Self {
+            destination_uri,
+            destination_exchange: Some(destination_exchange),
+            destination_exchange_routing_key,
+
+            destination_queue: None,
+        }
+    }
 }
 
 pub type MessageProperties = Map<String, Value>;

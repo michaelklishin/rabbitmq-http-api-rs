@@ -24,7 +24,7 @@ use std::fmt;
 
 use crate::error::Error;
 use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
-use crate::requests::{EmptyPayload, StreamParams};
+use crate::requests::{Amqp091ShovelParams, EmptyPayload, StreamParams, SHOVEL_COMPONENT};
 use crate::responses::{
     DeprecatedFeatureList, FeatureFlag, FeatureFlagList, FeatureFlagStability, FeatureFlagState,
     GetMessage, OAuthConfiguration, SchemaDefinitionSyncStatus, VirtualHostDefinitionSet,
@@ -993,7 +993,10 @@ where
         Ok(response)
     }
 
-    pub async fn upsert_runtime_parameter(&self, param: &RuntimeParameterDefinition) -> Result<()> {
+    pub async fn upsert_runtime_parameter<'a>(
+        &self,
+        param: &'a RuntimeParameterDefinition<'a>,
+    ) -> Result<()> {
         let _response = self
             .http_put(
                 path!("parameters", param.component, param.vhost, param.name),
@@ -1364,10 +1367,41 @@ where
     // Shovels
     //
 
-    pub async fn list_shovels(&self) -> crate::blocking_api::Result<Vec<responses::Shovel>> {
+    pub async fn list_shovels(&self) -> Result<Vec<responses::Shovel>> {
         let response = self.http_get("shovels", None, None).await?;
         let response = response.json().await?;
         Ok(response)
+    }
+
+    pub async fn declare_amqp091_shovel(&self, params: Amqp091ShovelParams<'_>) -> Result<()> {
+        let runtime_param = RuntimeParameterDefinition::from(params);
+
+        let _response = self
+            .http_put(
+                path!(
+                    "parameters",
+                    SHOVEL_COMPONENT,
+                    runtime_param.vhost,
+                    runtime_param.name
+                ),
+                &runtime_param,
+                None,
+                None,
+            )
+            .await?;
+        Ok(())
+    }
+
+    pub async fn delete_shovel(&self, vhost: &str, name: &str, idempotently: bool) -> Result<()> {
+        let excludes = if idempotently {
+            Some(StatusCode::NOT_FOUND)
+        } else {
+            None
+        };
+        let _response = self
+            .http_delete(path!("shovels", "vhost", vhost, name), excludes, None)
+            .await?;
+        Ok(())
     }
 
     //

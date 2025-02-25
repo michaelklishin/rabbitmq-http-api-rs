@@ -121,14 +121,14 @@ fn max_queue_limit(n: usize) -> Map<String, Value> {
     val
 }
 
-fn example_runtime_parameter_definition(
-    vhost: &str,
+fn example_runtime_parameter_definition<'a>(
+    vhost: &'a str,
     val: &mut Map<String, Value>,
-) -> RuntimeParameterDefinition {
+) -> RuntimeParameterDefinition<'a> {
     RuntimeParameterDefinition {
-        vhost: vhost.to_owned(),
-        name: "limits".to_owned(),
-        component: "vhost-limits".to_owned(),
+        vhost,
+        name: "limits",
+        component: "vhost-limits",
         value: val.clone(),
     }
 }

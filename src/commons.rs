@@ -577,3 +577,36 @@ impl From<UserLimitTarget> for String {
         value.as_ref().to_string()
     }
 }
+
+#[derive(Default, Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
+pub enum ShovelAcknowledgementMode {
+    #[serde(rename = "no-ack")]
+    Immediate,
+    #[serde(rename = "on-publish")]
+    WhenPublished,
+    #[default]
+    #[serde(rename = "on-confirm")]
+    WhenConfirmed,
+}
+
+impl From<&str> for ShovelAcknowledgementMode {
+    fn from(value: &str) -> Self {
+        match value {
+            "no-ack" => ShovelAcknowledgementMode::Immediate,
+            "on-publish" => ShovelAcknowledgementMode::WhenPublished,
+            "on-confirm" => ShovelAcknowledgementMode::WhenConfirmed,
+            _ => ShovelAcknowledgementMode::default(),
+        }
+    }
+}
+
+impl From<String> for ShovelAcknowledgementMode {
+    fn from(value: String) -> Self {
+        match value.as_str() {
+            "no-ack" => ShovelAcknowledgementMode::Immediate,
+            "on-publish" => ShovelAcknowledgementMode::WhenPublished,
+            "on-confirm" => ShovelAcknowledgementMode::WhenConfirmed,
+            _ => ShovelAcknowledgementMode::default(),
+        }
+    }
+}

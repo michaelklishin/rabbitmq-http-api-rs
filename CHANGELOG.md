@@ -2,7 +2,16 @@
 
 ## v0.23.0  (in development)
 
-No (documented) changes yet.
+### Breaking Changes
+
+ * `RuntimeParameterDefinition#name`, `RuntimeParameterDefinition#vhost`, and `RuntimeParameterDefinition#component` types changed from `String` to `&str`
+
+### Enhancements
+
+ * `Client#declare_amqp091_shovel` is a new function that declares a dynamic shovel
+    where both source and destination use AMQP 0-9-1
+
+ * `Client#delete_shovel` is a new function for deleting shovels
 
 
 ## v0.22.0 (Feb 8, 2025)
