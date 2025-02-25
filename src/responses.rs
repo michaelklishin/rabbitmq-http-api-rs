@@ -65,7 +65,7 @@ pub struct StreamConsumer {
     pub consumed: u64,
     pub offset_lag: u64,
     pub offset: u64,
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_arg_table"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_arg_table"))]
     pub properties: XArguments,
 }
 
@@ -370,9 +370,9 @@ impl fmt::Display for NodeMemoryBreakdown {
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 pub struct OAuthConfiguration {
     pub oauth_enabled: bool,
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub oauth_client_id: Option<String>,
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub oauth_provider_url: Option<String>,
 }
 
@@ -396,14 +396,14 @@ pub struct VirtualHost {
     /// Virtual host name
     pub name: String,
     /// Optional tags
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub tags: Option<TagList>,
     /// Optional description
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub description: Option<String>,
     /// Default queue type used in this virtual host when clients
     /// do not explicitly specify one
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub default_queue_type: Option<String>,
     /// All virtual host metadata combined
     #[cfg_attr(feature = "tabled", tabled(skip))]
@@ -487,7 +487,7 @@ pub struct Connection {
     #[serde(rename(deserialize = "peer_port"))]
     pub client_port: u32,
     /// Maximum number of channels that can be opened on this connection.
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub channel_max: Option<u16>,
     /// How many channels are opened on this connection.
     #[serde(rename(deserialize = "channels"))]
@@ -664,7 +664,7 @@ pub struct QueueInfo {
     pub durable: bool,
     pub auto_delete: bool,
     pub exclusive: bool,
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_arg_table"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_arg_table"))]
     pub arguments: XArguments,
 
     #[serde(default = "undefined")]
@@ -672,11 +672,11 @@ pub struct QueueInfo {
     #[serde(default)]
     pub state: String,
     // only quorum queues and streams will have this
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub leader: Option<String>,
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub members: Option<NodeList>,
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub online: Option<NodeList>,
 
     #[serde(default)]
@@ -689,7 +689,7 @@ pub struct QueueInfo {
     #[cfg_attr(feature = "tabled", tabled(skip))]
     pub exclusive_consumer_tag: Option<String>,
 
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub policy: Option<String>,
 
     #[serde(default)]
@@ -759,7 +759,7 @@ pub struct ExchangeInfo {
     pub exchange_type: String,
     pub durable: bool,
     pub auto_delete: bool,
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_arg_table"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_arg_table"))]
     pub arguments: XArguments,
 }
 
@@ -775,7 +775,7 @@ pub struct ExchangeInfoWithoutVirtualHost {
     pub exchange_type: String,
     pub durable: bool,
     pub auto_delete: bool,
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_arg_table"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_arg_table"))]
     pub arguments: XArguments,
 }
 
@@ -788,9 +788,9 @@ pub struct BindingInfo {
     pub destination: String,
     pub destination_type: BindingDestinationType,
     pub routing_key: String,
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_arg_table"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_arg_table"))]
     pub arguments: XArguments,
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub properties_key: Option<String>,
 }
 
@@ -805,9 +805,9 @@ pub struct BindingInfoWithoutVirtualHost {
     pub destination: String,
     pub destination_type: BindingDestinationType,
     pub routing_key: String,
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_arg_table"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_arg_table"))]
     pub arguments: XArguments,
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub properties_key: Option<String>,
 }
 
@@ -1111,31 +1111,31 @@ pub struct QueueTotals {
 pub struct MessageStats {
     /// Consumer delivery rate plus polling (via 'basic.get') rate
     #[serde(rename = "deliver_get_details")]
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub delivery_details: Option<Rate>,
     #[serde(rename = "publish_details")]
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub publishing_details: Option<Rate>,
 
     #[serde(rename = "deliver_no_ack_details")]
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub delivery_with_automatic_acknowledgement_details: Option<Rate>,
     #[serde(rename = "redeliver_details")]
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub redelivery_details: Option<Rate>,
 
     #[serde(rename = "confirm_details")]
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub publisher_confirmation_details: Option<Rate>,
     #[serde(rename = "ack_details")]
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub consumer_acknowledgement_details: Option<Rate>,
 
     #[serde(rename = "drop_unroutable_details")]
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub unroutable_dropped_message_details: Option<Rate>,
     #[serde(rename = "return_unroutable_details")]
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub unroutable_returned_message_details: Option<Rate>,
 }
 
@@ -1166,9 +1166,9 @@ pub struct Overview {
     pub product_version: String,
 
     // these two won't be available in 3.13.x
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_tag_map_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_tag_map_option"))]
     pub cluster_tags: Option<TagMap>,
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_tag_map_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_tag_map_option"))]
     pub node_tags: Option<TagMap>,
 
     pub statistics_db_event_queue: u64,
@@ -1600,24 +1600,24 @@ pub struct Shovel {
     pub state: ShovelState,
 
     #[serde(rename = "src_uri")]
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub source_uri: Option<String>,
     #[serde(rename = "dest_uri")]
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub destination_uri: Option<String>,
     #[serde(rename = "src_queue")]
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub source: Option<String>,
     #[serde(rename = "dest_queue")]
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub destination: Option<String>,
 
     #[serde(rename = "src_protocol")]
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub source_protocol: Option<MessagingProtocol>,
 
     #[serde(rename = "dest_protocol")]
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub destination_protocol: Option<MessagingProtocol>,
 }
 
@@ -1630,17 +1630,17 @@ pub struct SchemaDefinitionSyncStatus {
     pub state: SchemaDefinitionSyncState,
     pub upstream_username: String,
     pub upstream_endpoints: HostnamePortPairs,
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     #[serde(default)]
     pub last_sync_duration: Option<u32>,
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     #[serde(
         default,
         rename = "last_connection_completion_stamp",
         with = "time::serde::timestamp::option"
     )]
     pub last_connection_completion_timestamp: Option<OffsetDateTime>,
-    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     #[serde(
         default,
         rename = "last_sync_request_stamp",
@@ -1789,15 +1789,12 @@ pub struct WarmStandbyReplicationInVirtualHost {
     pub state: WarmStandbyReplicationState,
     #[cfg_attr(
         feature = "tabled",
-        tabled(display_with = "display_option", rename = "Upstream endpoints")
+        tabled(display = "display_option", rename = "Upstream endpoints")
     )]
     pub upstream_endpoints: Option<HostnamePortPairs>,
     #[cfg_attr(
         feature = "tabled",
-        tabled(
-            rename = "Upstream connection username",
-            display_with = "display_option"
-        )
+        tabled(rename = "Upstream connection username", display = "display_option")
     )]
     pub upstream_username: Option<String>,
 }

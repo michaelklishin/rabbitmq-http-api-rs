@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-use rand::distributions::{Alphanumeric, DistString};
+use rand::RngCore;
 use ring::digest::{Context, SHA256};
 
 const SALT_LENGTH: usize = 4;
@@ -21,9 +21,10 @@ const SALT_LENGTH: usize = 4;
 /// See the [Credentials and Passwords guide](https://rabbitmq.com/docs/passwords/).
 pub fn salt() -> Vec<u8> {
     // salts are 32 bit long
-    let sample = Alphanumeric.sample_string(&mut rand::thread_rng(), SALT_LENGTH);
-    let bytes = sample.as_bytes();
-    Vec::from(bytes)
+    let mut buf: [u8; SALT_LENGTH] = [0; SALT_LENGTH];
+    let mut rng = rand::rng();
+    rng.fill_bytes(&mut buf);
+    Vec::from(&buf)
 }
 
 /// Produces a SHA-256 hashed, salted passowrd hash.
