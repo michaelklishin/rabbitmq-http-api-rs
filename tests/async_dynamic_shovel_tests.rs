@@ -13,7 +13,7 @@
 // limitations under the License.
 use rabbitmq_http_client::commons::ShovelAcknowledgementMode;
 use rabbitmq_http_client::requests::{
-    Amqp091ShovelDestinationParams, Amqp091ShovelParams, Amqp091ShovelSourceParams,
+    Amqp091ShovelDestinationParams, Amqp091ShovelParams, Amqp091ShovelSourceParams, QueueParams,
 };
 use rabbitmq_http_client::{api::Client, requests::VirtualHostParams};
 
@@ -23,7 +23,7 @@ use crate::test_helpers::{
 };
 
 #[tokio::test]
-async fn test_declare_a_dynamic_amqp091_shovel() {
+async fn test_async_declare_a_dynamic_amqp091_shovel() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -57,7 +57,86 @@ async fn test_declare_a_dynamic_amqp091_shovel() {
 }
 
 #[tokio::test]
-async fn test_delete_a_dynamic_amqp091_shovel() {
+async fn test_async_declare_a_dynamic_amqp091_shovel_with_predeclared_source_topology() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let vh = "rust.http.api.blocking.test_declare_a_dynamic_amqp091_shovel_with_predeclared_source_topology";
+    let sh = "test_declare_a_dynamic_amqp091_shovel_with_predeclared_source_topology";
+
+    let vh_params = VirtualHostParams::named(vh);
+    let result1 = rc.create_vhost(&vh_params).await;
+    assert!(result1.is_ok());
+
+    let src_q = format!("{0}.src.q", sh);
+    let dest_q = format!("{0}.dest.q", sh);
+
+    let q_params = QueueParams::new_durable_classic_queue(&src_q, None);
+    let result2 = rc.declare_queue(vh, &q_params).await;
+    assert!(result2.is_ok());
+
+    let amqp_endpoint = amqp_endpoint_with_vhost(&vh);
+    let shovel_params = Amqp091ShovelParams {
+        vhost: &vh,
+        name: sh,
+        acknowledgement_mode: ShovelAcknowledgementMode::WhenConfirmed,
+        reconnect_delay: Some(5),
+        source: Amqp091ShovelSourceParams::predeclared_queue_source(&amqp_endpoint, &src_q),
+        destination: Amqp091ShovelDestinationParams::queue_destination(&amqp_endpoint, &dest_q),
+    };
+    let result3 = rc.declare_amqp091_shovel(shovel_params).await;
+    assert!(result3.is_ok());
+
+    await_metric_emission(300);
+    let result4 = rc.get_queue_info(&vh, &src_q).await;
+    assert!(result4.is_ok());
+
+    let _ = rc.delete_vhost(vh_params.name, false).await;
+}
+
+#[tokio::test]
+async fn test_async_declare_a_dynamic_amqp091_shovel_with_predeclared_destination_topology() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let vh = "rust.http.api.blocking.test_declare_a_dynamic_amqp091_shovel_with_predeclared_destination_topology";
+    let sh = "test_declare_a_dynamic_amqp091_shovel_with_predeclared_destination_topology";
+
+    let vh_params = VirtualHostParams::named(vh);
+    let result1 = rc.create_vhost(&vh_params).await;
+    assert!(result1.is_ok());
+
+    let src_q = format!("{0}.src.q", sh);
+    let dest_q = format!("{0}.dest.q", sh);
+
+    let q_params = QueueParams::new_durable_classic_queue(&dest_q, None);
+    let result2 = rc.declare_queue(vh, &q_params).await;
+    assert!(result2.is_ok());
+
+    let amqp_endpoint = amqp_endpoint_with_vhost(&vh);
+    let shovel_params = Amqp091ShovelParams {
+        vhost: &vh,
+        name: sh,
+        acknowledgement_mode: ShovelAcknowledgementMode::WhenConfirmed,
+        reconnect_delay: Some(5),
+        source: Amqp091ShovelSourceParams::queue_source(&amqp_endpoint, &src_q),
+        destination: Amqp091ShovelDestinationParams::predeclared_queue_destination(
+            &amqp_endpoint,
+            &dest_q,
+        ),
+    };
+    let result3 = rc.declare_amqp091_shovel(shovel_params).await;
+    assert!(result3.is_ok());
+
+    await_metric_emission(300);
+    let result4 = rc.get_queue_info(&vh, &dest_q).await;
+    assert!(result4.is_ok());
+
+    let _ = rc.delete_vhost(vh_params.name, false).await;
+}
+
+#[tokio::test]
+async fn test_async_delete_a_dynamic_amqp091_shovel() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 

@@ -450,6 +450,15 @@ impl<'a> From<Amqp091ShovelParams<'a>> for RuntimeParameterDefinition<'a> {
             value.insert("dest-exchange-key".to_owned(), json!(dxrk));
         }
 
+        value.insert(
+            "src-predeclared".to_owned(),
+            json!(params.source.predeclared),
+        );
+        value.insert(
+            "dest-predeclared".to_owned(),
+            json!(params.destination.predeclared),
+        );
+
         if let Some(val) = params.reconnect_delay {
             value.insert("reconnect-delay".to_owned(), json!(val));
         }
@@ -471,6 +480,8 @@ pub struct Amqp091ShovelSourceParams<'a> {
 
     pub source_exchange: Option<&'a str>,
     pub source_exchange_routing_key: Option<&'a str>,
+
+    pub predeclared: bool,
 }
 
 impl<'a> Amqp091ShovelSourceParams<'a> {
@@ -481,6 +492,8 @@ impl<'a> Amqp091ShovelSourceParams<'a> {
 
             source_exchange: None,
             source_exchange_routing_key: None,
+
+            predeclared: false,
         }
     }
 
@@ -495,6 +508,36 @@ impl<'a> Amqp091ShovelSourceParams<'a> {
             source_exchange_routing_key,
 
             source_queue: None,
+
+            predeclared: false,
+        }
+    }
+
+    pub fn predeclared_queue_source(source_uri: &'a str, source_queue: &'a str) -> Self {
+        Self {
+            source_uri,
+            source_queue: Some(source_queue),
+
+            source_exchange: None,
+            source_exchange_routing_key: None,
+
+            predeclared: true,
+        }
+    }
+
+    pub fn predeclared_exchange_source(
+        source_uri: &'a str,
+        source_exchange: &'a str,
+        source_exchange_routing_key: Option<&'a str>,
+    ) -> Self {
+        Self {
+            source_uri,
+            source_exchange: Some(source_exchange),
+            source_exchange_routing_key,
+
+            source_queue: None,
+
+            predeclared: true,
         }
     }
 }
@@ -506,6 +549,8 @@ pub struct Amqp091ShovelDestinationParams<'a> {
     pub destination_queue: Option<&'a str>,
     pub destination_exchange: Option<&'a str>,
     pub destination_exchange_routing_key: Option<&'a str>,
+
+    pub predeclared: bool,
 }
 
 impl<'a> Amqp091ShovelDestinationParams<'a> {
@@ -516,6 +561,8 @@ impl<'a> Amqp091ShovelDestinationParams<'a> {
 
             destination_exchange: None,
             destination_exchange_routing_key: None,
+
+            predeclared: false,
         }
     }
 
@@ -530,6 +577,39 @@ impl<'a> Amqp091ShovelDestinationParams<'a> {
             destination_exchange_routing_key,
 
             destination_queue: None,
+
+            predeclared: false,
+        }
+    }
+
+    pub fn predeclared_queue_destination(
+        destination_uri: &'a str,
+        destination_queue: &'a str,
+    ) -> Self {
+        Self {
+            destination_uri,
+            destination_queue: Some(destination_queue),
+
+            destination_exchange: None,
+            destination_exchange_routing_key: None,
+
+            predeclared: true,
+        }
+    }
+
+    pub fn predeclared_exchange_destination(
+        destination_uri: &'a str,
+        destination_exchange: &'a str,
+        destination_exchange_routing_key: Option<&'a str>,
+    ) -> Self {
+        Self {
+            destination_uri,
+            destination_exchange: Some(destination_exchange),
+            destination_exchange_routing_key,
+
+            destination_queue: None,
+
+            predeclared: true,
         }
     }
 }
