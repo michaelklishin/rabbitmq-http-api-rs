@@ -2,7 +2,12 @@
 
 ## v0.24.0  (in development)
 
-No (documented) changes yet.
+### Enhancements
+
+ * Both `Amqp091ShovelSourceParams` and `Amqp091ShovelDestinationParams` now support a new boolean option, `predeclared`,
+   that enables [either or both sides to rely on a pre-declared topology](https://www.rabbitmq.com/docs/shovel-dynamic#predeclared-topology)
+
+   
 
 
 ## v0.23.0  (Feb 24, 2025)
