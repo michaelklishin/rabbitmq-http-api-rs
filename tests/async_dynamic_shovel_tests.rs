@@ -169,5 +169,5 @@ async fn test_async_delete_a_dynamic_amqp091_shovel() {
     let result4 = rc.delete_shovel(&vh, &sh, true).await;
     assert!(result4.is_ok());
 
-    let _ = rc.delete_vhost(vh_params.name, false);
+    let _ = rc.delete_vhost(vh_params.name, false).await;
 }
