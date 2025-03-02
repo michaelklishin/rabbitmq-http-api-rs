@@ -406,7 +406,7 @@ pub struct Permissions<'a> {
 
 pub(crate) const SHOVEL_COMPONENT: &str = "shovel";
 
-/// Represents a dynamic shovel definition.
+/// Represents a dynamic AMQP 0-9-1 shovel definition.
 #[derive(Serialize)]
 pub struct Amqp091ShovelParams<'a> {
     pub name: &'a str,
@@ -422,6 +422,9 @@ pub struct Amqp091ShovelParams<'a> {
 impl<'a> From<Amqp091ShovelParams<'a>> for RuntimeParameterDefinition<'a> {
     fn from(params: Amqp091ShovelParams<'a>) -> Self {
         let mut value = Map::new();
+
+        value.insert("src-protocol".to_owned(), json!("amqp091"));
+        value.insert("dest-protocol".to_owned(), json!("amqp091"));
 
         value.insert("src-uri".to_owned(), json!(params.source.source_uri));
         if let Some(sq) = params.source.source_queue {
@@ -610,6 +613,85 @@ impl<'a> Amqp091ShovelDestinationParams<'a> {
             destination_queue: None,
 
             predeclared: true,
+        }
+    }
+}
+
+/// Represents a dynamic shovel definition.
+#[derive(Serialize)]
+pub struct Amqp10ShovelParams<'a> {
+    pub name: &'a str,
+    pub vhost: &'a str,
+
+    pub acknowledgement_mode: ShovelAcknowledgementMode,
+    pub reconnect_delay: Option<u16>,
+
+    pub source: Amqp10ShovelSourceParams<'a>,
+    pub destination: Amqp10ShovelDestinationParams<'a>,
+}
+
+#[derive(Serialize)]
+pub struct Amqp10ShovelSourceParams<'a> {
+    pub source_uri: &'a str,
+    pub source_address: &'a str,
+}
+
+impl<'a> Amqp10ShovelSourceParams<'a> {
+    pub fn new(uri: &'a str, address: &'a str) -> Self {
+        Self {
+            source_uri: uri,
+            source_address: address,
+        }
+    }
+}
+
+impl<'a> From<Amqp10ShovelParams<'a>> for RuntimeParameterDefinition<'a> {
+    fn from(params: Amqp10ShovelParams<'a>) -> Self {
+        let mut value = Map::new();
+
+        value.insert("src-protocol".to_owned(), json!("amqp10"));
+        value.insert("dest-protocol".to_owned(), json!("amqp10"));
+
+        value.insert("src-uri".to_owned(), json!(params.source.source_uri));
+        value.insert(
+            "src-address".to_owned(),
+            json!(params.source.source_address),
+        );
+
+        value.insert(
+            "dest-uri".to_owned(),
+            json!(params.destination.destination_uri),
+        );
+        value.insert(
+            "dest-address".to_owned(),
+            json!(params.destination.destination_address),
+        );
+
+        value.insert("ack-mode".to_owned(), json!(params.acknowledgement_mode));
+        if let Some(val) = params.reconnect_delay {
+            value.insert("reconnect-delay".to_owned(), json!(val));
+        }
+
+        Self {
+            name: params.name,
+            vhost: params.vhost,
+            component: SHOVEL_COMPONENT,
+            value,
+        }
+    }
+}
+
+#[derive(Serialize)]
+pub struct Amqp10ShovelDestinationParams<'a> {
+    pub destination_uri: &'a str,
+    pub destination_address: &'a str,
+}
+
+impl<'a> Amqp10ShovelDestinationParams<'a> {
+    pub fn new(uri: &'a str, address: &'a str) -> Self {
+        Self {
+            destination_uri: uri,
+            destination_address: address,
         }
     }
 }

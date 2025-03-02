@@ -4,6 +4,11 @@
 
 ### Enhancements
 
+ * `Client#declare_amqp10_shovel` is a new function that declares a dynamic shovel
+   where both source and destination use AMQP 1.0
+
+   
+
  * Both `Amqp091ShovelSourceParams` and `Amqp091ShovelDestinationParams` now support a new boolean option, `predeclared`,
    that enables [either or both sides to rely on a pre-declared topology](https://www.rabbitmq.com/docs/shovel-dynamic#predeclared-topology)
 

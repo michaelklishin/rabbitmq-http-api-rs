@@ -15,7 +15,9 @@
 
 use crate::error::Error;
 use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
-use crate::requests::{Amqp091ShovelParams, EmptyPayload, StreamParams, SHOVEL_COMPONENT};
+use crate::requests::{
+    Amqp091ShovelParams, Amqp10ShovelParams, EmptyPayload, StreamParams, SHOVEL_COMPONENT,
+};
 use crate::responses::{
     DeprecatedFeatureList, FeatureFlag, FeatureFlagList, FeatureFlagStability, FeatureFlagState,
     GetMessage, OAuthConfiguration, VirtualHostDefinitionSet, WarmStandbyReplicationStatus,
@@ -1207,6 +1209,23 @@ where
     }
 
     pub fn declare_amqp091_shovel(&self, params: Amqp091ShovelParams<'_>) -> Result<()> {
+        let runtime_param = RuntimeParameterDefinition::from(params);
+
+        let _response = self.http_put(
+            path!(
+                "parameters",
+                SHOVEL_COMPONENT,
+                runtime_param.vhost,
+                runtime_param.name
+            ),
+            &runtime_param,
+            None,
+            None,
+        )?;
+        Ok(())
+    }
+
+    pub fn declare_amqp10_shovel(&self, params: Amqp10ShovelParams<'_>) -> Result<()> {
         let runtime_param = RuntimeParameterDefinition::from(params);
 
         let _response = self.http_put(

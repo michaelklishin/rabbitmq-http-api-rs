@@ -13,7 +13,8 @@
 // limitations under the License.
 use rabbitmq_http_client::commons::ShovelAcknowledgementMode;
 use rabbitmq_http_client::requests::{
-    Amqp091ShovelDestinationParams, Amqp091ShovelParams, Amqp091ShovelSourceParams, QueueParams,
+    Amqp091ShovelDestinationParams, Amqp091ShovelParams, Amqp091ShovelSourceParams,
+    Amqp10ShovelDestinationParams, Amqp10ShovelParams, Amqp10ShovelSourceParams, QueueParams,
 };
 use rabbitmq_http_client::{blocking_api::Client, requests::VirtualHostParams};
 
@@ -52,6 +53,48 @@ fn test_blocking_declare_a_dynamic_amqp091_shovel() {
     await_metric_emission(300);
     let result3 = rc.get_queue_info(&vh, &src_q);
     assert!(result3.is_ok());
+
+    let _ = rc.delete_vhost(vh_params.name, false);
+}
+
+#[test]
+fn test_blocking_declare_a_dynamic_amqp10_shovel() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let vh = "rust.http.api.blocking.test_blocking_declare_a_dynamic_amqp10_shovel";
+    let sh = "test_async_declare_a_dynamic_amqp10_shovel";
+
+    let vh_params = VirtualHostParams::named(vh);
+    let result1 = rc.create_vhost(&vh_params);
+    assert!(result1.is_ok());
+
+    // note: 4.1.0 will use a different addressing scheme,
+    //       see https://www.rabbitmq.com/docs/next/amqp#address-v2
+    let src_queue = format!("{}.src.q", sh);
+    let src_address = format!("/queue/{}.src.q", sh);
+    let dest_queue = format!("{}.dest.q", sh);
+    let dest_address = format!("/queue/{}.dest.q", sh);
+
+    let src_params = QueueParams::new_durable_classic_queue(&src_queue, None);
+    let result2 = rc.declare_queue(vh, &src_params);
+    assert!(result2.is_ok());
+
+    let dest_params = QueueParams::new_durable_classic_queue(&dest_queue, None);
+    let result3 = rc.declare_queue(vh, &dest_params);
+    assert!(result3.is_ok());
+
+    let amqp_endpoint = amqp_endpoint_with_vhost(&vh);
+    let shovel_params = Amqp10ShovelParams {
+        vhost: &vh,
+        name: sh,
+        acknowledgement_mode: ShovelAcknowledgementMode::WhenConfirmed,
+        reconnect_delay: Some(5),
+        source: Amqp10ShovelSourceParams::new(&amqp_endpoint, &src_address),
+        destination: Amqp10ShovelDestinationParams::new(&amqp_endpoint, &dest_address),
+    };
+    let result4 = rc.declare_amqp10_shovel(shovel_params);
+    assert!(result4.is_ok());
 
     let _ = rc.delete_vhost(vh_params.name, false);
 }

@@ -1612,6 +1612,13 @@ pub struct Shovel {
     #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub destination: Option<String>,
 
+    #[serde(rename = "src_address")]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub source_address: Option<String>,
+    #[serde(rename = "dest_address")]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub destination_address: Option<String>,
+
     #[serde(rename = "src_protocol")]
     #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub source_protocol: Option<MessagingProtocol>,
