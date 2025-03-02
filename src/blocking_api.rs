@@ -1211,35 +1211,13 @@ where
     pub fn declare_amqp091_shovel(&self, params: Amqp091ShovelParams<'_>) -> Result<()> {
         let runtime_param = RuntimeParameterDefinition::from(params);
 
-        let _response = self.http_put(
-            path!(
-                "parameters",
-                SHOVEL_COMPONENT,
-                runtime_param.vhost,
-                runtime_param.name
-            ),
-            &runtime_param,
-            None,
-            None,
-        )?;
-        Ok(())
+        self.declare_shovel_parameter(&runtime_param)
     }
 
     pub fn declare_amqp10_shovel(&self, params: Amqp10ShovelParams<'_>) -> Result<()> {
         let runtime_param = RuntimeParameterDefinition::from(params);
 
-        let _response = self.http_put(
-            path!(
-                "parameters",
-                SHOVEL_COMPONENT,
-                runtime_param.vhost,
-                runtime_param.name
-            ),
-            &runtime_param,
-            None,
-            None,
-        )?;
-        Ok(())
+        self.declare_shovel_parameter(&runtime_param)
     }
 
     pub fn delete_shovel(&self, vhost: &str, name: &str, idempotently: bool) -> Result<()> {
@@ -1450,6 +1428,24 @@ where
     //
     // Implementation
     //
+
+    fn declare_shovel_parameter(
+        &self,
+        runtime_param: &RuntimeParameterDefinition<'_>,
+    ) -> Result<()> {
+        let _response = self.http_put(
+            path!(
+                "parameters",
+                SHOVEL_COMPONENT,
+                runtime_param.vhost,
+                runtime_param.name
+            ),
+            &runtime_param,
+            None,
+            None,
+        )?;
+        Ok(())
+    }
 
     fn health_check_alarms(&self, path: &str) -> Result<()> {
         // we expect that StatusCode::SERVICE_UNAVAILABLE may be return and ignore
