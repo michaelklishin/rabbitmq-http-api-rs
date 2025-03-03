@@ -445,6 +445,29 @@ pub enum PolicyTarget {
     All,
 }
 
+impl PolicyTarget {
+    // Returns true if this policy target includes the target category.
+    // For example, [`PolicyTarget::Queue`] matches [`PolicyTarget::ClassicQueues`], [`PolicyTarget::QuorumQueues`],
+    // [`PolicyTarget::Stream`], [`PolicyTarget::Queue`] but not [`PolicyTarget::Exchanges`].
+    pub fn does_apply_to(&self, other: PolicyTarget) -> bool {
+        match (self, other) {
+            (PolicyTarget::All, _) => true,
+            (_, PolicyTarget::All) => true,
+            // queues includes
+            (PolicyTarget::Queues, PolicyTarget::Queues) => true,
+            (PolicyTarget::Queues, PolicyTarget::ClassicQueues) => true,
+            (PolicyTarget::Queues, PolicyTarget::QuorumQueues) => true,
+            // streams are included into "queues"
+            (PolicyTarget::Queues, PolicyTarget::Streams) => true,
+            (PolicyTarget::ClassicQueues, PolicyTarget::ClassicQueues) => true,
+            (PolicyTarget::QuorumQueues, PolicyTarget::QuorumQueues) => true,
+            (PolicyTarget::Streams, PolicyTarget::Streams) => true,
+            (PolicyTarget::Exchanges, PolicyTarget::Exchanges) => true,
+            _ => false,
+        }
+    }
+}
+
 impl fmt::Display for PolicyTarget {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", Into::<String>::into(self.clone()))?;
