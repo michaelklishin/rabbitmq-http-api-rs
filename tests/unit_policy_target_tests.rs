@@ -16,7 +16,7 @@ use rabbitmq_http_client::commons::PolicyTarget;
 mod test_helpers;
 
 #[test]
-fn test_unit_policy_type_matching() {
+fn test_unit_policy_target_does_apply_to() {
     // "all" matches everything
     assert!(PolicyTarget::All.does_apply_to(PolicyTarget::All));
     assert!(PolicyTarget::All.does_apply_to(PolicyTarget::ClassicQueues));
