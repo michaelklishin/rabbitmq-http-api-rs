@@ -480,10 +480,15 @@ impl From<&str> for PolicyTarget {
     fn from(value: &str) -> Self {
         match value {
             "queues" => PolicyTarget::Queues,
+            "queue" => PolicyTarget::Queues,
             "classic_queues" => PolicyTarget::ClassicQueues,
+            "classic_queue" => PolicyTarget::ClassicQueues,
             "quorum_queues" => PolicyTarget::QuorumQueues,
+            "quorum_queue" => PolicyTarget::QuorumQueues,
             "streams" => PolicyTarget::Streams,
+            "stream" => PolicyTarget::Streams,
             "exchanges" => PolicyTarget::Exchanges,
+            "exchange" => PolicyTarget::Exchanges,
             "all" => PolicyTarget::All,
             _ => PolicyTarget::Queues,
         }
@@ -494,10 +499,15 @@ impl From<String> for PolicyTarget {
     fn from(value: String) -> Self {
         match value.as_str() {
             "queues" => PolicyTarget::Queues,
+            "queue" => PolicyTarget::Queues,
             "classic_queues" => PolicyTarget::ClassicQueues,
+            "classic_queue" => PolicyTarget::ClassicQueues,
             "quorum_queues" => PolicyTarget::QuorumQueues,
+            "quorum_queue" => PolicyTarget::QuorumQueues,
             "streams" => PolicyTarget::Streams,
+            "stream" => PolicyTarget::Streams,
             "exchanges" => PolicyTarget::Exchanges,
+            "exchange" => PolicyTarget::Exchanges,
             "all" => PolicyTarget::All,
             _ => PolicyTarget::Queues,
         }
