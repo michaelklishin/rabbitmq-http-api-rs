@@ -25,6 +25,7 @@ use serde_json::Map;
 
 use time::OffsetDateTime;
 
+use regex::Regex;
 #[cfg(feature = "tabled")]
 use std::borrow::Cow;
 #[cfg(feature = "tabled")]
@@ -891,6 +892,30 @@ pub struct Policy {
     pub apply_to: PolicyTarget,
     pub priority: i16,
     pub definition: PolicyDefinition,
+}
+
+impl Policy {
+    pub fn does_match(&self, name: &str, typ: PolicyTarget) -> bool {
+        Policy::do_match(&self.pattern, self.apply_to.clone(), name, typ)
+    }
+
+    pub fn do_match(pattern: &str, apply_to: PolicyTarget, name: &str, typ: PolicyTarget) -> bool {
+        if !(apply_to.does_apply_to(typ)) {
+            return false;
+        }
+
+        if let Ok(regex) = Regex::new(pattern) {
+            regex.is_match(name)
+        } else {
+            false
+        }
+    }
+}
+
+impl PolicyWithoutVirtualHost {
+    pub fn does_match(&self, name: &str, typ: PolicyTarget) -> bool {
+        Policy::do_match(&self.pattern, self.apply_to.clone(), name, typ)
+    }
 }
 
 /// Used in virtual host-specific definitions.
