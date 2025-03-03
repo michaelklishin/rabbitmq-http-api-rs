@@ -99,7 +99,7 @@ async fn test_async_operator_policy() {
     };
     test_an_operator_policy(&rc, &operator_policy).await;
 
-    // let _ = rc.delete_vhost(vh_params.name, false);
+    let _ = rc.delete_vhost(vh_params.name, true).await;
 }
 
 async fn test_a_policy(rc: &Client<&str, &str, &str>, policy: &PolicyParams<'_>) {

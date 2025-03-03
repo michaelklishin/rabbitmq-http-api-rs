@@ -99,7 +99,7 @@ fn test_blocking_operator_policy() {
     };
     test_an_operator_policy(&rc, &operator_policy);
 
-    // let _ = rc.delete_vhost(vh_params.name, false);
+    let _ = rc.delete_vhost(vh_params.name, true);
 }
 
 fn test_a_policy(rc: &Client<&str, &str, &str>, policy: &PolicyParams) {
