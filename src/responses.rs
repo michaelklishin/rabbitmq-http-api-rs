@@ -868,23 +868,41 @@ pub struct ClusterIdentity {
     pub name: String,
 }
 
-pub trait PolicyPredicates {
+pub trait PolicyDefinitionOps {
     fn has_cmq_keys(&self) -> bool;
+
+    fn is_empty(&self) -> bool;
+
+    fn without_keys(&self, keys: Vec<&str>) -> Self;
+
+    fn without_cmq_keys(&self) -> Self;
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PolicyDefinition(pub Option<Map<String, serde_json::Value>>);
 
 impl PolicyDefinition {
-    pub const CMQ_KEYS: [&'static str; 4] = [
+    pub const CMQ_KEYS: [&'static str; 5] = [
         "ha-mode",
         "ha-params",
         "ha-promote-on-shutdown",
         "ha-sync-mode",
+        "ha-sync-batch-size",
     ];
+
+    pub fn len(&self) -> usize {
+        match &self.0 {
+            Some(m) => m.len(),
+            None => 0,
+        }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
 }
 
-impl PolicyPredicates for PolicyDefinition {
+impl PolicyDefinitionOps for PolicyDefinition {
     fn has_cmq_keys(&self) -> bool {
         match &self.0 {
             None => false,
@@ -892,6 +910,29 @@ impl PolicyPredicates for PolicyDefinition {
                 .keys()
                 .any(|k| PolicyDefinition::CMQ_KEYS.contains(&k.as_str())),
         }
+    }
+
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    fn without_keys(&self, keys: Vec<&str>) -> Self {
+        match &self.0 {
+            Some(m) => {
+                let mut nm = m.clone();
+                for s in keys {
+                    let k = s.to_owned();
+                    let _ = nm.remove(&k);
+                }
+
+                PolicyDefinition(Some(nm))
+            }
+            None => PolicyDefinition(None),
+        }
+    }
+
+    fn without_cmq_keys(&self) -> Self {
+        self.without_keys(Vec::from(PolicyDefinition::CMQ_KEYS))
     }
 }
 
@@ -936,9 +977,30 @@ impl Policy {
     }
 }
 
-impl PolicyPredicates for Policy {
+impl PolicyDefinitionOps for Policy {
     fn has_cmq_keys(&self) -> bool {
         self.definition.has_cmq_keys()
+    }
+
+    fn is_empty(&self) -> bool {
+        self.definition.is_empty()
+    }
+
+    fn without_keys(&self, keys: Vec<&str>) -> Self {
+        let defs = self.definition.without_keys(keys);
+
+        Self {
+            name: self.name.clone(),
+            vhost: self.vhost.clone(),
+            pattern: self.pattern.clone(),
+            apply_to: self.apply_to.clone(),
+            priority: self.priority,
+            definition: defs,
+        }
+    }
+
+    fn without_cmq_keys(&self) -> Self {
+        self.without_keys(Vec::from(PolicyDefinition::CMQ_KEYS))
     }
 }
 
