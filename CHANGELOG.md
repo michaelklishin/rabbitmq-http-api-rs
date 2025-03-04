@@ -1,8 +1,16 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.25.0  (in development)
+## v0.26.0  (in development)
 
 No changes yet.
+
+
+## v0.25.0  (Mar 3, 2025)
+
+### Enhancements
+
+ * `PolicyTarget#does_apply_to` is a new function that allow for `PolicyTarget`
+   equivalence comparison. For example, `PolicyTarget::QuorumQueues` is a subset of `PolicyTarget::Queues` but `PolicyTarget::QuorumQueues` is not
 
 
 ## v0.24.0  (Mar 2, 2025)
