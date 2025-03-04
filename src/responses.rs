@@ -868,8 +868,32 @@ pub struct ClusterIdentity {
     pub name: String,
 }
 
+pub trait PolicyPredicates {
+    fn has_cmq_keys(&self) -> bool;
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PolicyDefinition(pub Option<Map<String, serde_json::Value>>);
+
+impl PolicyDefinition {
+    pub const CMQ_KEYS: [&'static str; 4] = [
+        "ha-mode",
+        "ha-params",
+        "ha-promote-on-shutdown",
+        "ha-sync-mode",
+    ];
+}
+
+impl PolicyPredicates for PolicyDefinition {
+    fn has_cmq_keys(&self) -> bool {
+        match &self.0 {
+            None => false,
+            Some(m) => m
+                .keys()
+                .any(|k| PolicyDefinition::CMQ_KEYS.contains(&k.as_str())),
+        }
+    }
+}
 
 impl fmt::Display for PolicyDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -909,6 +933,12 @@ impl Policy {
         } else {
             false
         }
+    }
+}
+
+impl PolicyPredicates for Policy {
+    fn has_cmq_keys(&self) -> bool {
+        self.definition.has_cmq_keys()
     }
 }
 
