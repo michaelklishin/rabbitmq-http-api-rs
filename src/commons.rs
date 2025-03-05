@@ -345,6 +345,8 @@ pub enum QueueType {
     Classic,
     Quorum,
     Stream,
+    // Tanzu RabbitMQ-specific
+    Delayed
 }
 
 impl From<&str> for QueueType {
