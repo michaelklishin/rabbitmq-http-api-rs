@@ -52,6 +52,10 @@ pub enum Error<U, S, E, BT> {
     MultipleMatchingBindings,
     #[error("could not convert provided value into an HTTP header value")]
     InvalidHeaderValue { error: InvalidHeaderValue },
+    #[error("Unsupported argument value for property (field) {property}")]
+    UnsupportedArgumentValue {
+        property: String
+    },
     #[error("encountered an error when performing an HTTP request")]
     RequestError { error: E, backtrace: BT },
     #[error("an unspecified error")]
