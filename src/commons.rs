@@ -355,6 +355,7 @@ impl From<&str> for QueueType {
             "classic" => QueueType::Classic,
             "quorum" => QueueType::Quorum,
             "stream" => QueueType::Stream,
+            "delayed" => QueueType::Delayed,
             _ => QueueType::Classic,
         }
     }
@@ -377,6 +378,7 @@ impl From<QueueType> for String {
             QueueType::Classic => "classic".to_owned(),
             QueueType::Quorum => "quorum".to_owned(),
             QueueType::Stream => "stream".to_owned(),
+            QueueType::Delayed => "delayed".to_owned(),
         }
     }
 }
@@ -454,8 +456,9 @@ impl From<QueueType> for PolicyTarget {
     fn from(value: QueueType) -> Self {
         match value {
             QueueType::Classic => PolicyTarget::ClassicQueues,
-            QueueType::Quorum => PolicyTarget::QuorumQueues,
-            QueueType::Stream => PolicyTarget::Streams,
+            QueueType::Quorum  => PolicyTarget::QuorumQueues,
+            QueueType::Stream  => PolicyTarget::Streams,
+            QueueType::Delayed => PolicyTarget::Queues,
         }
     }
 }
