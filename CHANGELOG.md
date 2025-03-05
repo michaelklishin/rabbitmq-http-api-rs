@@ -2,7 +2,13 @@
 
 ## v0.26.0  (in development)
 
-No changes yet.
+### Enhancements
+
+ * `QueueOps`, `NamedPolicyTargetObject` are two new traits that allow
+   key queue properties to be accessed on several structs that semantically represent
+   a queue, either directly or in an exported set of definitions
+
+ * `QueueType::Unsupported(String)` is a new queue type variant
 
 
 ## v0.25.0  (Mar 3, 2025)
