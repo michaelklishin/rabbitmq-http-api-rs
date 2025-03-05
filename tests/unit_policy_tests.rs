@@ -246,7 +246,7 @@ fn test_unit_policy_does_match_case1() {
         definition: defs.clone(),
     };
 
-    assert!(p.does_match_name("events.1", PolicyTarget::Queues))
+    assert!(p.does_match_name("/", "events.1", PolicyTarget::Queues))
 }
 
 #[test]
@@ -263,14 +263,24 @@ fn test_unit_policy_does_match_case2() {
         definition: defs.clone(),
     };
 
-    assert!(p.does_match_name("ca.on.to.1", PolicyTarget::Queues));
+    assert!(p.does_match_name("/", "ca.on.to.1", PolicyTarget::Queues));
 
-    assert_eq!(false, p.does_match_name("cdi.r.1", PolicyTarget::Queues));
-    assert_eq!(false, p.does_match_name("ca", PolicyTarget::Queues));
-    assert_eq!(false, p.does_match_name("abc.r.1", PolicyTarget::Queues));
     assert_eq!(
         false,
-        p.does_match_name("us.ny.nyc.1", PolicyTarget::Queues)
+        p.does_match_name("/", "cdi.r.1", PolicyTarget::Queues)
+    );
+    assert_eq!(false, p.does_match_name("/", "ca", PolicyTarget::Queues));
+    assert_eq!(
+        false,
+        p.does_match_name("/", "abc.r.1", PolicyTarget::Queues)
+    );
+    assert_eq!(
+        false,
+        p.does_match_name("/", "us.ny.nyc.1", PolicyTarget::Queues)
+    );
+    assert_eq!(
+        false,
+        p.does_match_name("a-different-vhost", "ca.on.to.2", PolicyTarget::Queues)
     );
 }
 
@@ -288,15 +298,16 @@ fn test_unit_policy_does_match_case3() {
         definition: defs.clone(),
     };
 
-    assert!(p.does_match_name("events.regional.na", PolicyTarget::Exchanges));
+    assert!(p.does_match_name("/", "events.regional.na", PolicyTarget::Exchanges));
 
     assert_eq!(
         false,
-        p.does_match_name("events.regional.na.partitions.1", PolicyTarget::Queues)
+        p.does_match_name("/", "events.regional.na.partitions.1", PolicyTarget::Queues)
     );
     assert_eq!(
         false,
         p.does_match_name(
+            "/",
             "events.regional.na.partitions.1",
             PolicyTarget::ClassicQueues
         )
@@ -304,12 +315,17 @@ fn test_unit_policy_does_match_case3() {
     assert_eq!(
         false,
         p.does_match_name(
+            "/",
             "events.regional.na.partitions.1",
             PolicyTarget::QuorumQueues
         )
     );
     assert_eq!(
         false,
-        p.does_match_name("events.regional.na.partitions.1", PolicyTarget::Streams)
+        p.does_match_name(
+            "/",
+            "events.regional.na.partitions.1",
+            PolicyTarget::Streams
+        )
     );
 }

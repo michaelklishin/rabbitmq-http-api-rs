@@ -1028,15 +1028,24 @@ pub struct Policy {
 }
 
 impl Policy {
-    pub fn does_match_name(&self, name: &str, typ: PolicyTarget) -> bool {
-        Policy::is_a_match(&self.pattern, self.apply_to.clone(), name, typ)
+    pub fn does_match_name(&self, vhost: &str, name: &str, typ: PolicyTarget) -> bool {
+        Policy::is_a_full_match(
+            &self.vhost,
+            &self.pattern,
+            self.apply_to.clone(),
+            vhost,
+            name,
+            typ,
+        )
     }
 
     pub fn does_match_object(&self, object: &impl NamedPolicyTargetObject) -> bool {
         let same_vhost = self.vhost == object.vhost();
-        let matching_name_and_type = Policy::is_a_match(
+        let matching_name_and_type = Policy::is_a_full_match(
+            &self.vhost,
             &self.pattern,
             self.apply_to.clone(),
+            &object.vhost(),
             &object.name(),
             object.policy_target(),
         );
@@ -1044,7 +1053,25 @@ impl Policy {
         same_vhost && matching_name_and_type
     }
 
-    pub fn is_a_match(
+    pub fn is_a_full_match(
+        vhost_a: &str,
+        pattern: &str,
+        apply_to: PolicyTarget,
+        vhost_b: &str,
+        name: &str,
+        typ: PolicyTarget,
+    ) -> bool {
+        let same_vhost = vhost_a == vhost_b;
+        let matches_kind = apply_to.does_apply_to(typ);
+
+        if let Ok(regex) = Regex::new(pattern) {
+            regex.is_match(name) && matches_kind && same_vhost
+        } else {
+            false
+        }
+    }
+
+    pub fn is_a_name_match(
         pattern: &str,
         apply_to: PolicyTarget,
         name: &str,
@@ -1089,7 +1116,7 @@ impl PolicyDefinitionOps for Policy {
 
 impl PolicyWithoutVirtualHost {
     pub fn does_match(&self, name: &str, typ: PolicyTarget) -> bool {
-        Policy::is_a_match(&self.pattern, self.apply_to.clone(), name, typ)
+        Policy::is_a_name_match(&self.pattern, self.apply_to.clone(), name, typ)
     }
 }
 
