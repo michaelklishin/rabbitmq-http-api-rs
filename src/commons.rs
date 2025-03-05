@@ -348,6 +348,7 @@ pub enum QueueType {
     // Tanzu RabbitMQ-specific
     Delayed,
     // A type this client is not aware of
+    #[serde(untagged)]
     Unsupported(String),
 }
 
