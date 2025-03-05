@@ -351,7 +351,7 @@ pub enum QueueType {
 
 impl From<&str> for QueueType {
     fn from(value: &str) -> Self {
-        match value {
+        match value.to_ascii_lowercase().as_str() {
             "classic" => QueueType::Classic,
             "quorum" => QueueType::Quorum,
             "stream" => QueueType::Stream,
@@ -363,7 +363,7 @@ impl From<&str> for QueueType {
 
 impl From<String> for QueueType {
     fn from(value: String) -> Self {
-        match value.as_str() {
+        match value.to_ascii_lowercase().as_str() {
             "classic" => QueueType::Classic,
             "quorum" => QueueType::Quorum,
             "stream" => QueueType::Stream,

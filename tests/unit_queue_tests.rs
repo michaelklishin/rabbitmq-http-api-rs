@@ -20,6 +20,21 @@ use rabbitmq_http_client::responses::{
 use serde_json::{json, Map};
 
 #[test]
+fn test_unit_queue_type_from_str() {
+    assert_eq!(QueueType::Classic, QueueType::from("classic"));
+    assert_eq!(QueueType::Classic, QueueType::from("Classic"));
+
+    assert_eq!(QueueType::Quorum, QueueType::from("quorum"));
+    assert_eq!(QueueType::Quorum, QueueType::from("Quorum"));
+
+    assert_eq!(QueueType::Stream, QueueType::from("stream"));
+    assert_eq!(QueueType::Stream, QueueType::from("Stream"));
+
+    assert_eq!(QueueType::Delayed, QueueType::from("delayed"));
+    assert_eq!(QueueType::Delayed, QueueType::from("Delayed"));
+}
+
+#[test]
 fn test_unit_policy_target_type_case1() {
     let input = r#"{
         "arguments": {
