@@ -832,6 +832,8 @@ pub struct ExchangeInfo {
     pub arguments: XArguments,
 }
 
+pub type ExchangeDefinition = ExchangeInfo;
+
 /// Used in virtual host-specific definitions.
 /// The virtual host is omitted so that such objects can
 /// be imported into an arbitrary virtual host.
@@ -848,6 +850,8 @@ pub struct ExchangeInfoWithoutVirtualHost {
     pub arguments: XArguments,
 }
 
+pub type ExchangeDefinitionWithoutVirtualHost = ExchangeInfoWithoutVirtualHost;
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
@@ -862,6 +866,8 @@ pub struct BindingInfo {
     #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub properties_key: Option<String>,
 }
+
+pub type BindingDefinition = BindingInfo;
 
 /// Used in virtual host-specific definitions.
 /// The virtual host is omitted so that such objects can
@@ -879,6 +885,8 @@ pub struct BindingInfoWithoutVirtualHost {
     #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub properties_key: Option<String>,
 }
+
+pub type BindingDefinitionWithoutVirtualHost = BindingInfoWithoutVirtualHost;
 
 #[derive(Debug, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
@@ -1169,8 +1177,8 @@ pub struct ClusterDefinitionSet {
     pub policies: Vec<Policy>,
 
     pub queues: Vec<QueueDefinition>,
-    pub exchanges: Vec<ExchangeInfo>,
-    pub bindings: Vec<BindingInfo>,
+    pub exchanges: Vec<ExchangeDefinition>,
+    pub bindings: Vec<BindingDefinition>,
 }
 
 /// Represents definitions of a single virtual host.
@@ -1186,8 +1194,8 @@ pub struct VirtualHostDefinitionSet {
     pub policies: Vec<PolicyWithoutVirtualHost>,
 
     pub queues: Vec<QueueDefinitionWithoutVirtualHost>,
-    pub exchanges: Vec<ExchangeInfoWithoutVirtualHost>,
-    pub bindings: Vec<BindingInfoWithoutVirtualHost>,
+    pub exchanges: Vec<ExchangeDefinitionWithoutVirtualHost>,
+    pub bindings: Vec<BindingDefinitionWithoutVirtualHost>,
 }
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
