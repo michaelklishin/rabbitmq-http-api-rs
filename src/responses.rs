@@ -13,7 +13,9 @@
 // limitations under the License.
 use std::{fmt, ops};
 
-use crate::commons::{BindingDestinationType, PolicyTarget};
+use crate::commons::{
+    BindingDestinationType, PolicyTarget, QueueType, X_ARGUMENT_KEY_X_QUEUE_TYPE,
+};
 use crate::formatting::*;
 use crate::utils::{percentage, percentage_as_text};
 use serde::{
@@ -654,6 +656,12 @@ impl fmt::Display for NameAndVirtualHost {
     }
 }
 
+pub trait QueueOps {
+    fn queue_type(&self) -> QueueType;
+
+    fn policy_target_type(&self) -> PolicyTarget;
+}
+
 #[derive(Debug, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
@@ -724,6 +732,34 @@ pub struct QueueInfo {
     pub unacknowledged_message_count: u64,
 }
 
+impl QueueOps for QueueInfo {
+    fn queue_type(&self) -> QueueType {
+        QueueType::from(self.queue_type.as_str())
+    }
+
+    fn policy_target_type(&self) -> PolicyTarget {
+        PolicyTarget::from(self.queue_type())
+    }
+}
+
+impl NamedPolicyTargetObject for QueueInfo {
+    fn vhost(&self) -> String {
+        self.vhost.clone()
+    }
+
+    fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    fn policy_target(&self) -> PolicyTarget {
+        self.policy_target_type()
+    }
+
+    fn does_match(&self, policy: &Policy) -> bool {
+        policy.does_match_object(self)
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
@@ -734,6 +770,22 @@ pub struct QueueDefinition {
     pub auto_delete: bool,
     #[cfg_attr(feature = "tabled", tabled(skip))]
     pub arguments: XArguments,
+}
+
+impl QueueOps for QueueDefinition {
+    fn queue_type(&self) -> QueueType {
+        if let Some((_, val)) = self.arguments.0.get_key_value(X_ARGUMENT_KEY_X_QUEUE_TYPE) {
+            val.as_str()
+                .map(QueueType::from)
+                .unwrap_or(QueueType::default())
+        } else {
+            QueueType::default()
+        }
+    }
+
+    fn policy_target_type(&self) -> PolicyTarget {
+        PolicyTarget::from(self.queue_type())
+    }
 }
 
 /// Used in virtual host-specific definitions.
@@ -748,6 +800,22 @@ pub struct QueueDefinitionWithoutVirtualHost {
     pub auto_delete: bool,
     #[cfg_attr(feature = "tabled", tabled(skip))]
     pub arguments: XArguments,
+}
+
+impl QueueOps for QueueDefinitionWithoutVirtualHost {
+    fn queue_type(&self) -> QueueType {
+        if let Some((_, val)) = self.arguments.0.get_key_value(X_ARGUMENT_KEY_X_QUEUE_TYPE) {
+            val.as_str()
+                .map(QueueType::from)
+                .unwrap_or(QueueType::default())
+        } else {
+            QueueType::default()
+        }
+    }
+
+    fn policy_target_type(&self) -> PolicyTarget {
+        PolicyTarget::from(self.queue_type())
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -960,17 +1028,32 @@ pub struct Policy {
 }
 
 impl Policy {
-    pub fn does_match(&self, name: &str, typ: PolicyTarget) -> bool {
-        Policy::do_match(&self.pattern, self.apply_to.clone(), name, typ)
+    pub fn does_match_name(&self, name: &str, typ: PolicyTarget) -> bool {
+        Policy::is_a_match(&self.pattern, self.apply_to.clone(), name, typ)
     }
 
-    pub fn do_match(pattern: &str, apply_to: PolicyTarget, name: &str, typ: PolicyTarget) -> bool {
-        if !(apply_to.does_apply_to(typ)) {
-            return false;
-        }
+    pub fn does_match_object(&self, object: &impl NamedPolicyTargetObject) -> bool {
+        let same_vhost = self.vhost == object.vhost();
+        let matching_name_and_type = Policy::is_a_match(
+            &self.pattern,
+            self.apply_to.clone(),
+            &object.name(),
+            object.policy_target(),
+        );
+
+        same_vhost && matching_name_and_type
+    }
+
+    pub fn is_a_match(
+        pattern: &str,
+        apply_to: PolicyTarget,
+        name: &str,
+        typ: PolicyTarget,
+    ) -> bool {
+        let matches_kind = apply_to.does_apply_to(typ);
 
         if let Ok(regex) = Regex::new(pattern) {
-            regex.is_match(name)
+            regex.is_match(name) && matches_kind
         } else {
             false
         }
@@ -1006,7 +1089,7 @@ impl PolicyDefinitionOps for Policy {
 
 impl PolicyWithoutVirtualHost {
     pub fn does_match(&self, name: &str, typ: PolicyTarget) -> bool {
-        Policy::do_match(&self.pattern, self.apply_to.clone(), name, typ)
+        Policy::is_a_match(&self.pattern, self.apply_to.clone(), name, typ)
     }
 }
 
@@ -1023,6 +1106,14 @@ pub struct PolicyWithoutVirtualHost {
     pub apply_to: PolicyTarget,
     pub priority: i16,
     pub definition: PolicyDefinition,
+}
+
+/// Represents an object a policy can match: a queue, a stream, an exchange.
+pub trait NamedPolicyTargetObject {
+    fn vhost(&self) -> String;
+    fn name(&self) -> String;
+    fn policy_target(&self) -> PolicyTarget;
+    fn does_match(&self, policy: &Policy) -> bool;
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]

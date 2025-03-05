@@ -80,32 +80,32 @@ pub enum SupportedProtocol {
     Other(String),
 }
 
-const SUPPORTED_PROTOCOL_CLUSTERING: &str = "clustering";
+pub const SUPPORTED_PROTOCOL_CLUSTERING: &str = "clustering";
 
-const SUPPORTED_PROTOCOL_AMQP: &str = "amqp";
-const SUPPORTED_PROTOCOL_AMQP_WITH_TLS: &str = "amqps";
+pub const SUPPORTED_PROTOCOL_AMQP: &str = "amqp";
+pub const SUPPORTED_PROTOCOL_AMQP_WITH_TLS: &str = "amqps";
 
-const SUPPORTED_PROTOCOL_STREAM: &str = "stream";
-const SUPPORTED_PROTOCOL_STREAM_WITH_TLS: &str = "stream/ssl";
+pub const SUPPORTED_PROTOCOL_STREAM: &str = "stream";
+pub const SUPPORTED_PROTOCOL_STREAM_WITH_TLS: &str = "stream/ssl";
 
-const SUPPORTED_PROTOCOL_AMQP_OVER_WEBSOCKETS: &str = "http/web-amqp";
-const SUPPORTED_PROTOCOL_AMQP_OVER_WEBSOCKETS_WITH_TLS: &str = "https/web-amqp";
+pub const SUPPORTED_PROTOCOL_AMQP_OVER_WEBSOCKETS: &str = "http/web-amqp";
+pub const SUPPORTED_PROTOCOL_AMQP_OVER_WEBSOCKETS_WITH_TLS: &str = "https/web-amqp";
 
-const SUPPORTED_PROTOCOL_MQTT: &str = "mqtt";
-const SUPPORTED_PROTOCOL_MQTT_WITH_TLS: &str = "mqtt/ssl";
-const SUPPORTED_PROTOCOL_MQTT_OVER_WEBSOCKETS: &str = "http/web-mqtt";
-const SUPPORTED_PROTOCOL_MQTT_OVER_WEBSOCKETS_WITH_TLS: &str = "https/web-mqtt";
+pub const SUPPORTED_PROTOCOL_MQTT: &str = "mqtt";
+pub const SUPPORTED_PROTOCOL_MQTT_WITH_TLS: &str = "mqtt/ssl";
+pub const SUPPORTED_PROTOCOL_MQTT_OVER_WEBSOCKETS: &str = "http/web-mqtt";
+pub const SUPPORTED_PROTOCOL_MQTT_OVER_WEBSOCKETS_WITH_TLS: &str = "https/web-mqtt";
 
-const SUPPORTED_PROTOCOL_STOMP: &str = "stomp";
-const SUPPORTED_PROTOCOL_STOMP_WITH_TLS: &str = "stomp/ssl";
-const SUPPORTED_PROTOCOL_STOMP_OVER_WEBSOCKETS: &str = "http/stomp-mqtt";
-const SUPPORTED_PROTOCOL_STOMP_OVER_WEBSOCKETS_WITH_TLS: &str = "https/stomp-mqtt";
+pub const SUPPORTED_PROTOCOL_STOMP: &str = "stomp";
+pub const SUPPORTED_PROTOCOL_STOMP_WITH_TLS: &str = "stomp/ssl";
+pub const SUPPORTED_PROTOCOL_STOMP_OVER_WEBSOCKETS: &str = "http/stomp-mqtt";
+pub const SUPPORTED_PROTOCOL_STOMP_OVER_WEBSOCKETS_WITH_TLS: &str = "https/stomp-mqtt";
 
-const SUPPORTED_PROTOCOL_PROMETHEUS: &str = "http/prometheus";
-const SUPPORTED_PROTOCOL_PROMETHEUS_WITH_TLS: &str = "https/prometheus";
+pub const SUPPORTED_PROTOCOL_PROMETHEUS: &str = "http/prometheus";
+pub const SUPPORTED_PROTOCOL_PROMETHEUS_WITH_TLS: &str = "https/prometheus";
 
-const SUPPORTED_PROTOCOL_HTTP: &str = "http";
-const SUPPORTED_PROTOCOL_HTTP_WITH_TLS: &str = "https";
+pub const SUPPORTED_PROTOCOL_HTTP: &str = "http";
+pub const SUPPORTED_PROTOCOL_HTTP_WITH_TLS: &str = "https";
 
 impl From<&str> for SupportedProtocol {
     fn from(value: &str) -> Self {
@@ -237,7 +237,7 @@ impl fmt::Display for SupportedProtocol {
 
 /// Exchange types. Most variants are for exchange types included with modern RabbitMQ distributions.
 /// For custom types provided by 3rd party plugins, use the `Plugin(String)` variant.
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Eq, PartialEq, Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all(serialize = "lowercase", deserialize = "PascalCase"))]
 pub enum ExchangeType {
     /// Fanout exchange
@@ -277,18 +277,20 @@ pub enum ExchangeType {
     Plugin(String),
 }
 
-const EXCHANGE_TYPE_FANOUT: &str = "fanout";
-const EXCHANGE_TYPE_TOPIC: &str = "topic";
-const EXCHANGE_TYPE_DIRECT: &str = "direct";
-const EXCHANGE_TYPE_HEADERS: &str = "headers";
-const EXCHANGE_TYPE_CONSISTENT_HASHING: &str = "x-consistent-hash";
-const EXCHANGE_TYPE_MODULUS_HASH: &str = "x-modulus-hash";
-const EXCHANGE_TYPE_RANDOM: &str = "x-random";
-const EXCHANGE_TYPE_JMS_TOPIC: &str = "x-jms-topic";
-const EXCHANGE_TYPE_LOCAL_RANDOM: &str = "x-local-random";
-const EXCHANGE_TYPE_RECENT_HISTORY: &str = "x-recent-history";
-const EXCHANGE_TYPE_DELAYED_MESSAGE: &str = "x-delayed-message";
-const EXCHANGE_TYPE_MESSAGE_DEDUPLICATION: &str = "x-message-deduplication";
+pub const X_ARGUMENT_KEY_X_QUEUE_TYPE: &str = "x-queue-type";
+
+pub const EXCHANGE_TYPE_FANOUT: &str = "fanout";
+pub const EXCHANGE_TYPE_TOPIC: &str = "topic";
+pub const EXCHANGE_TYPE_DIRECT: &str = "direct";
+pub const EXCHANGE_TYPE_HEADERS: &str = "headers";
+pub const EXCHANGE_TYPE_CONSISTENT_HASHING: &str = "x-consistent-hash";
+pub const EXCHANGE_TYPE_MODULUS_HASH: &str = "x-modulus-hash";
+pub const EXCHANGE_TYPE_RANDOM: &str = "x-random";
+pub const EXCHANGE_TYPE_JMS_TOPIC: &str = "x-jms-topic";
+pub const EXCHANGE_TYPE_LOCAL_RANDOM: &str = "x-local-random";
+pub const EXCHANGE_TYPE_RECENT_HISTORY: &str = "x-recent-history";
+pub const EXCHANGE_TYPE_DELAYED_MESSAGE: &str = "x-delayed-message";
+pub const EXCHANGE_TYPE_MESSAGE_DEDUPLICATION: &str = "x-message-deduplication";
 
 impl From<&str> for ExchangeType {
     fn from(value: &str) -> Self {
@@ -336,9 +338,10 @@ impl From<ExchangeType> for String {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
+#[derive(Eq, PartialEq, Debug, Serialize, Deserialize, Clone, Copy, Default)]
 #[serde(rename_all(serialize = "lowercase", deserialize = "PascalCase"))]
 pub enum QueueType {
+    #[default]
     Classic,
     Quorum,
     Stream,
@@ -434,7 +437,7 @@ impl From<BindingDestinationType> for String {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
+#[derive(Eq, PartialEq, Debug, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum PolicyTarget {
     Queues,
@@ -443,6 +446,16 @@ pub enum PolicyTarget {
     Streams,
     Exchanges,
     All,
+}
+
+impl From<QueueType> for PolicyTarget {
+    fn from(value: QueueType) -> Self {
+        match value {
+            QueueType::Classic => PolicyTarget::ClassicQueues,
+            QueueType::Quorum => PolicyTarget::QuorumQueues,
+            QueueType::Stream => PolicyTarget::Streams,
+        }
+    }
 }
 
 impl PolicyTarget {

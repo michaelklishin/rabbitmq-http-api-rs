@@ -231,3 +231,85 @@ fn test_unit_policy_definition_without_cmq_keys_case1() {
     assert_eq!(false, m2.contains_key(&k5));
     assert!(m2.contains_key(&k6));
 }
+
+#[test]
+fn test_unit_policy_does_match_case1() {
+    let mut m = Map::new();
+    m.insert("max-length".to_owned(), json!(100000));
+    let defs = PolicyDefinition(Some(m));
+    let p = Policy {
+        name: "policy.1".to_owned(),
+        vhost: "/".to_owned(),
+        pattern: "^events".to_owned(),
+        apply_to: PolicyTarget::Queues,
+        priority: 11,
+        definition: defs.clone(),
+    };
+
+    assert!(p.does_match_name("events.1", PolicyTarget::Queues))
+}
+
+#[test]
+fn test_unit_policy_does_match_case2() {
+    let mut m = Map::new();
+    m.insert("max-length".to_owned(), json!(100000));
+    let defs = PolicyDefinition(Some(m));
+    let p = Policy {
+        name: "policy.2".to_owned(),
+        vhost: "/".to_owned(),
+        pattern: r"^ca\.".to_owned(),
+        apply_to: PolicyTarget::Queues,
+        priority: 11,
+        definition: defs.clone(),
+    };
+
+    assert!(p.does_match_name("ca.on.to.1", PolicyTarget::Queues));
+
+    assert_eq!(false, p.does_match_name("cdi.r.1", PolicyTarget::Queues));
+    assert_eq!(false, p.does_match_name("ca", PolicyTarget::Queues));
+    assert_eq!(false, p.does_match_name("abc.r.1", PolicyTarget::Queues));
+    assert_eq!(
+        false,
+        p.does_match_name("us.ny.nyc.1", PolicyTarget::Queues)
+    );
+}
+
+#[test]
+fn test_unit_policy_does_match_case3() {
+    let mut m = Map::new();
+    m.insert("alternate-exchange".to_owned(), json!("amq.fanout"));
+    let defs = PolicyDefinition(Some(m));
+    let p = Policy {
+        name: "policy.3".to_owned(),
+        vhost: "/".to_owned(),
+        pattern: r"^events\.".to_owned(),
+        apply_to: PolicyTarget::Exchanges,
+        priority: 11,
+        definition: defs.clone(),
+    };
+
+    assert!(p.does_match_name("events.regional.na", PolicyTarget::Exchanges));
+
+    assert_eq!(
+        false,
+        p.does_match_name("events.regional.na.partitions.1", PolicyTarget::Queues)
+    );
+    assert_eq!(
+        false,
+        p.does_match_name(
+            "events.regional.na.partitions.1",
+            PolicyTarget::ClassicQueues
+        )
+    );
+    assert_eq!(
+        false,
+        p.does_match_name(
+            "events.regional.na.partitions.1",
+            PolicyTarget::QuorumQueues
+        )
+    );
+    assert_eq!(
+        false,
+        p.does_match_name("events.regional.na.partitions.1", PolicyTarget::Streams)
+    );
+}
