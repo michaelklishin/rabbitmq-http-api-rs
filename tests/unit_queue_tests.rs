@@ -33,7 +33,25 @@ fn test_unit_queue_type_from_str() {
     assert_eq!(QueueType::Delayed, QueueType::from("delayed"));
     assert_eq!(QueueType::Delayed, QueueType::from("Delayed"));
 
-    assert_eq!(QueueType::Unsupported, QueueType::from("%%a-non-existent-type"));
+    let unsupported_val1 = "%%a-non-existent-type".to_owned();
+    assert_eq!(
+        QueueType::Unsupported(unsupported_val1.clone()),
+        QueueType::from(unsupported_val1.clone())
+    );
+    assert_eq!(
+        QueueType::Unsupported(unsupported_val1.clone()),
+        QueueType::from(unsupported_val1.as_str())
+    );
+
+    let unsupported_val2 = "123123123".to_owned();
+    assert_eq!(
+        QueueType::Unsupported(unsupported_val2.clone()),
+        QueueType::from(unsupported_val2.clone())
+    );
+    assert_eq!(
+        QueueType::Unsupported(unsupported_val2.clone()),
+        QueueType::from(unsupported_val2.as_str())
+    );
 }
 
 #[test]

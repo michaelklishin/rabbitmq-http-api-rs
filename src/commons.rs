@@ -338,7 +338,7 @@ impl From<ExchangeType> for String {
     }
 }
 
-#[derive(Eq, PartialEq, Debug, Serialize, Deserialize, Clone, Copy, Default)]
+#[derive(Eq, PartialEq, Debug, Serialize, Deserialize, Clone, Default)]
 #[serde(rename_all(serialize = "lowercase", deserialize = "PascalCase"))]
 pub enum QueueType {
     #[default]
@@ -348,28 +348,30 @@ pub enum QueueType {
     // Tanzu RabbitMQ-specific
     Delayed,
     // A type this client is not aware of
-    Unsupported
+    Unsupported(String),
 }
 
 impl From<&str> for QueueType {
     fn from(value: &str) -> Self {
-        match value.to_ascii_lowercase().as_str() {
+        let val = value.to_ascii_lowercase();
+        match val.as_str() {
             "classic" => QueueType::Classic,
             "quorum" => QueueType::Quorum,
             "stream" => QueueType::Stream,
             "delayed" => QueueType::Delayed,
-            _ => QueueType::Unsupported,
+            _ => QueueType::Unsupported(value.to_owned()),
         }
     }
 }
 
 impl From<String> for QueueType {
     fn from(value: String) -> Self {
-        match value.to_ascii_lowercase().as_str() {
+        let val = value.to_ascii_lowercase();
+        match val.as_str() {
             "classic" => QueueType::Classic,
             "quorum" => QueueType::Quorum,
             "stream" => QueueType::Stream,
-            _ => QueueType::Unsupported,
+            _ => QueueType::Unsupported(value),
         }
     }
 }
@@ -381,7 +383,7 @@ impl From<QueueType> for String {
             QueueType::Quorum => "quorum".to_owned(),
             QueueType::Stream => "stream".to_owned(),
             QueueType::Delayed => "delayed".to_owned(),
-            QueueType::Unsupported => "unsupported".to_owned(),
+            QueueType::Unsupported(val) => val.to_owned(),
         }
     }
 }
@@ -459,10 +461,10 @@ impl From<QueueType> for PolicyTarget {
     fn from(value: QueueType) -> Self {
         match value {
             QueueType::Classic => PolicyTarget::ClassicQueues,
-            QueueType::Quorum  => PolicyTarget::QuorumQueues,
-            QueueType::Stream  => PolicyTarget::Streams,
+            QueueType::Quorum => PolicyTarget::QuorumQueues,
+            QueueType::Stream => PolicyTarget::Streams,
             QueueType::Delayed => PolicyTarget::Queues,
-            QueueType::Unsupported => PolicyTarget::Queues,
+            QueueType::Unsupported(_) => PolicyTarget::Queues,
         }
     }
 }
