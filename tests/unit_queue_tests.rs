@@ -322,6 +322,143 @@ fn test_unit_queue_info_policy_matching_case2() {
     }"#;
     let cq = serde_json::from_str::<QueueInfo>(input).unwrap();
 
+    // names do not match
+    assert_eq!(false, cq.does_match(&p));
+    assert_eq!(false, p.does_match_object(&cq));
+}
+
+#[test]
+fn test_unit_queue_info_policy_matching_case3() {
+    let mut m = Map::new();
+    m.insert("max-length".to_owned(), json!(100000));
+    let defs = PolicyDefinition(Some(m));
+    let p = Policy {
+        name: "policy.2".to_owned(),
+        vhost: "/".to_owned(),
+        pattern: r"^events\.".to_owned(),
+        // won't match a classic queue
+        apply_to: PolicyTarget::QuorumQueues,
+        priority: 11,
+        definition: defs.clone(),
+    };
+
+    let input = r#"{
+        "arguments": {
+          "x-queue-type": "classic"
+        },
+        "auto_delete": false,
+        "consumer_capacity": 0,
+        "consumer_utilisation": 0,
+        "consumers": 0,
+        "durable": true,
+        "effective_policy_definition": {},
+        "exclusive": false,
+        "memory": 21968,
+        "message_bytes": 21,
+        "message_bytes_paged_out": 0,
+        "message_bytes_persistent": 21,
+        "message_bytes_ram": 3,
+        "message_bytes_ready": 21,
+        "message_bytes_unacknowledged": 0,
+        "messages": 7,
+        "messages_details": {
+          "rate": 0.0
+        },
+        "messages_paged_out": 0,
+        "messages_persistent": 7,
+        "messages_ram": 1,
+        "messages_ready": 7,
+        "messages_ready_details": {
+          "rate": 0.0
+        },
+        "messages_ready_ram": 1,
+        "messages_unacknowledged": 0,
+        "messages_unacknowledged_details": {
+          "rate": 0.0
+        },
+        "messages_unacknowledged_ram": 0,
+        "name": "events.signin.attempts",
+        "node": "rabbit@hostname",
+        "reductions": 6939,
+        "reductions_details": {
+          "rate": 0.0
+        },
+        "state": "running",
+        "storage_version": 2,
+        "type": "classic",
+        "vhost": "/"
+    }"#;
+    let cq = serde_json::from_str::<QueueInfo>(input).unwrap();
+
+    // policy target does not match
+    assert_eq!(false, cq.does_match(&p));
+    assert_eq!(false, p.does_match_object(&cq));
+}
+
+#[test]
+fn test_unit_queue_info_policy_matching_case4() {
+    let mut m = Map::new();
+    m.insert("max-length".to_owned(), json!(100000));
+    let defs = PolicyDefinition(Some(m));
+    let p = Policy {
+        name: "policy.3".to_owned(),
+        vhost: "vh-1".to_owned(),
+        pattern: r"^events\.".to_owned(),
+        // won't match a classic queue
+        apply_to: PolicyTarget::QuorumQueues,
+        priority: 11,
+        definition: defs.clone(),
+    };
+
+    let input = r#"{
+        "arguments": {
+          "x-queue-type": "quorum"
+        },
+        "auto_delete": false,
+        "consumer_capacity": 0,
+        "consumer_utilisation": 0,
+        "consumers": 0,
+        "durable": true,
+        "effective_policy_definition": {},
+        "exclusive": false,
+        "memory": 21968,
+        "message_bytes": 21,
+        "message_bytes_paged_out": 0,
+        "message_bytes_persistent": 21,
+        "message_bytes_ram": 3,
+        "message_bytes_ready": 21,
+        "message_bytes_unacknowledged": 0,
+        "messages": 7,
+        "messages_details": {
+          "rate": 0.0
+        },
+        "messages_paged_out": 0,
+        "messages_persistent": 7,
+        "messages_ram": 1,
+        "messages_ready": 7,
+        "messages_ready_details": {
+          "rate": 0.0
+        },
+        "messages_ready_ram": 1,
+        "messages_unacknowledged": 0,
+        "messages_unacknowledged_details": {
+          "rate": 0.0
+        },
+        "messages_unacknowledged_ram": 0,
+        "name": "events.signin.attempts",
+        "node": "rabbit@hostname",
+        "reductions": 6939,
+        "reductions_details": {
+          "rate": 0.0
+        },
+        "state": "running",
+        "storage_version": 2,
+        "type": "quorum",
+        "vhost": "vh-abc-126387"
+    }"#;
+    let cq = serde_json::from_str::<QueueInfo>(input).unwrap();
+
+    // virtual hosts do not match
     assert_eq!(false, cq.does_match(&p));
     assert_eq!(false, p.does_match_object(&cq));
 }
