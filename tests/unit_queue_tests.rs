@@ -32,6 +32,8 @@ fn test_unit_queue_type_from_str() {
 
     assert_eq!(QueueType::Delayed, QueueType::from("delayed"));
     assert_eq!(QueueType::Delayed, QueueType::from("Delayed"));
+
+    assert_eq!(QueueType::Unsupported, QueueType::from("%%a-non-existent-type"));
 }
 
 #[test]

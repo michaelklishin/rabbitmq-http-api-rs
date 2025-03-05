@@ -346,7 +346,9 @@ pub enum QueueType {
     Quorum,
     Stream,
     // Tanzu RabbitMQ-specific
-    Delayed
+    Delayed,
+    // A type this client is not aware of
+    Unsupported
 }
 
 impl From<&str> for QueueType {
@@ -356,7 +358,7 @@ impl From<&str> for QueueType {
             "quorum" => QueueType::Quorum,
             "stream" => QueueType::Stream,
             "delayed" => QueueType::Delayed,
-            _ => QueueType::Classic,
+            _ => QueueType::Unsupported,
         }
     }
 }
@@ -367,7 +369,7 @@ impl From<String> for QueueType {
             "classic" => QueueType::Classic,
             "quorum" => QueueType::Quorum,
             "stream" => QueueType::Stream,
-            _ => QueueType::Classic,
+            _ => QueueType::Unsupported,
         }
     }
 }
@@ -379,6 +381,7 @@ impl From<QueueType> for String {
             QueueType::Quorum => "quorum".to_owned(),
             QueueType::Stream => "stream".to_owned(),
             QueueType::Delayed => "delayed".to_owned(),
+            QueueType::Unsupported => "unsupported".to_owned(),
         }
     }
 }
@@ -459,6 +462,7 @@ impl From<QueueType> for PolicyTarget {
             QueueType::Quorum  => PolicyTarget::QuorumQueues,
             QueueType::Stream  => PolicyTarget::Streams,
             QueueType::Delayed => PolicyTarget::Queues,
+            QueueType::Unsupported => PolicyTarget::Queues,
         }
     }
 }
