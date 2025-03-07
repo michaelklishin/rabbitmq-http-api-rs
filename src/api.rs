@@ -64,20 +64,20 @@ pub type Result<T> = std::result::Result<T, HttpClientError>;
 /// // fetch information and metrics of a specific queue
 /// rc.get_queue_info("/", "qq.1").await;
 /// ```
-pub struct ClientBuilder<E, U, P> {
+pub struct ClientBuilder<E = &'static str, U = &'static str, P = &'static str> {
     endpoint: E,
     username: U,
     password: P,
     client: HttpClient,
 }
 
-impl Default for ClientBuilder<&'static str, &'static str, &'static str> {
+impl Default for ClientBuilder {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl ClientBuilder<&'static str, &'static str, &'static str> {
+impl ClientBuilder {
     /// Constructs a new `ClientBuilder`.
     ///
     /// This is the same as `Client::builder()`.

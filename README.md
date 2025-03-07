@@ -58,9 +58,6 @@ The examples below do not cover the entire API. Most ``
 ```rust
 use rabbitmq_http_client::blocking_api::ClientBuilder;
 
-// a type alias for convenience
-type APIClient<'a> = Client<&'a str, &'a str, &'a str>;
-
 let endpoint = "http://localhost:15672/api";
 let username = "username";
 let password = "password";
@@ -108,9 +105,6 @@ let _ = rc.get_queue_info("/", "qq.1");
 
 ```rust
 use rabbitmq_http_client::api::ClientBuilder;
-
-// a type alias for convenience
-type APIClient<'a> = Client<&'a str, &'a str, &'a str>;
 
 let endpoint = "http://localhost:15672/api";
 let username = "username";
