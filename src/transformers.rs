@@ -18,6 +18,9 @@ pub trait DefinitionSetTransformer {
     fn transform<'a>(&'a self, defs: &'a mut ClusterDefinitionSet) -> &'a mut ClusterDefinitionSet;
 }
 
+pub type TransformerFn<T> = Box<dyn Fn(T) -> T>;
+pub type TransformerFnOnce<T> = Box<dyn FnOnce(T) -> T>;
+
 #[derive(Default)]
 pub struct StripCmqPolicies {}
 

@@ -27,6 +27,7 @@ use serde_json::{json, Map};
 
 use time::OffsetDateTime;
 
+use crate::transformers::{TransformerFn, TransformerFnOnce};
 use regex::Regex;
 #[cfg(feature = "tabled")]
 use std::borrow::Cow;
@@ -871,6 +872,24 @@ pub struct ExchangeInfo {
 
 pub type ExchangeDefinition = ExchangeInfo;
 
+impl NamedPolicyTargetObject for ExchangeDefinition {
+    fn vhost(&self) -> String {
+        self.vhost.clone()
+    }
+
+    fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    fn policy_target(&self) -> PolicyTarget {
+        PolicyTarget::Exchanges
+    }
+
+    fn does_match(&self, policy: &Policy) -> bool {
+        policy.does_match_object(self)
+    }
+}
+
 /// Used in virtual host-specific definitions.
 /// The virtual host is omitted so that such objects can
 /// be imported into an arbitrary virtual host.
@@ -1218,9 +1237,6 @@ pub struct ClusterDefinitionSet {
     pub bindings: Vec<BindingDefinition>,
 }
 
-type TransformerFn<T> = Box<dyn Fn(T) -> T>;
-type TransformerFnOnce<T> = Box<dyn FnOnce(T) -> T>;
-
 impl ClusterDefinitionSet {
     pub fn update_policies(&mut self, f: TransformerFn<Policy>) -> Vec<Policy> {
         let updated = self
@@ -1237,6 +1253,14 @@ impl ClusterDefinitionSet {
         self.queues
             .iter()
             .filter(|&qd| policy.does_match_object(&qd.clone()))
+            .cloned()
+            .collect()
+    }
+
+    pub fn exchanges_matching(&self, policy: &Policy) -> Vec<ExchangeDefinition> {
+        self.exchanges
+            .iter()
+            .filter(|&exd| policy.does_match_object(exd))
             .cloned()
             .collect()
     }
