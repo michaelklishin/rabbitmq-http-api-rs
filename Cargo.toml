@@ -16,7 +16,6 @@ doctest = false
 serde = { version = "1.0", features = ["derive"] }
 serde-aux = "4.6"
 serde_json = "1"
-sorted-vec = "0.8.6"
 rand = "0.9"
 ring = "0.17"
 rbase64 = "2"
