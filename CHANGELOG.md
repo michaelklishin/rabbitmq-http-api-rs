@@ -1,14 +1,27 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.26.0  (in development)
+## v0.27.0 (in development)
+
+No changes yet.
+
+
+## v0.26.0  (Mar 10, 2024)
 
 ### Enhancements
+
+ * `ClientBuilder<E, U, P>` now has a default type parameter value.
+
+   Contributed by @ikrivosheev.
+
+   GitHub issue: [#46](https://github.com/michaelklishin/rabbitmq-http-api-rs/pull/46)
 
  * `QueueOps`, `NamedPolicyTargetObject` are two new traits that allow
    key queue properties to be accessed on several structs that semantically represent
    a queue, either directly or in an exported set of definitions
 
  * `QueueType::Unsupported(String)` is a new queue type variant
+
+ * Initial functions for mutating certain parts of `ClusterDefinitionSet`s
 
 
 ## v0.25.0  (Mar 3, 2025)
