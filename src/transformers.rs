@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::commons::QueueType;
 use crate::responses::{ClusterDefinitionSet, Policy, PolicyDefinitionOps};
 
 pub trait DefinitionSetTransformer {
@@ -21,16 +22,19 @@ pub trait DefinitionSetTransformer {
 pub type TransformerFn<T> = Box<dyn Fn(T) -> T>;
 pub type TransformerFnOnce<T> = Box<dyn FnOnce(T) -> T>;
 
+pub type TransformerFnMut<T> = Box<dyn FnMut(T) -> T>;
+
 #[derive(Default)]
 pub struct StripCmqPolicies {}
 
 impl DefinitionSetTransformer for StripCmqPolicies {
     fn transform<'a>(&self, defs: &'a mut ClusterDefinitionSet) -> &'a mut ClusterDefinitionSet {
-        let f = Box::new(|p: Policy| p.without_cmq_keys());
-        let matched_policies = defs.update_policies(f);
+        let pf = Box::new(|p: Policy| p.without_cmq_keys());
+        let matched_policies = defs.update_policies(pf);
+
         // for the queue matched by the above policies, inject an "x-queue-type" set to `QueueType::Quorum`
         for mp in matched_policies {
-            let _qs = defs.queues_matching(&mp);
+            defs.update_queue_type_of_matching(&mp, QueueType::Quorum)
         }
 
         defs
@@ -42,22 +46,31 @@ pub struct TransformationChain {
 }
 
 #[allow(clippy::single_match)]
-#[allow(clippy::borrowed_box)]
-impl TransformationChain {
-    pub fn new(vec: Vec<Box<dyn DefinitionSetTransformer>>) -> TransformationChain {
-        TransformationChain { chain: vec }
-    }
-
-    pub fn for_names(names: Vec<String>) -> TransformationChain {
+impl From<Vec<&str>> for TransformationChain {
+    fn from(names: Vec<&str>) -> Self {
         let mut vec: Vec<Box<dyn DefinitionSetTransformer>> = Vec::new();
         for name in names {
-            match name.as_ref() {
+            match name {
                 "strip_cmq_policies" => {
                     vec.push(Box::new(StripCmqPolicies::default()));
                 }
                 _ => (),
             }
         }
+        TransformationChain { chain: vec }
+    }
+}
+impl From<Vec<String>> for TransformationChain {
+    fn from(names0: Vec<String>) -> Self {
+        let names: Vec<&str> = names0.iter().map(|s| s.as_str()).collect();
+        TransformationChain::from(names)
+    }
+}
+
+#[allow(clippy::single_match)]
+#[allow(clippy::borrowed_box)]
+impl TransformationChain {
+    pub fn new(vec: Vec<Box<dyn DefinitionSetTransformer>>) -> TransformationChain {
         TransformationChain { chain: vec }
     }
 

@@ -51,6 +51,10 @@ impl XArguments {
     pub fn insert(&mut self, key: &str, value: serde_json::Value) -> Option<serde_json::Value> {
         self.0.insert(key.to_owned(), value)
     }
+
+    pub fn remove(&mut self, key: &str) -> Option<serde_json::Value> {
+        self.0.remove(key)
+    }
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -819,6 +823,7 @@ impl QueueOps for QueueDefinition {
 
 impl QueueDefinition {
     pub fn update_queue_type(&mut self, typ: QueueType) -> &mut Self {
+        self.arguments.remove(X_ARGUMENT_KEY_X_QUEUE_TYPE);
         self.arguments
             .insert(X_ARGUMENT_KEY_X_QUEUE_TYPE, json!(typ));
 
@@ -1014,10 +1019,11 @@ pub trait PolicyDefinitionOps {
 pub struct PolicyDefinition(pub Option<Map<String, serde_json::Value>>);
 
 impl PolicyDefinition {
-    pub const CMQ_KEYS: [&'static str; 5] = [
+    pub const CMQ_KEYS: [&'static str; 6] = [
         "ha-mode",
         "ha-params",
         "ha-promote-on-shutdown",
+        "ha-promote-on-failure",
         "ha-sync-mode",
         "ha-sync-batch-size",
     ];
@@ -1092,6 +1098,13 @@ pub struct Policy {
 }
 
 impl Policy {
+    pub fn definition_keys(&self) -> Vec<&str> {
+        match &self.definition.0 {
+            None => Vec::new(),
+            Some(m) => m.keys().map(|k| k.as_str()).collect(),
+        }
+    }
+
     pub fn does_match_name(&self, vhost: &str, name: &str, typ: PolicyTarget) -> bool {
         Policy::is_a_full_match(
             &self.vhost,
@@ -1238,6 +1251,42 @@ pub struct ClusterDefinitionSet {
 }
 
 impl ClusterDefinitionSet {
+    pub fn find_policy(&self, vhost: &str, name: &str) -> Option<&Policy> {
+        self.policies
+            .iter()
+            .find(|&p| p.vhost == *vhost && p.name == *name)
+    }
+
+    pub fn policies_in(&self, vhost: &str) -> Option<&Policy> {
+        self.policies.iter().find(|&p| p.vhost == *vhost)
+    }
+
+    pub fn find_queue(&self, vhost: &str, name: &str) -> Option<&QueueDefinition> {
+        self.queues
+            .iter()
+            .find(|&q| q.vhost == *vhost && q.name == *name)
+    }
+
+    pub fn find_queue_mut(&mut self, vhost: &str, name: &str) -> Option<&mut QueueDefinition> {
+        self.queues
+            .iter_mut()
+            .find(|q| q.vhost == *vhost && q.name == *name)
+    }
+
+    pub fn queues_in(&self, vhost: &str) -> Option<&QueueDefinition> {
+        self.queues.iter().find(|&q| q.vhost == *vhost)
+    }
+
+    pub fn find_exchange(&self, vhost: &str, name: &str) -> Option<&ExchangeDefinition> {
+        self.exchanges
+            .iter()
+            .find(|&x| x.vhost == *vhost && x.name == *name)
+    }
+
+    pub fn exchanges_in(&self, vhost: &str) -> Option<&ExchangeDefinition> {
+        self.exchanges.iter().find(|&x| x.vhost == *vhost)
+    }
+
     pub fn update_policies(&mut self, f: TransformerFn<Policy>) -> Vec<Policy> {
         let updated = self
             .policies
@@ -1249,41 +1298,39 @@ impl ClusterDefinitionSet {
         updated.clone()
     }
 
-    pub fn queues_matching(&self, policy: &Policy) -> Vec<QueueDefinition> {
+    pub fn queues_matching(&self, policy: &Policy) -> Vec<&QueueDefinition> {
         self.queues
             .iter()
-            .filter(|&qd| policy.does_match_object(&qd.clone()))
-            .cloned()
+            .filter(|&qd| policy.does_match_object(qd))
             .collect()
     }
 
-    pub fn exchanges_matching(&self, policy: &Policy) -> Vec<ExchangeDefinition> {
-        self.exchanges
+    pub fn update_queue_type_of_matching(&mut self, policy: &Policy, typ: QueueType) {
+        let matches: Vec<(String, String)> = self
+            .queues
             .iter()
-            .filter(|&exd| policy.does_match_object(exd))
-            .cloned()
-            .collect()
+            .filter(|&qd| policy.does_match_object(&qd.clone()))
+            .map(|qd| (qd.vhost.clone(), qd.name.clone()))
+            .collect();
+
+        for (vh, qn) in matches.iter() {
+            self.update_queue_type(&vh.clone(), &qn.clone(), typ.clone());
+        }
     }
 
     pub fn update_queue_type(
         &mut self,
-        vhost: String,
-        name: String,
+        vhost: &str,
+        name: &str,
         typ: QueueType,
     ) -> Option<QueueDefinition> {
-        if self
-            .queues
-            .iter()
-            .find(|&q| q.name == name && q.vhost == vhost)
-            .as_mut()
-            .is_some()
-        {
-            let f = Box::new(|mut obj: QueueDefinition| {
-                obj.update_queue_type(typ);
-                obj
-            });
+        if let Some(qd) = self.find_queue_mut(vhost, name) {
+            let mut args = qd.arguments.clone();
+            args.insert(X_ARGUMENT_KEY_X_QUEUE_TYPE, json!(typ.clone()));
 
-            self.update_queue(vhost, name, f)
+            qd.arguments = args;
+
+            Some(qd.clone())
         } else {
             None
         }
