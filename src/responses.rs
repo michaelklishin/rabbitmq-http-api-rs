@@ -23,7 +23,7 @@ use serde::{
     Deserialize, Serialize,
 };
 use serde_aux::prelude::*;
-use serde_json::Map;
+use serde_json::{json, Map};
 
 use time::OffsetDateTime;
 
@@ -41,6 +41,16 @@ pub struct PluginList(pub Vec<String>);
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct XArguments(pub Map<String, serde_json::Value>);
+
+impl XArguments {
+    pub fn get(&self, key: &str) -> Option<&serde_json::Value> {
+        self.0.get(key)
+    }
+
+    pub fn insert(&mut self, key: &str, value: serde_json::Value) -> Option<serde_json::Value> {
+        self.0.insert(key.to_owned(), value)
+    }
+}
 
 #[derive(Debug, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
@@ -772,6 +782,24 @@ pub struct QueueDefinition {
     pub arguments: XArguments,
 }
 
+impl NamedPolicyTargetObject for QueueDefinition {
+    fn vhost(&self) -> String {
+        self.vhost.clone()
+    }
+
+    fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    fn policy_target(&self) -> PolicyTarget {
+        self.policy_target_type()
+    }
+
+    fn does_match(&self, policy: &Policy) -> bool {
+        policy.does_match_object(self)
+    }
+}
+
 impl QueueOps for QueueDefinition {
     fn queue_type(&self) -> QueueType {
         if let Some((_, val)) = self.arguments.0.get_key_value(X_ARGUMENT_KEY_X_QUEUE_TYPE) {
@@ -785,6 +813,15 @@ impl QueueOps for QueueDefinition {
 
     fn policy_target_type(&self) -> PolicyTarget {
         PolicyTarget::from(self.queue_type())
+    }
+}
+
+impl QueueDefinition {
+    pub fn update_queue_type(&mut self, typ: QueueType) -> &mut Self {
+        self.arguments
+            .insert(X_ARGUMENT_KEY_X_QUEUE_TYPE, json!(typ));
+
+        self
     }
 }
 
@@ -1179,6 +1216,74 @@ pub struct ClusterDefinitionSet {
     pub queues: Vec<QueueDefinition>,
     pub exchanges: Vec<ExchangeDefinition>,
     pub bindings: Vec<BindingDefinition>,
+}
+
+type TransformerFn<T> = Box<dyn Fn(T) -> T>;
+type TransformerFnOnce<T> = Box<dyn FnOnce(T) -> T>;
+
+impl ClusterDefinitionSet {
+    pub fn update_policies(&mut self, f: TransformerFn<Policy>) -> Vec<Policy> {
+        let updated = self
+            .policies
+            .iter()
+            .map(|p| f(p.clone()))
+            .collect::<Vec<_>>();
+        self.policies = updated.clone();
+
+        updated.clone()
+    }
+
+    pub fn queues_matching(&self, policy: &Policy) -> Vec<QueueDefinition> {
+        self.queues
+            .iter()
+            .filter(|&qd| policy.does_match_object(&qd.clone()))
+            .cloned()
+            .collect()
+    }
+
+    pub fn update_queue_type(
+        &mut self,
+        vhost: String,
+        name: String,
+        typ: QueueType,
+    ) -> Option<QueueDefinition> {
+        if self
+            .queues
+            .iter()
+            .find(|&q| q.name == name && q.vhost == vhost)
+            .as_mut()
+            .is_some()
+        {
+            let f = Box::new(|mut obj: QueueDefinition| {
+                obj.update_queue_type(typ);
+                obj
+            });
+
+            self.update_queue(vhost, name, f)
+        } else {
+            None
+        }
+    }
+
+    pub fn update_queue(
+        &mut self,
+        vhost: String,
+        name: String,
+        f: TransformerFnOnce<QueueDefinition>,
+    ) -> Option<QueueDefinition> {
+        if let Some(&mut qd) = self
+            .queues
+            .iter()
+            .find(|&q| q.name == name && q.vhost == vhost)
+            .as_mut()
+        {
+            let qd = f(qd.clone());
+
+            Some(qd)
+        } else {
+            None
+        }
+    }
 }
 
 /// Represents definitions of a single virtual host.
