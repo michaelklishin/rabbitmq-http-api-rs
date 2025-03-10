@@ -1236,7 +1236,7 @@ pub struct Permissions {
 #[allow(dead_code)]
 pub struct ClusterDefinitionSet {
     #[serde(rename(deserialize = "rabbitmq_version"))]
-    pub server_version: String,
+    pub server_version: Option<String>,
     pub users: Vec<User>,
     #[serde(rename(deserialize = "vhosts"))]
     pub virtual_hosts: Vec<VirtualHost>,
@@ -1362,9 +1362,9 @@ impl ClusterDefinitionSet {
 #[allow(dead_code)]
 pub struct VirtualHostDefinitionSet {
     #[serde(rename(deserialize = "rabbitmq_version"))]
-    pub server_version: String,
+    pub server_version: Option<String>,
     /// All virtual host metadata combined
-    pub metadata: VirtualHostMetadata,
+    pub metadata: Option<VirtualHostMetadata>,
 
     pub parameters: Vec<RuntimeParameterWithoutVirtualHost>,
     pub policies: Vec<PolicyWithoutVirtualHost>,
