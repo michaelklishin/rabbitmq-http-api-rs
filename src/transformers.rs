@@ -24,10 +24,10 @@ pub type TransformerFnOnce<T> = Box<dyn FnOnce(T) -> T>;
 
 pub type TransformerFnMut<T> = Box<dyn FnMut(T) -> T>;
 
-#[derive(Default)]
-pub struct StripCmqPolicies {}
+#[derive(Default, Debug)]
+pub struct StripCmqKeysFromPolicies {}
 
-impl DefinitionSetTransformer for StripCmqPolicies {
+impl DefinitionSetTransformer for StripCmqKeysFromPolicies {
     fn transform<'a>(&self, defs: &'a mut ClusterDefinitionSet) -> &'a mut ClusterDefinitionSet {
         let pf = Box::new(|p: Policy| p.without_cmq_keys());
         let matched_policies = defs.update_policies(pf);
@@ -41,7 +41,7 @@ impl DefinitionSetTransformer for StripCmqPolicies {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct DropEmptyPolicies {}
 
 impl DefinitionSetTransformer for DropEmptyPolicies {
@@ -70,10 +70,11 @@ pub struct TransformationChain {
 impl From<Vec<&str>> for TransformationChain {
     fn from(names: Vec<&str>) -> Self {
         let mut vec: Vec<Box<dyn DefinitionSetTransformer>> = Vec::new();
+        dbg!(&names);
         for name in names {
             match name {
-                "strip_cmq_policies" => {
-                    vec.push(Box::new(StripCmqPolicies::default()));
+                "strip_cmq_keys_from_policies" => {
+                    vec.push(Box::new(StripCmqKeysFromPolicies::default()));
                 }
                 "drop_empty_policies" => {
                     vec.push(Box::new(DropEmptyPolicies::default()));
@@ -106,5 +107,9 @@ impl TransformationChain {
             });
 
         defs
+    }
+
+    pub fn len(&self) -> usize {
+        self.chain.len()
     }
 }

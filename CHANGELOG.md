@@ -2,7 +2,13 @@
 
 ## v0.27.0 (in development)
 
-No changes yet.
+ * `ClusterDefinitionSet` transformations are maturing. 
+
+   There are two `transformations::DefinitionSetTransformer`s
+   available: one that removes classic queue mirroring-related (from the 3.13.x era) policy keys, and another
+   that removes policies with empty definitions.
+
+   The two are supposed to be used together.
 
 
 ## v0.26.0  (Mar 10, 2024)
