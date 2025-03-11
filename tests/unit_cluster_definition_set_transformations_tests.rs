@@ -15,7 +15,7 @@ mod test_helpers;
 
 use rabbitmq_http_client::commons::{QueueType, X_ARGUMENT_KEY_X_QUEUE_TYPE};
 use rabbitmq_http_client::responses::{ClusterDefinitionSet, PolicyDefinitionOps};
-use rabbitmq_http_client::transformers::TransformationChain;
+use rabbitmq_http_client::transformers::{StripCmqKeysFromPolicies, TransformationChain};
 use serde_json::json;
 
 #[test]
@@ -228,7 +228,9 @@ fn test_unit_strip_cmq_policies_case1() {
     assert_eq!(4, p0.definition.len());
     assert_eq!(true, p0.definition.has_cmq_keys());
 
-    let chain = TransformationChain::from(vec!["strip_cmq_policies"]);
+    let chain = TransformationChain {
+        chain: vec![Box::new(StripCmqKeysFromPolicies::default())],
+    };
     let defs1 = chain.apply(&mut defs0);
 
     // Three CMQ-related queues were stripped
