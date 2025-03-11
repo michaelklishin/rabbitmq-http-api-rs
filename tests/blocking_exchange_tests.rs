@@ -17,7 +17,7 @@ use rabbitmq_http_client::{
 use serde_json::{json, Map, Value};
 
 mod test_helpers;
-use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
+use crate::test_helpers::{endpoint, testing_against_3_13_x, PASSWORD, USERNAME};
 
 use rabbitmq_http_client::commons::ExchangeType;
 
@@ -43,11 +43,19 @@ fn test_blocking_declare_a_durable_headers_exchange() {
 
 #[test]
 fn test_blocking_declare_a_durable_local_random_exchange() {
+    if testing_against_3_13_x() {
+        return;
+    }
+
     test_declare_a_durable_exchange_of_type("rust.tests.local-rnd.1", ExchangeType::LocalRandom);
 }
 
 #[test]
 fn test_blocking_declare_a_durable_custom_exchange_type() {
+    if testing_against_3_13_x() {
+        return;
+    }
+
     // This is a core type that's not in the AMQP 0-9-1 spec,
     // using it requiring additional plugins on the node
     test_declare_a_durable_exchange_of_type(

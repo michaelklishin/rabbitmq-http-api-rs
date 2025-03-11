@@ -20,13 +20,18 @@ use rabbitmq_http_client::{api::Client, requests::VirtualHostParams};
 
 mod test_helpers;
 use crate::test_helpers::{
-    amqp_endpoint_with_vhost, await_metric_emission, endpoint, PASSWORD, USERNAME,
+    amqp_endpoint_with_vhost, async_testing_against_3_13_x, await_metric_emission, endpoint,
+    PASSWORD, USERNAME,
 };
 
 #[tokio::test]
 async fn test_async_declare_a_dynamic_amqp091_shovel() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    if async_testing_against_3_13_x().await {
+        return;
+    }
 
     let vh = "rust.http.api.async.test_declare_a_dynamic_amqp091_shovel";
     let sh = "test_declare_a_dynamic_amqp091_shovel";
@@ -61,6 +66,10 @@ async fn test_async_declare_a_dynamic_amqp091_shovel() {
 async fn test_async_declare_a_dynamic_amqp10_shovel() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    if async_testing_against_3_13_x().await {
+        return;
+    }
 
     let vh = "rust.http.api.async.test_async_declare_a_dynamic_amqp10_shovel";
     let sh = "test_async_declare_a_dynamic_amqp10_shovel";
@@ -104,6 +113,10 @@ async fn test_async_declare_a_dynamic_amqp091_shovel_with_predeclared_source_top
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
+    if async_testing_against_3_13_x().await {
+        return;
+    }
+
     let vh = "rust.http.api.blocking.test_declare_a_dynamic_amqp091_shovel_with_predeclared_source_topology";
     let sh = "test_declare_a_dynamic_amqp091_shovel_with_predeclared_source_topology";
 
@@ -141,6 +154,10 @@ async fn test_async_declare_a_dynamic_amqp091_shovel_with_predeclared_source_top
 async fn test_async_declare_a_dynamic_amqp091_shovel_with_predeclared_destination_topology() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    if async_testing_against_3_13_x().await {
+        return;
+    }
 
     let vh = "rust.http.api.blocking.test_declare_a_dynamic_amqp091_shovel_with_predeclared_destination_topology";
     let sh = "test_declare_a_dynamic_amqp091_shovel_with_predeclared_destination_topology";
@@ -182,6 +199,10 @@ async fn test_async_declare_a_dynamic_amqp091_shovel_with_predeclared_destinatio
 async fn test_async_delete_a_dynamic_amqp091_shovel() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    if async_testing_against_3_13_x().await {
+        return;
+    }
 
     let vh = "rust.http.api.async.test_delete_a_dynamic_amqp091_shovel";
     let sh = "test_delete_a_dynamic_amqp091_shovel";

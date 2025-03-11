@@ -13,15 +13,6 @@
 // limitations under the License.
 #![allow(clippy::result_large_err)]
 
-use backtrace::Backtrace;
-use reqwest::{
-    header::{HeaderMap, HeaderValue},
-    Client as HttpClient, StatusCode,
-};
-use serde::Serialize;
-use serde_json::{json, Map, Value};
-use std::fmt;
-
 use crate::error::Error;
 use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
 use crate::requests::{
@@ -29,7 +20,7 @@ use crate::requests::{
 };
 use crate::responses::{
     DeprecatedFeatureList, FeatureFlag, FeatureFlagList, FeatureFlagStability, FeatureFlagState,
-    GetMessage, OAuthConfiguration, SchemaDefinitionSyncStatus, VirtualHostDefinitionSet,
+    GetMessage, OAuthConfiguration, Overview, SchemaDefinitionSyncStatus, VirtualHostDefinitionSet,
     WarmStandbyReplicationStatus,
 };
 use crate::{
@@ -41,6 +32,14 @@ use crate::{
     },
     responses::{self, BindingInfo, ClusterDefinitionSet},
 };
+use backtrace::Backtrace;
+use reqwest::{
+    header::{HeaderMap, HeaderValue},
+    Client as HttpClient, StatusCode,
+};
+use serde::Serialize;
+use serde_json::{json, Map, Value};
+use std::fmt;
 
 pub type HttpClientResponse = reqwest::Response;
 pub type HttpClientError = crate::error::HttpClientError;
@@ -1454,6 +1453,13 @@ where
         let response = self.http_get("overview", None, None).await?;
         let response = response.json().await?;
         Ok(response)
+    }
+
+    pub async fn server_version(&self) -> Result<String> {
+        let response = self.http_get("overview", None, None).await?;
+        let response: Overview = response.json().await?;
+
+        Ok(response.rabbitmq_version)
     }
 
     //

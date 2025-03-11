@@ -17,14 +17,18 @@ use rabbitmq_http_client::{
 };
 
 mod test_helpers;
-use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
+use crate::test_helpers::{async_testing_against_3_13_x, endpoint, PASSWORD, USERNAME};
 
 #[tokio::test]
 async fn test_async_list_feature_flags() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
-    let result = rc.list_feature_flags().await;
 
+    if async_testing_against_3_13_x().await {
+        return;
+    }
+
+    let result = rc.list_feature_flags().await;
     assert!(result.is_ok());
     let vec = result.unwrap();
     assert!(vec
@@ -37,8 +41,12 @@ async fn test_async_list_feature_flags() {
 async fn test_async_enable_a_feature_flag() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
-    let ff_name = "detailed_queues_endpoint";
 
+    if async_testing_against_3_13_x().await {
+        return;
+    }
+
+    let ff_name = "detailed_queues_endpoint";
     let result1 = rc.enable_feature_flag(ff_name).await;
     assert!(result1.is_ok());
 
@@ -56,8 +64,12 @@ async fn test_async_enable_a_feature_flag() {
 async fn test_async_enable_all_stable_feature_flags() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
-    let ff_name = "rabbitmq_4.0.0";
 
+    if async_testing_against_3_13_x().await {
+        return;
+    }
+
+    let ff_name = "rabbitmq_4.0.0";
     let result1 = rc.enable_all_stable_feature_flags().await;
     assert!(result1.is_ok());
 

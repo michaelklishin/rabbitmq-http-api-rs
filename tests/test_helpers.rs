@@ -13,13 +13,15 @@
 // limitations under the License.
 #![allow(dead_code)]
 
-use rabbitmq_http_client::blocking_api::Client as GenericAPIClient;
+use rabbitmq_http_client::blocking_api::Client as BlockingClient;
 use std::env;
 use std::time::Duration;
 
 use amqprs::channel::BasicPublishArguments;
 use amqprs::connection::{Connection, OpenConnectionArguments};
 use amqprs::BasicProperties;
+use rabbitmq_http_client::api::Client as AsyncClient;
+use regex::Regex;
 use tokio::time;
 //
 // Common
@@ -31,7 +33,7 @@ pub const PASSWORD: &str = "guest";
 
 pub const AMQP_ENDPOINT: &str = "amqp://localhost:5672";
 
-pub type APIClient<'a> = GenericAPIClient<&'a str, &'a str, &'a str>;
+pub type APIClient<'a> = BlockingClient<&'a str, &'a str, &'a str>;
 
 pub fn endpoint() -> String {
     ENDPOINT.to_owned()
@@ -53,6 +55,22 @@ pub fn amqp_endpoint_with_vhost(name: &str) -> String {
 // Blocking client tests
 //
 
+pub fn testing_against_3_13_x() -> bool {
+    testing_against_series("^3.13")
+}
+
+pub fn testing_against_4_0_x() -> bool {
+    testing_against_series("^4.0")
+}
+
+pub fn testing_against_series(series: &str) -> bool {
+    let endpoint = endpoint();
+    let rc = BlockingClient::new(&endpoint, USERNAME, PASSWORD);
+
+    let regex = Regex::new(series).unwrap();
+    regex.is_match(&rc.server_version().unwrap())
+}
+
 pub fn await_metric_emission(ms: u64) {
     std::thread::sleep(Duration::from_millis(ms));
 }
@@ -65,6 +83,22 @@ pub fn await_queue_metric_emission() {
 //
 // Async client tests
 //
+
+pub async fn async_testing_against_3_13_x() -> bool {
+    async_testing_against_series("^3.13").await
+}
+
+pub async fn async_testing_against_4_0_x() -> bool {
+    async_testing_against_series("^4.0").await
+}
+
+pub async fn async_testing_against_series(series: &str) -> bool {
+    let endpoint = endpoint();
+    let rc = AsyncClient::new(&endpoint, USERNAME, PASSWORD);
+
+    let regex = Regex::new(series).unwrap();
+    regex.is_match(&rc.server_version().await.unwrap())
+}
 
 pub async fn async_await_metric_emission(ms: u64) {
     time::sleep(Duration::from_millis(ms)).await;

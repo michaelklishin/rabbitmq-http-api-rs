@@ -15,7 +15,7 @@ use rabbitmq_http_client::{api::Client, error::Error as APIClientError, requests
 use serde_json::{json, Map, Value};
 
 mod test_helpers;
-use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
+use crate::test_helpers::{async_testing_against_3_13_x, endpoint, PASSWORD, USERNAME};
 
 use rabbitmq_http_client::commons::ExchangeType;
 
@@ -44,6 +44,10 @@ async fn test_async_declare_a_durable_headers_exchange() {
 
 #[tokio::test]
 async fn test_async_declare_a_durable_local_random_exchange() {
+    if async_testing_against_3_13_x().await {
+        return;
+    }
+
     test_async_declare_a_durable_exchange_of_type(
         "rust.tests.local-rnd.1",
         ExchangeType::LocalRandom,
@@ -53,6 +57,10 @@ async fn test_async_declare_a_durable_local_random_exchange() {
 
 #[tokio::test]
 async fn test_async_declare_a_durable_custom_exchange_type() {
+    if async_testing_against_3_13_x().await {
+        return;
+    }
+
     // This is a core type that's not in the AMQP 0-9-1 spec,
     // using it requiring additional plugins on the node
     test_async_declare_a_durable_exchange_of_type(

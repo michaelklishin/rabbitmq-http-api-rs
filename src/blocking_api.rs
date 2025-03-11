@@ -1283,6 +1283,12 @@ where
         Ok(response)
     }
 
+    pub fn server_version(&self) -> Result<String> {
+        let response = self.http_get("overview", None, None)?;
+        let response: responses::Overview = response.json()?;
+        Ok(response.rabbitmq_version)
+    }
+
     //
     // Feature flags
     //

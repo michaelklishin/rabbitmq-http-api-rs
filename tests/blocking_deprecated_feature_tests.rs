@@ -15,7 +15,7 @@ use rabbitmq_http_client::responses::DeprecationPhase;
 use rabbitmq_http_client::{blocking_api::Client, commons::QueueType, requests::QueueParams};
 
 mod test_helpers;
-use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
+use crate::test_helpers::{endpoint, testing_against_3_13_x, PASSWORD, USERNAME};
 
 #[test]
 fn test_blocking_list_all_deprecated_features() {
@@ -35,6 +35,11 @@ fn test_blocking_list_all_deprecated_features() {
 fn test_blocking_list_deprecated_features_in_use() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    if testing_against_3_13_x() {
+        return;
+    }
+
     let vh = "/";
     let q = "test_list_deprecated_features_in_use";
 
