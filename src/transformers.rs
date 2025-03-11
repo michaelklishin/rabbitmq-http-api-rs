@@ -70,7 +70,6 @@ pub struct TransformationChain {
 impl From<Vec<&str>> for TransformationChain {
     fn from(names: Vec<&str>) -> Self {
         let mut vec: Vec<Box<dyn DefinitionSetTransformer>> = Vec::new();
-        dbg!(&names);
         for name in names {
             match name {
                 "strip_cmq_keys_from_policies" => {
