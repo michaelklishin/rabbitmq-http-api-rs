@@ -41,6 +41,27 @@ impl DefinitionSetTransformer for StripCmqPolicies {
     }
 }
 
+#[derive(Default)]
+pub struct DropEmptyPolicies {}
+
+impl DefinitionSetTransformer for DropEmptyPolicies {
+    fn transform<'a>(&self, defs: &'a mut ClusterDefinitionSet) -> &'a mut ClusterDefinitionSet {
+        let non_empty = defs
+            .policies
+            .iter()
+            .filter(|p| !p.is_empty())
+            .cloned()
+            .collect::<Vec<_>>();
+        defs.policies = non_empty;
+
+        defs
+    }
+}
+
+//
+// Transformation chain
+//
+
 pub struct TransformationChain {
     pub chain: Vec<Box<dyn DefinitionSetTransformer>>,
 }
@@ -53,6 +74,9 @@ impl From<Vec<&str>> for TransformationChain {
             match name {
                 "strip_cmq_policies" => {
                     vec.push(Box::new(StripCmqPolicies::default()));
+                }
+                "drop_empty_policies" => {
+                    vec.push(Box::new(DropEmptyPolicies::default()));
                 }
                 _ => (),
             }
