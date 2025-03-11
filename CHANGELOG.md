@@ -1,6 +1,11 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.27.0 (in development)
+## v0.28.0 (in development)
+
+No changes yet.
+
+
+## v0.27.0 (Mar 11, 2024)
 
  * `ClusterDefinitionSet` transformations are maturing. 
 
