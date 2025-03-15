@@ -66,6 +66,26 @@ impl DefinitionSetTransformer for DropEmptyPolicies {
     }
 }
 
+#[derive(Default, Debug)]
+pub struct ExcludeUsers {}
+
+impl DefinitionSetTransformer for ExcludeUsers {
+    fn transform<'a>(&self, defs: &'a mut ClusterDefinitionSet) -> &'a mut ClusterDefinitionSet {
+        defs.users = Vec::new();
+        defs
+    }
+}
+
+#[derive(Default, Debug)]
+pub struct ExcludePermissions {}
+
+impl DefinitionSetTransformer for ExcludePermissions {
+    fn transform<'a>(&self, defs: &'a mut ClusterDefinitionSet) -> &'a mut ClusterDefinitionSet {
+        defs.permissions = Vec::new();
+        defs
+    }
+}
+
 //
 // Transformation chain
 //
@@ -85,6 +105,12 @@ impl From<Vec<&str>> for TransformationChain {
                 }
                 "drop_empty_policies" => {
                     vec.push(Box::new(DropEmptyPolicies::default()));
+                }
+                "exclude_users" => {
+                    vec.push(Box::new(ExcludeUsers::default()));
+                }
+                "exclude_permissions" => {
+                    vec.push(Box::new(ExcludePermissions::default()));
                 }
                 _ => {
                     vec.push(Box::new(NoOp::default()));
