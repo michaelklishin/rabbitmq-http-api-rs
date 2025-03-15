@@ -86,6 +86,26 @@ impl DefinitionSetTransformer for ExcludePermissions {
     }
 }
 
+#[derive(Default, Debug)]
+pub struct ExcludeRuntimeParameters {}
+
+impl DefinitionSetTransformer for ExcludeRuntimeParameters {
+    fn transform<'a>(&self, defs: &'a mut ClusterDefinitionSet) -> &'a mut ClusterDefinitionSet {
+        defs.parameters = Vec::new();
+        defs
+    }
+}
+
+#[derive(Default, Debug)]
+pub struct ExcludePolicies {}
+
+impl DefinitionSetTransformer for ExcludePolicies {
+    fn transform<'a>(&self, defs: &'a mut ClusterDefinitionSet) -> &'a mut ClusterDefinitionSet {
+        defs.policies = Vec::new();
+        defs
+    }
+}
+
 //
 // Transformation chain
 //
@@ -111,6 +131,12 @@ impl From<Vec<&str>> for TransformationChain {
                 }
                 "exclude_permissions" => {
                     vec.push(Box::new(ExcludePermissions::default()));
+                }
+                "exclude_runtime_parameters" => {
+                    vec.push(Box::new(ExcludeRuntimeParameters::default()));
+                }
+                "exclude_policies" => {
+                    vec.push(Box::new(ExcludePolicies::default()));
                 }
                 _ => {
                     vec.push(Box::new(NoOp::default()));
