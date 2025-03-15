@@ -2,12 +2,17 @@
 
 ## v0.28.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * New definition set transformations that include certain parts of the definition set:
+   `exclude_users`, `exclude_permissions`, `exclude_runtime_parameters`, `exclude_policies`
 
 
 ## v0.27.0 (Mar 11, 2024)
 
- * `ClusterDefinitionSet` transformations are maturing. 
+### Enhancements
+
+ * `ClusterDefinitionSet` transformations are maturing.
 
    There are two `transformations::DefinitionSetTransformer`s
    available: one that removes classic queue mirroring-related (from the 3.13.x era) policy keys, and another
@@ -53,7 +58,7 @@ No changes yet.
  * Both `Amqp091ShovelSourceParams` and `Amqp091ShovelDestinationParams` now support a new boolean option, `predeclared`,
    that enables [either or both sides to rely on a pre-declared topology](https://www.rabbitmq.com/docs/shovel-dynamic#predeclared-topology)
 
-   
+
 
 
 ## v0.23.0  (Feb 24, 2025)
