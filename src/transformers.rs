@@ -25,6 +25,14 @@ pub type TransformerFnOnce<T> = Box<dyn FnOnce(T) -> T>;
 pub type TransformerFnMut<T> = Box<dyn FnMut(T) -> T>;
 
 #[derive(Default, Debug)]
+pub struct NoOp {}
+impl DefinitionSetTransformer for NoOp {
+    fn transform<'a>(&self, defs: &'a mut ClusterDefinitionSet) -> &'a mut ClusterDefinitionSet {
+        defs
+    }
+}
+
+#[derive(Default, Debug)]
 pub struct StripCmqKeysFromPolicies {}
 
 impl DefinitionSetTransformer for StripCmqKeysFromPolicies {
@@ -78,7 +86,9 @@ impl From<Vec<&str>> for TransformationChain {
                 "drop_empty_policies" => {
                     vec.push(Box::new(DropEmptyPolicies::default()));
                 }
-                _ => (),
+                _ => {
+                    vec.push(Box::new(NoOp::default()));
+                }
             }
         }
         TransformationChain { chain: vec }
