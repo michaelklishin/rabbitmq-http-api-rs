@@ -2046,6 +2046,49 @@ impl TryFrom<RuntimeParameter> for FederationUpstream {
     }
 }
 
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq, Default)]
+#[serde(rename_all = "lowercase")]
+pub enum FederationType {
+    #[default]
+    Exchange,
+    Queue,
+}
+
+impl fmt::Display for FederationType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            FederationType::Exchange => write!(f, "exchange"),
+            FederationType::Queue => write!(f, "queue"),
+        }
+    }
+}
+
+impl From<String> for FederationType {
+    fn from(value: String) -> Self {
+        match value.as_str() {
+            "exchange" => FederationType::Exchange,
+            "queue" => FederationType::Queue,
+            _ => FederationType::default(),
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+#[allow(dead_code)]
+pub struct FederationLink {
+    pub node: String,
+    pub vhost: String,
+    pub id: String,
+    pub uri: String,
+    pub status: String,
+    #[serde(rename = "type")]
+    pub typ: FederationType,
+    pub upstream: String,
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub consumer_tag: Option<String>,
+}
+
 //
 // Shovels
 //

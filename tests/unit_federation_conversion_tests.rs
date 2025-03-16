@@ -15,7 +15,7 @@ mod test_helpers;
 
 use rabbitmq_http_client::{
     commons::MessageTransferAcknowledgementMode,
-    responses::{FederationUpstream, RuntimeParameter},
+    responses::{FederationLink, FederationType, FederationUpstream, RuntimeParameter},
 };
 
 #[test]
@@ -85,4 +85,66 @@ fn test_unit_deserialize_federation_upstream_case2() {
         MessageTransferAcknowledgementMode::WhenConfirmed,
         upstream.ack_mode
     );
+}
+
+#[test]
+fn test_unit_deserialize_federation_link_case1() {
+    let json = r#"
+        {
+          "node": "rabbit@sunnyside",
+          "queue": "fed.cq.1",
+          "upstream_queue": "fed.cq.overridden",
+          "consumer_tag": "hgksdh98s7f98au9u",
+          "type": "queue",
+          "vhost": "/",
+          "upstream": "up-1",
+          "id": "e178dfad",
+          "status": "running",
+          "local_connection": "<rabbit@sunnyside.1741991552.108078.0>",
+          "uri": "amqp://localhost:5672/fed",
+          "timestamp": "2025-03-16 0:41:29",
+          "local_channel": {
+            "acks_uncommitted": 0,
+            "confirm": true,
+            "connection_details": {
+              "name": "<rabbit@sunnyside.1741991552.108078.0>",
+              "peer_host": "undefined",
+              "peer_port": "undefined"
+            },
+            "consumer_count": 0,
+            "garbage_collection": {
+              "fullsweep_after": 65535,
+              "max_heap_size": 0,
+              "min_bin_vheap_size": 1727361,
+              "min_heap_size": 233,
+              "minor_gcs": 6
+            },
+            "idle_since": "2025-03-16T00:41:30.097-04:00",
+            "messages_unacknowledged": 0,
+            "messages_uncommitted": 0,
+            "messages_unconfirmed": 0,
+            "name": "<rabbit@sunnyside.1741991552.108078.0> (1)",
+            "node": "rabbit@sunnyside",
+            "number": 1,
+            "pending_raft_commands": 0,
+            "prefetch_count": 0,
+            "reductions": 1127,
+            "reductions_details": {
+              "rate": 0.0
+            },
+            "state": "running",
+            "transactional": false,
+            "user": "none",
+            "user_who_performed_action": "none",
+            "vhost": "/"
+          }
+        }
+    "#;
+
+    let link: FederationLink = serde_json::from_str(&json).unwrap();
+    assert_eq!(link.uri, "amqp://localhost:5672/fed");
+    assert_eq!(link.id, "e178dfad");
+    assert_eq!(link.typ, FederationType::Queue);
+    assert_eq!(link.upstream, "up-1");
+    assert_eq!(link.consumer_tag.unwrap(), "hgksdh98s7f98au9u");
 }
