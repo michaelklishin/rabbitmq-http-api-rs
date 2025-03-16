@@ -14,8 +14,10 @@
 use std::{fmt, ops};
 
 use crate::commons::{
-    BindingDestinationType, PolicyTarget, QueueType, X_ARGUMENT_KEY_X_QUEUE_TYPE,
+    BindingDestinationType, MessageTransferAcknowledgementMode, PolicyTarget, QueueType,
+    X_ARGUMENT_KEY_X_QUEUE_TYPE,
 };
+use crate::error::ConversionError;
 use crate::formatting::*;
 use crate::utils::{percentage, percentage_as_text};
 use serde::{
@@ -1932,6 +1934,121 @@ impl From<MessagingProtocol> for String {
         }
     }
 }
+
+//
+// Federation
+//
+
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+#[serde(rename_all = "kebab-case")]
+#[allow(dead_code)]
+pub struct FederationUpstream {
+    pub name: String,
+    pub vhost: String,
+    pub uri: String,
+    pub ack_mode: MessageTransferAcknowledgementMode,
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub trust_user_id: Option<bool>,
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub reconnect_delay: Option<u32>,
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub queue: Option<String>,
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub consumer_tag: Option<String>,
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub exchange: Option<String>,
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub max_hops: Option<u32>,
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub expires: Option<u32>,
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub message_ttl: Option<u32>,
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub queue_type: Option<QueueType>,
+}
+
+impl TryFrom<RuntimeParameter> for FederationUpstream {
+    type Error = ConversionError;
+
+    fn try_from(param: RuntimeParameter) -> Result<Self, Self::Error> {
+        let uri = param
+            .value
+            .get("uri")
+            .map(|v| v.as_str().unwrap().to_owned())
+            .ok_or_else(|| ConversionError::MissingProperty {
+                argument: "uri".to_owned(),
+            })?;
+
+        let ack_mode = param
+            .value
+            .get("ack-mode")
+            .map(|v| MessageTransferAcknowledgementMode::from(v.as_str().unwrap_or("on-publish")))
+            .unwrap_or_default()
+            .to_owned();
+        let reconnect_delay = param
+            .value
+            .get("reconnect-delay")
+            .map(|v| v.as_i64().unwrap() as u32);
+        let trust_user_id = param
+            .value
+            .get("trust-user-id")
+            .map(|v| v.as_bool().unwrap_or_default());
+
+        let exchange = param
+            .value
+            .get("exchange")
+            .map(|v| v.as_str().unwrap().to_owned());
+
+        let max_hops = param
+            .value
+            .get("max-hops")
+            .map(|v| v.as_i64().unwrap() as u32);
+        let expires = param
+            .value
+            .get("expires")
+            .map(|v| v.as_i64().unwrap() as u32);
+        let message_ttl = param
+            .value
+            .get("message-ttl")
+            .map(|v| v.as_i64().unwrap() as u32);
+        let queue_type = param
+            .value
+            .get("queue-type")
+            .map(|v| QueueType::from(v.as_str().unwrap_or("classic")));
+
+        let queue = param
+            .value
+            .get("queue")
+            .map(|v| v.as_str().unwrap().to_owned());
+        let consumer_tag = param
+            .value
+            .get("consumer-tag")
+            .map(|v| v.as_str().unwrap().to_owned());
+
+        let upstream = FederationUpstream {
+            name: param.name.clone(),
+            vhost: param.vhost.clone(),
+            uri,
+            ack_mode,
+            trust_user_id,
+            reconnect_delay,
+            exchange,
+            max_hops,
+            expires,
+            message_ttl,
+            queue_type,
+            queue,
+            consumer_tag,
+        };
+
+        Ok(upstream)
+    }
+}
+
+//
+// Shovels
+//
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 #[serde(rename_all = "snake_case")]

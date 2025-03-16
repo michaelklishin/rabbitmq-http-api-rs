@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-use rabbitmq_http_client::commons::ShovelAcknowledgementMode;
+use rabbitmq_http_client::commons::MessageTransferAcknowledgementMode;
 use rabbitmq_http_client::requests::{
     Amqp091ShovelDestinationParams, Amqp091ShovelParams, Amqp091ShovelSourceParams,
     Amqp10ShovelDestinationParams, Amqp10ShovelParams, Amqp10ShovelSourceParams, QueueParams,
@@ -47,7 +47,7 @@ async fn test_async_declare_a_dynamic_amqp091_shovel() {
     let shovel_params = Amqp091ShovelParams {
         vhost: &vh,
         name: sh,
-        acknowledgement_mode: ShovelAcknowledgementMode::WhenConfirmed,
+        acknowledgement_mode: MessageTransferAcknowledgementMode::WhenConfirmed,
         reconnect_delay: Some(5),
         source: Amqp091ShovelSourceParams::queue_source(&amqp_endpoint, &src_q),
         destination: Amqp091ShovelDestinationParams::queue_destination(&amqp_endpoint, &dest_q),
@@ -97,7 +97,7 @@ async fn test_async_declare_a_dynamic_amqp10_shovel() {
     let shovel_params = Amqp10ShovelParams {
         vhost: &vh,
         name: sh,
-        acknowledgement_mode: ShovelAcknowledgementMode::WhenConfirmed,
+        acknowledgement_mode: MessageTransferAcknowledgementMode::WhenConfirmed,
         reconnect_delay: Some(5),
         source: Amqp10ShovelSourceParams::new(&amqp_endpoint, &src_address),
         destination: Amqp10ShovelDestinationParams::new(&amqp_endpoint, &dest_address),
@@ -135,7 +135,7 @@ async fn test_async_declare_a_dynamic_amqp091_shovel_with_predeclared_source_top
     let shovel_params = Amqp091ShovelParams {
         vhost: &vh,
         name: sh,
-        acknowledgement_mode: ShovelAcknowledgementMode::WhenConfirmed,
+        acknowledgement_mode: MessageTransferAcknowledgementMode::WhenConfirmed,
         reconnect_delay: Some(5),
         source: Amqp091ShovelSourceParams::predeclared_queue_source(&amqp_endpoint, &src_q),
         destination: Amqp091ShovelDestinationParams::queue_destination(&amqp_endpoint, &dest_q),
@@ -177,7 +177,7 @@ async fn test_async_declare_a_dynamic_amqp091_shovel_with_predeclared_destinatio
     let shovel_params = Amqp091ShovelParams {
         vhost: &vh,
         name: sh,
-        acknowledgement_mode: ShovelAcknowledgementMode::WhenConfirmed,
+        acknowledgement_mode: MessageTransferAcknowledgementMode::WhenConfirmed,
         reconnect_delay: Some(5),
         source: Amqp091ShovelSourceParams::queue_source(&amqp_endpoint, &src_q),
         destination: Amqp091ShovelDestinationParams::predeclared_queue_destination(
@@ -218,7 +218,7 @@ async fn test_async_delete_a_dynamic_amqp091_shovel() {
     let shovel_params = Amqp091ShovelParams {
         vhost: &vh,
         name: sh,
-        acknowledgement_mode: ShovelAcknowledgementMode::WhenConfirmed,
+        acknowledgement_mode: MessageTransferAcknowledgementMode::WhenConfirmed,
         reconnect_delay: Some(5),
         source: Amqp091ShovelSourceParams::queue_source(&amqp_endpoint, &src_q),
         destination: Amqp091ShovelDestinationParams::queue_destination(&amqp_endpoint, &dest_q),

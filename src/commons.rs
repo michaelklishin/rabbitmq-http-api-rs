@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 use std::fmt;
+use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
 
@@ -352,6 +353,18 @@ pub enum QueueType {
     Unsupported(String),
 }
 
+impl Display for QueueType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            QueueType::Classic => write!(f, "classic"),
+            QueueType::Quorum => write!(f, "quorum"),
+            QueueType::Stream => write!(f, "stream"),
+            QueueType::Delayed => write!(f, "delayed"),
+            QueueType::Unsupported(s) => write!(f, "{}", s),
+        }
+    }
+}
+
 impl From<&str> for QueueType {
     fn from(value: &str) -> Self {
         let val = value.to_ascii_lowercase();
@@ -637,7 +650,7 @@ impl From<UserLimitTarget> for String {
 }
 
 #[derive(Default, Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
-pub enum ShovelAcknowledgementMode {
+pub enum MessageTransferAcknowledgementMode {
     #[serde(rename = "no-ack")]
     Immediate,
     #[serde(rename = "on-publish")]
@@ -647,24 +660,40 @@ pub enum ShovelAcknowledgementMode {
     WhenConfirmed,
 }
 
-impl From<&str> for ShovelAcknowledgementMode {
+impl From<&str> for MessageTransferAcknowledgementMode {
     fn from(value: &str) -> Self {
         match value {
-            "no-ack" => ShovelAcknowledgementMode::Immediate,
-            "on-publish" => ShovelAcknowledgementMode::WhenPublished,
-            "on-confirm" => ShovelAcknowledgementMode::WhenConfirmed,
-            _ => ShovelAcknowledgementMode::default(),
+            "no-ack" => MessageTransferAcknowledgementMode::Immediate,
+            "on-publish" => MessageTransferAcknowledgementMode::WhenPublished,
+            "on-confirm" => MessageTransferAcknowledgementMode::WhenConfirmed,
+            _ => MessageTransferAcknowledgementMode::default(),
         }
     }
 }
 
-impl From<String> for ShovelAcknowledgementMode {
+impl From<String> for MessageTransferAcknowledgementMode {
     fn from(value: String) -> Self {
         match value.as_str() {
-            "no-ack" => ShovelAcknowledgementMode::Immediate,
-            "on-publish" => ShovelAcknowledgementMode::WhenPublished,
-            "on-confirm" => ShovelAcknowledgementMode::WhenConfirmed,
-            _ => ShovelAcknowledgementMode::default(),
+            "no-ack" => MessageTransferAcknowledgementMode::Immediate,
+            "on-publish" => MessageTransferAcknowledgementMode::WhenPublished,
+            "on-confirm" => MessageTransferAcknowledgementMode::WhenConfirmed,
+            _ => MessageTransferAcknowledgementMode::default(),
         }
+    }
+}
+
+impl Display for MessageTransferAcknowledgementMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            MessageTransferAcknowledgementMode::Immediate => write!(f, "no-ack"),
+            MessageTransferAcknowledgementMode::WhenPublished => write!(f, "on-publish"),
+            MessageTransferAcknowledgementMode::WhenConfirmed => write!(f, "on-confirm"),
+        }
+    }
+}
+
+impl From<MessageTransferAcknowledgementMode> for String {
+    fn from(value: MessageTransferAcknowledgementMode) -> Self {
+        value.to_string()
     }
 }

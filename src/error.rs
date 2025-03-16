@@ -23,6 +23,14 @@ use reqwest::{
 };
 
 #[derive(Error, Debug)]
+pub enum ConversionError {
+    #[error("Unsupported argument value for property (field) {property}")]
+    UnsupportedPropertyValue { property: String },
+    #[error("Missing required argument")]
+    MissingProperty { argument: String },
+}
+
+#[derive(Error, Debug)]
 pub enum Error<U, S, E, BT> {
     #[error("API responded with a client error: status code of {status_code}")]
     ClientErrorResponse {
@@ -54,6 +62,8 @@ pub enum Error<U, S, E, BT> {
     InvalidHeaderValue { error: InvalidHeaderValue },
     #[error("Unsupported argument value for property (field) {property}")]
     UnsupportedArgumentValue { property: String },
+    #[error("Missing required argument")]
+    MissingProperty { argument: String },
     #[error("encountered an error when performing an HTTP request")]
     RequestError { error: E, backtrace: BT },
     #[error("an unspecified error")]
@@ -103,5 +113,18 @@ impl From<reqwest::Error> for HttpClientError {
 impl From<reqwest::header::InvalidHeaderValue> for HttpClientError {
     fn from(err: reqwest::header::InvalidHeaderValue) -> Self {
         HttpClientError::InvalidHeaderValue { error: err }
+    }
+}
+
+impl From<ConversionError> for HttpClientError {
+    fn from(value: ConversionError) -> Self {
+        match value {
+            ConversionError::UnsupportedPropertyValue { property } => {
+                HttpClientError::UnsupportedArgumentValue { property }
+            }
+            ConversionError::MissingProperty { argument } => {
+                HttpClientError::MissingProperty { argument }
+            }
+        }
     }
 }

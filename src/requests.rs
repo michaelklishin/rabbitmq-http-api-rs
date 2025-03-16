@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-use crate::commons::{ExchangeType, PolicyTarget, QueueType, ShovelAcknowledgementMode};
+use crate::commons::{ExchangeType, MessageTransferAcknowledgementMode, PolicyTarget, QueueType};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 
@@ -412,7 +412,7 @@ pub struct Amqp091ShovelParams<'a> {
     pub name: &'a str,
     pub vhost: &'a str,
 
-    pub acknowledgement_mode: ShovelAcknowledgementMode,
+    pub acknowledgement_mode: MessageTransferAcknowledgementMode,
     pub reconnect_delay: Option<u16>,
 
     pub source: Amqp091ShovelSourceParams<'a>,
@@ -623,7 +623,7 @@ pub struct Amqp10ShovelParams<'a> {
     pub name: &'a str,
     pub vhost: &'a str,
 
-    pub acknowledgement_mode: ShovelAcknowledgementMode,
+    pub acknowledgement_mode: MessageTransferAcknowledgementMode,
     pub reconnect_delay: Option<u16>,
 
     pub source: Amqp10ShovelSourceParams<'a>,
