@@ -473,6 +473,32 @@ pub struct User {
     pub password_hash: String,
 }
 
+impl User {
+    pub fn with_name(&self, name: String) -> Self {
+        Self {
+            name,
+            tags: self.tags.clone(),
+            password_hash: self.password_hash.clone(),
+        }
+    }
+
+    pub fn with_tags(&self, tags: TagList) -> Self {
+        Self {
+            name: self.name.clone(),
+            tags,
+            password_hash: self.password_hash.clone(),
+        }
+    }
+
+    pub fn with_password_hash(&self, password_hash: String) -> Self {
+        Self {
+            name: self.name.clone(),
+            tags: self.tags.clone(),
+            password_hash,
+        }
+    }
+}
+
 /// Represents a client connection.
 #[derive(Debug, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
@@ -1229,6 +1255,18 @@ pub struct Permissions {
     pub configure: String,
     pub read: String,
     pub write: String,
+}
+
+impl Permissions {
+    pub fn with_username(&self, username: &str) -> Self {
+        Permissions {
+            user: username.to_owned(),
+            vhost: self.vhost.clone(),
+            configure: self.configure.clone(),
+            read: self.read.clone(),
+            write: self.write.clone(),
+        }
+    }
 }
 
 /// Represents definitions of an entire cluster (all virtual hosts).

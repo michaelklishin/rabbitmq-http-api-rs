@@ -12,8 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::collections::HashMap;
+
 use crate::commons::QueueType;
 use crate::responses::{ClusterDefinitionSet, Policy, PolicyDefinitionOps};
+
+use crate::password_hashing;
 
 pub trait DefinitionSetTransformer {
     fn transform<'a>(&'a self, defs: &'a mut ClusterDefinitionSet) -> &'a mut ClusterDefinitionSet;
@@ -61,6 +65,44 @@ impl DefinitionSetTransformer for DropEmptyPolicies {
             .cloned()
             .collect::<Vec<_>>();
         defs.policies = non_empty;
+
+        defs
+    }
+}
+
+#[derive(Default, Debug)]
+pub struct ObfuscateUsernames {}
+
+impl DefinitionSetTransformer for ObfuscateUsernames {
+    fn transform<'a>(&'a self, defs: &'a mut ClusterDefinitionSet) -> &'a mut ClusterDefinitionSet {
+        // keeps track of name changes
+        let mut obfuscated = HashMap::<String, String>::new();
+        let mut i = 1u16;
+        for u in &defs.users {
+            let new_name = format!("obfuscated-user-{}", i);
+            i += 1;
+            obfuscated.insert(u.name.clone(), new_name.clone());
+        }
+        let obfuscated2 = obfuscated.clone();
+
+        let updated_users = defs.users.clone().into_iter().map(|u| {
+            let new_name = obfuscated.get(&u.name).unwrap_or(&u.name).as_str();
+            let salt = password_hashing::salt();
+            let new_password = format!("password-{}", i);
+            let hash =
+                password_hashing::base64_encoded_salted_password_hash_sha256(&salt, &new_password);
+
+            u.with_name(new_name.to_owned()).with_password_hash(hash)
+        });
+
+        let updated_permissions = defs.permissions.clone().into_iter().map(|p| {
+            let new_new = obfuscated2.get(&p.user).unwrap_or(&p.user).as_str();
+
+            p.with_username(new_new)
+        });
+
+        defs.users = updated_users.collect::<Vec<_>>();
+        defs.permissions = updated_permissions.collect::<Vec<_>>();
 
         defs
     }
@@ -125,6 +167,9 @@ impl From<Vec<&str>> for TransformationChain {
                 }
                 "drop_empty_policies" => {
                     vec.push(Box::new(DropEmptyPolicies::default()));
+                }
+                "obfuscate_usernames" => {
+                    vec.push(Box::new(ObfuscateUsernames::default()));
                 }
                 "exclude_users" => {
                     vec.push(Box::new(ExcludeUsers::default()));
