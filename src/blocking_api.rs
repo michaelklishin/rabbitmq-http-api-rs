@@ -16,7 +16,8 @@
 use crate::error::Error;
 use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
 use crate::requests::{
-    Amqp091ShovelParams, Amqp10ShovelParams, EmptyPayload, StreamParams, SHOVEL_COMPONENT,
+    Amqp091ShovelParams, Amqp10ShovelParams, EmptyPayload, FederationUpstreamParams, StreamParams,
+    FEDERATION_UPSTREAM_COMPONENT, SHOVEL_COMPONENT,
 };
 use crate::responses::{
     DeprecatedFeatureList, FeatureFlag, FeatureFlagList, FeatureFlagStability, FeatureFlagState,
@@ -1199,6 +1200,22 @@ where
     }
 
     //
+    // Federation
+    //
+
+    pub fn list_federation_links(&self) -> Result<Vec<responses::FederationLink>> {
+        let response = self.http_get("federation-links", None, None)?;
+        let response = response.json()?;
+        Ok(response)
+    }
+
+    pub fn declare_federation_upstream(&self, params: FederationUpstreamParams<'_>) -> Result<()> {
+        let runtime_param = RuntimeParameterDefinition::from(params);
+
+        self.declare_federation_upstream_with_parameters(&runtime_param)
+    }
+
+    //
     // Shovels
     //
 
@@ -1443,6 +1460,24 @@ where
             path!(
                 "parameters",
                 SHOVEL_COMPONENT,
+                runtime_param.vhost,
+                runtime_param.name
+            ),
+            &runtime_param,
+            None,
+            None,
+        )?;
+        Ok(())
+    }
+
+    fn declare_federation_upstream_with_parameters(
+        &self,
+        runtime_param: &RuntimeParameterDefinition<'_>,
+    ) -> Result<()> {
+        let _response = self.http_put(
+            path!(
+                "parameters",
+                FEDERATION_UPSTREAM_COMPONENT,
                 runtime_param.vhost,
                 runtime_param.name
             ),

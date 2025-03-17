@@ -404,6 +404,175 @@ pub struct Permissions<'a> {
     pub write: &'a str,
 }
 
+#[derive(Serialize, Deserialize, Default)]
+#[serde(rename_all = "lowercase")]
+pub enum FederationResourceCleanupMode {
+    #[default]
+    Default,
+    Never,
+}
+
+pub(crate) const FEDERATION_UPSTREAM_COMPONENT: &str = "federation-upstream";
+
+/// Represents a set of queue federation parameters
+/// that are associated with an upstream.
+pub struct QueueFederationParams<'a> {
+    pub queue: &'a str,
+    pub consumer_tag: Option<&'a str>,
+}
+
+impl<'a> QueueFederationParams<'a> {
+    pub fn new(queue: &'a str) -> Self {
+        Self {
+            queue,
+            consumer_tag: None,
+        }
+    }
+
+    pub fn new_with_consumer_tag(queue: &'a str, consumer_tag: &'a str) -> Self {
+        Self {
+            queue,
+            consumer_tag: Some(consumer_tag),
+        }
+    }
+}
+
+/// Represents a set of exchange federation parameters
+/// that are associated with an upstream.
+pub struct ExchangeFederationParams<'a> {
+    pub exchange: Option<&'a str>,
+    pub max_hops: Option<u8>,
+    pub queue_type: QueueType,
+    pub ttl: Option<u32>,
+    pub message_ttl: Option<u32>,
+}
+
+impl ExchangeFederationParams<'_> {
+    pub fn new(queue_type: QueueType) -> Self {
+        Self {
+            exchange: None,
+            max_hops: None,
+            queue_type,
+            ttl: None,
+            message_ttl: None,
+        }
+    }
+}
+
+/// Matches the default used by the federation plugin.
+const DEFAULT_FEDERATION_PREFETCH: u16 = 1000;
+/// Matches the default used by the federation plugin.
+const DEFAULT_FEDERATION_RECONNECT_DELAY: u16 = 5;
+
+/// Represents a set of parameters that define a federation upstream
+/// and a number of the federation type-specific (exchange, queue) parameters
+/// that are associated with an upstream.
+///
+/// A federation upstream is declared as a runtime parameter,
+/// therefore this type implements a conversion that is used
+/// by [`crate::api::Client#declare_federation_upstream`] and [`crate::blocking_api::Client#declare_federation_upstream`]
+pub struct FederationUpstreamParams<'a> {
+    pub name: &'a str,
+    pub vhost: &'a str,
+    pub uri: &'a str,
+    pub reconnect_delay: u16,
+    pub trust_user_id: bool,
+    pub prefetch_count: u16,
+    pub ack_mode: MessageTransferAcknowledgementMode,
+    pub bind_using_nowait: bool,
+    pub resource_cleanup_mode: FederationResourceCleanupMode,
+
+    pub queue_federation: Option<QueueFederationParams<'a>>,
+    pub exchange_federation: Option<ExchangeFederationParams<'a>>,
+}
+
+impl<'a> FederationUpstreamParams<'a> {
+    pub fn new_queue_federation_upstream(
+        vhost: &'a str,
+        name: &'a str,
+        uri: &'a str,
+        params: QueueFederationParams<'a>,
+    ) -> Self {
+        Self {
+            vhost,
+            name,
+            uri,
+            ack_mode: MessageTransferAcknowledgementMode::WhenConfirmed,
+            reconnect_delay: DEFAULT_FEDERATION_RECONNECT_DELAY,
+            trust_user_id: false,
+            prefetch_count: DEFAULT_FEDERATION_PREFETCH,
+            bind_using_nowait: false,
+            resource_cleanup_mode: FederationResourceCleanupMode::default(),
+            exchange_federation: None,
+            queue_federation: Some(params),
+        }
+    }
+
+    pub fn new_exchange_federation_upstream(
+        vhost: &'a str,
+        name: &'a str,
+        uri: &'a str,
+        params: ExchangeFederationParams<'a>,
+    ) -> Self {
+        Self {
+            vhost,
+            name,
+            uri,
+            ack_mode: MessageTransferAcknowledgementMode::WhenConfirmed,
+            reconnect_delay: DEFAULT_FEDERATION_RECONNECT_DELAY,
+            trust_user_id: false,
+            prefetch_count: DEFAULT_FEDERATION_PREFETCH,
+            bind_using_nowait: false,
+            resource_cleanup_mode: FederationResourceCleanupMode::default(),
+            queue_federation: None,
+            exchange_federation: Some(params),
+        }
+    }
+}
+
+impl<'a> From<FederationUpstreamParams<'a>> for RuntimeParameterDefinition<'a> {
+    fn from(params: FederationUpstreamParams<'a>) -> Self {
+        let mut value = Map::new();
+
+        value.insert("uri".to_owned(), json!(params.uri));
+        value.insert("prefetch-count".to_owned(), json!(params.prefetch_count));
+        value.insert("trust-user-id".to_owned(), json!(params.trust_user_id));
+        value.insert("reconnect-delay".to_owned(), json!(params.reconnect_delay));
+        value.insert("ack-mode".to_owned(), json!(params.ack_mode));
+
+        if let Some(qf) = params.queue_federation {
+            value.insert("queue".to_owned(), json!(qf.queue));
+            if let Some(val) = qf.consumer_tag {
+                value.insert("consumer-tag".to_owned(), json!(val));
+            }
+        }
+
+        if let Some(ef) = params.exchange_federation {
+            value.insert("queue-type".to_owned(), json!(ef.queue_type));
+            if let Some(val) = ef.exchange {
+                value.insert("exchange".to_owned(), json!(val));
+            };
+
+            if let Some(val) = ef.max_hops {
+                value.insert("max-hops".to_owned(), json!(val));
+            }
+            if let Some(val) = ef.ttl {
+                value.insert("expires".to_owned(), json!(val));
+            }
+            if let Some(val) = ef.message_ttl {
+                value.insert("message-ttl".to_owned(), json!(val));
+            }
+        }
+
+        Self {
+            name: params.name,
+            vhost: params.vhost,
+            component: SHOVEL_COMPONENT,
+            value,
+        }
+    }
+}
+
 pub(crate) const SHOVEL_COMPONENT: &str = "shovel";
 
 /// Represents a dynamic AMQP 0-9-1 shovel definition.
