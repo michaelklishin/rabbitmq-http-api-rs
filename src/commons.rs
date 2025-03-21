@@ -673,12 +673,7 @@ impl From<&str> for MessageTransferAcknowledgementMode {
 
 impl From<String> for MessageTransferAcknowledgementMode {
     fn from(value: String) -> Self {
-        match value.as_str() {
-            "no-ack" => MessageTransferAcknowledgementMode::Immediate,
-            "on-publish" => MessageTransferAcknowledgementMode::WhenPublished,
-            "on-confirm" => MessageTransferAcknowledgementMode::WhenConfirmed,
-            _ => MessageTransferAcknowledgementMode::default(),
-        }
+        Self::from(value.as_str())
     }
 }
 

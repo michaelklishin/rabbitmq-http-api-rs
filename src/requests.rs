@@ -412,6 +412,22 @@ pub enum FederationResourceCleanupMode {
     Never,
 }
 
+impl From<&str> for FederationResourceCleanupMode {
+    fn from(value: &str) -> Self {
+        match value {
+            "default" => FederationResourceCleanupMode::Default,
+            "never" => FederationResourceCleanupMode::Never,
+            _ => FederationResourceCleanupMode::default(),
+        }
+    }
+}
+
+impl From<String> for FederationResourceCleanupMode {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
 pub(crate) const FEDERATION_UPSTREAM_COMPONENT: &str = "federation-upstream";
 
 /// Represents a set of queue federation parameters
@@ -445,6 +461,7 @@ pub struct ExchangeFederationParams<'a> {
     pub queue_type: QueueType,
     pub ttl: Option<u32>,
     pub message_ttl: Option<u32>,
+    pub resource_cleanup_mode: FederationResourceCleanupMode,
 }
 
 impl ExchangeFederationParams<'_> {
@@ -455,6 +472,7 @@ impl ExchangeFederationParams<'_> {
             queue_type,
             ttl: None,
             message_ttl: None,
+            resource_cleanup_mode: FederationResourceCleanupMode::default(),
         }
     }
 }
@@ -480,7 +498,6 @@ pub struct FederationUpstreamParams<'a> {
     pub prefetch_count: u16,
     pub ack_mode: MessageTransferAcknowledgementMode,
     pub bind_using_nowait: bool,
-    pub resource_cleanup_mode: FederationResourceCleanupMode,
 
     pub queue_federation: Option<QueueFederationParams<'a>>,
     pub exchange_federation: Option<ExchangeFederationParams<'a>>,
@@ -502,7 +519,6 @@ impl<'a> FederationUpstreamParams<'a> {
             trust_user_id: false,
             prefetch_count: DEFAULT_FEDERATION_PREFETCH,
             bind_using_nowait: false,
-            resource_cleanup_mode: FederationResourceCleanupMode::default(),
             exchange_federation: None,
             queue_federation: Some(params),
         }
@@ -523,7 +539,6 @@ impl<'a> FederationUpstreamParams<'a> {
             trust_user_id: false,
             prefetch_count: DEFAULT_FEDERATION_PREFETCH,
             bind_using_nowait: false,
-            resource_cleanup_mode: FederationResourceCleanupMode::default(),
             queue_federation: None,
             exchange_federation: Some(params),
         }
