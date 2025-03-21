@@ -433,21 +433,21 @@ pub const FEDERATION_UPSTREAM_COMPONENT: &str = "federation-upstream";
 /// Represents a set of queue federation parameters
 /// that are associated with an upstream.
 pub struct QueueFederationParams<'a> {
-    pub queue: &'a str,
+    pub queue: Option<&'a str>,
     pub consumer_tag: Option<&'a str>,
 }
 
 impl<'a> QueueFederationParams<'a> {
     pub fn new(queue: &'a str) -> Self {
         Self {
-            queue,
+            queue:  Some(queue),
             consumer_tag: None,
         }
     }
 
     pub fn new_with_consumer_tag(queue: &'a str, consumer_tag: &'a str) -> Self {
         Self {
-            queue,
+            queue:   Some(queue),
             consumer_tag: Some(consumer_tag),
         }
     }
