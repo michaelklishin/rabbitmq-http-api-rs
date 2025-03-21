@@ -18,7 +18,7 @@ mod test_helpers;
 use crate::test_helpers::{amqp_endpoint_with_vhost, endpoint, PASSWORD, USERNAME};
 
 #[test]
-fn test_blocking_declare_a_federation_upstream_with_queue_federation_parameters () {
+fn test_blocking_declare_a_federation_upstream_with_queue_federation_parameters() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 

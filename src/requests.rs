@@ -440,14 +440,14 @@ pub struct QueueFederationParams<'a> {
 impl<'a> QueueFederationParams<'a> {
     pub fn new(queue: &'a str) -> Self {
         Self {
-            queue:  Some(queue),
+            queue: Some(queue),
             consumer_tag: None,
         }
     }
 
     pub fn new_with_consumer_tag(queue: &'a str, consumer_tag: &'a str) -> Self {
         Self {
-            queue:   Some(queue),
+            queue: Some(queue),
             consumer_tag: Some(consumer_tag),
         }
     }
