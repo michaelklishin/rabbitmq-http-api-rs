@@ -404,7 +404,7 @@ pub struct Permissions<'a> {
     pub write: &'a str,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Default, Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum FederationResourceCleanupMode {
     #[default]
