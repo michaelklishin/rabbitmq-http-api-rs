@@ -21,8 +21,8 @@ use crate::requests::{
 };
 use crate::responses::{
     DeprecatedFeatureList, FeatureFlag, FeatureFlagList, FeatureFlagStability, FeatureFlagState,
-    GetMessage, OAuthConfiguration, Overview, SchemaDefinitionSyncStatus, VirtualHostDefinitionSet,
-    WarmStandbyReplicationStatus,
+    FederationUpstream, GetMessage, OAuthConfiguration, Overview, SchemaDefinitionSyncStatus,
+    VirtualHostDefinitionSet, WarmStandbyReplicationStatus,
 };
 use crate::{
     commons::{BindingDestinationType, SupportedProtocol, UserLimitTarget, VirtualHostLimitTarget},
@@ -1369,6 +1369,20 @@ where
     // Federation
     //
 
+    pub async fn list_federation_upstreams(&self) -> Result<Vec<responses::FederationUpstream>> {
+        let response = self
+            .list_runtime_parameters_of_component(FEDERATION_UPSTREAM_COMPONENT)
+            .await?;
+        let upstreams = response
+            .into_iter()
+            .map(FederationUpstream::try_from)
+            // TODO: in theory this can be an Err
+            .map(|r| r.unwrap())
+            .collect::<Vec<_>>();
+
+        Ok(upstreams)
+    }
+
     pub async fn list_federation_links(&self) -> Result<Vec<responses::FederationLink>> {
         let response = self.http_get("federation-links", None, None).await?;
         let response = response.json().await?;
@@ -1382,6 +1396,11 @@ where
         let runtime_param = RuntimeParameterDefinition::from(params);
 
         self.declare_federation_upstream_with_parameters(&runtime_param)
+            .await
+    }
+
+    pub async fn delete_federation_upstream(&self, vhost: &str, name: &str) -> Result<()> {
+        self.clear_runtime_parameter(FEDERATION_UPSTREAM_COMPONENT, vhost, name)
             .await
     }
 

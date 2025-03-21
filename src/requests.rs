@@ -428,7 +428,7 @@ impl From<String> for FederationResourceCleanupMode {
     }
 }
 
-pub(crate) const FEDERATION_UPSTREAM_COMPONENT: &str = "federation-upstream";
+pub const FEDERATION_UPSTREAM_COMPONENT: &str = "federation-upstream";
 
 /// Represents a set of queue federation parameters
 /// that are associated with an upstream.
@@ -588,7 +588,7 @@ impl<'a> From<FederationUpstreamParams<'a>> for RuntimeParameterDefinition<'a> {
     }
 }
 
-pub(crate) const SHOVEL_COMPONENT: &str = "shovel";
+pub const SHOVEL_COMPONENT: &str = "shovel";
 
 /// Represents a dynamic AMQP 0-9-1 shovel definition.
 #[derive(Serialize)]

@@ -64,6 +64,11 @@ pub enum Error<U, S, E, BT> {
     UnsupportedArgumentValue { property: String },
     #[error("Missing required argument")]
     MissingProperty { argument: String },
+    #[error("Response is incompatible with the target data type")]
+    IncompatibleBody {
+        error: ConversionError,
+        backtrace: BT,
+    },
     #[error("encountered an error when performing an HTTP request")]
     RequestError { error: E, backtrace: BT },
     #[error("an unspecified error")]
