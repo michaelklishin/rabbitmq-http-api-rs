@@ -372,7 +372,7 @@ pub struct BulkUserDelete<'a> {
 pub type RuntimeParameterValue = Map<String, Value>;
 
 /// Represents a [runtime parameter](https://rabbitmq.com/docs/parameters/).
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RuntimeParameterDefinition<'a> {
     pub name: &'a str,
     pub vhost: &'a str,
@@ -582,7 +582,7 @@ impl<'a> From<FederationUpstreamParams<'a>> for RuntimeParameterDefinition<'a> {
         Self {
             name: params.name,
             vhost: params.vhost,
-            component: SHOVEL_COMPONENT,
+            component: FEDERATION_UPSTREAM_COMPONENT,
             value,
         }
     }
