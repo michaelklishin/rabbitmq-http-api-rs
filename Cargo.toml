@@ -29,12 +29,12 @@ reqwest = { version = "0.12.12", features = [
 ], optional = true }
 backtrace = { version = "0.3", optional = true }
 thiserror = { version = "2", optional = true }
-tokio = "1.43.0"
-time = { version = "0.3.37", features = ["serde-human-readable"] }
+tokio = "1.44"
+time = { version = "0.3.40", features = ["serde-human-readable"] }
 
 [dev-dependencies]
 amqprs = {  version = "2"}
-cargo-nextest = "0.9.88"
+cargo-nextest = "0.9.92"
 
 [features]
 default = ["core", "blocking"]
