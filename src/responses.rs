@@ -2083,6 +2083,7 @@ pub struct FederationLink {
     pub uri: String,
     pub status: String,
     #[serde(rename = "type")]
+    #[cfg_attr(feature = "tabled", tabled(rename = "type"))]
     pub typ: FederationType,
     pub upstream: String,
     #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
