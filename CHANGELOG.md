@@ -1,8 +1,16 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.28.0 (in development)
+## v0.29.0 (in development)
+
+No (documented) changes yet.
+
+
+## v0.28.0 (Mar 23, 2024)
 
 ### Enhancements
+
+ * Federation support. Key API elements: `FederationUpstreamParams`, `QueueFederationParams`, `ExchangeFederationParams`,
+   `FederationUpstream`, `FederationLink`, `Client#declare_federation_upstream_with_parameters`, `Client#declare_federation_upstream`, `Client#delete_federation_upstream`, `Client#list_federation_upstreams`, `Client#list_federation_links`
 
  * New definition set transformations that include certain parts of the definition set:
    `exclude_users`, `exclude_permissions`, `exclude_runtime_parameters`, `exclude_policies`
