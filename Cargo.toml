@@ -53,3 +53,13 @@ blocking = [
     "dep:percent-encoding",
 ]
 tabled = ["dep:tabled"]
+
+[profiles.dev]
+incremental = true
+overflow-checks = true
+debug-assertions = true
+
+[profiles.release]
+incremental = false
+overflow-checks = false
+debug-assertions = false
