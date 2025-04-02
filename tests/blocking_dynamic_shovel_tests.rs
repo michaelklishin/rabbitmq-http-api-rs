@@ -20,8 +20,8 @@ use rabbitmq_http_client::{blocking_api::Client, requests::VirtualHostParams};
 
 mod test_helpers;
 use crate::test_helpers::{
-    amqp_endpoint_with_vhost, await_metric_emission, endpoint, testing_against_3_13_x, PASSWORD,
-    USERNAME,
+    amqp10_endpoint_with_vhost, amqp_endpoint_with_vhost, await_metric_emission, endpoint,
+    testing_against_3_13_x, PASSWORD, USERNAME,
 };
 
 #[test]
@@ -93,7 +93,7 @@ fn test_blocking_declare_a_dynamic_amqp10_shovel() {
     let result3 = rc.declare_queue(vh, &dest_params);
     assert!(result3.is_ok());
 
-    let amqp_endpoint = amqp_endpoint_with_vhost(&vh);
+    let amqp_endpoint = amqp10_endpoint_with_vhost(&vh);
     let shovel_params = Amqp10ShovelParams {
         vhost: &vh,
         name: sh,
