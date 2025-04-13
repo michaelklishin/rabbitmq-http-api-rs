@@ -64,7 +64,7 @@ async fn test_async_export_cluster_wide_definitions_as_data() {
             pattern: "definitions.qq.limited",
             apply_to: PolicyTarget::QuorumQueues,
             priority: 1,
-            definition: Some(qq_pol_def_m),
+            definition: qq_pol_def_m,
         })
         .await;
     assert!(pol_result.is_ok());
@@ -166,7 +166,7 @@ async fn test_async_export_vhost_definitions_as_data() {
             pattern: "vhost.definitions.qq.limited",
             apply_to: PolicyTarget::QuorumQueues,
             priority: 1,
-            definition: Some(qq_pol_def_m),
+            definition: qq_pol_def_m,
         })
         .await;
     assert!(pol_result.is_ok());

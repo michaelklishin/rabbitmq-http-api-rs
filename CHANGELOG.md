@@ -1,8 +1,16 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.29.0 (in development)
+## v0.30.0 (in development)
 
-No (documented) changes yet.
+No changes yet.
+
+## v0.29.0 (Apr 13, 2024)
+
+### Breaking Changes
+
+ * `PolicyDefinition` and specifically `requests::PolicyParams.definition` is now a `Map<String, Value>`
+   and not an `Option<Map<String, Value>>`. When creating a policy, the definition cannot be missing or black,
+   otherwise it would not pass server validation.
 
 
 ## v0.28.0 (Mar 23, 2024)

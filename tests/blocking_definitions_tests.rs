@@ -63,7 +63,7 @@ fn test_blocking_export_cluster_wide_definitions_as_data() {
         pattern: "definitions.qq.limited",
         apply_to: PolicyTarget::QuorumQueues,
         priority: 1,
-        definition: Some(qq_pol_def_m),
+        definition: qq_pol_def_m,
     });
     assert!(pol_result.is_ok());
 
@@ -158,7 +158,7 @@ fn test_blocking_export_vhost_definitions_as_data() {
         pattern: "vhost.definitions.qq.limited",
         apply_to: PolicyTarget::QuorumQueues,
         priority: 1,
-        definition: Some(qq_pol_def_m),
+        definition: qq_pol_def_m,
     });
     assert!(pol_result.is_ok());
 

@@ -380,7 +380,7 @@ pub struct RuntimeParameterDefinition<'a> {
     pub value: RuntimeParameterValue,
 }
 
-pub type PolicyDefinition = Option<Map<String, Value>>;
+pub type PolicyDefinition = Map<String, Value>;
 
 /// Represents a [policy](https://rabbitmq.com/docs/parameters/#policies).
 #[derive(Serialize)]

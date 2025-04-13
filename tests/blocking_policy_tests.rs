@@ -33,7 +33,7 @@ fn test_blocking_message_ttl_policy() {
 
     let mut map = Map::<String, Value>::new();
     map.insert("message-ttl".to_owned(), json!(10_000));
-    let policy_definition = Some(map);
+    let policy_definition = map.clone();
 
     let message_ttl_policy = PolicyParams {
         vhost: vh_params.name,
@@ -55,7 +55,7 @@ fn test_blocking_dlx_policy() {
 
     let mut map = Map::<String, Value>::new();
     map.insert("dead-letter-exchange".to_owned(), json!("my-dlx"));
-    let policy_definition = Some(map);
+    let policy_definition = map.clone();
 
     let vh_params = VirtualHostParams::named("test_dlx_policy");
     let _ = rc.delete_vhost(vh_params.name, false);
@@ -82,7 +82,7 @@ fn test_blocking_operator_policy() {
 
     let mut map = Map::<String, Value>::new();
     map.insert("delivery-limit".to_owned(), json!(13));
-    let policy_definition = Some(map);
+    let policy_definition = map.clone();
 
     let vh_params = VirtualHostParams::named("test_operator_policy");
     let _ = rc.delete_vhost(vh_params.name, false);
@@ -111,8 +111,8 @@ fn test_a_policy(rc: &Client<&str, &str, &str>, policy: &PolicyParams) {
     assert!(result.is_ok(), "declare_policy returned {:?}", result);
 
     // validate it was created as expected
-    let result = rc.get_policy(policy.vhost, policy.name);
-    assert_eq!(result.unwrap().definition.0, policy.definition);
+    let fetched_policy = rc.get_policy(policy.vhost, policy.name).unwrap();
+    assert_eq!(fetched_policy.definition.0.unwrap(), policy.definition);
 
     // delete it
     assert!(rc.delete_policy(policy.vhost, policy.name).is_ok());
@@ -131,8 +131,8 @@ fn test_an_operator_policy(rc: &Client<&str, &str, &str>, policy: &PolicyParams)
     assert!(result.is_ok(), "declare_policy returned {:?}", result);
 
     // validate it was created as expected
-    let result = rc.get_operator_policy(policy.vhost, policy.name);
-    assert_eq!(result.unwrap().definition.0, policy.definition);
+    let fetched_policy = rc.get_operator_policy(policy.vhost, policy.name).unwrap();
+    assert_eq!(fetched_policy.definition.0.unwrap(), policy.definition);
 
     // delete it
     assert!(rc.delete_operator_policy(policy.vhost, policy.name).is_ok());
