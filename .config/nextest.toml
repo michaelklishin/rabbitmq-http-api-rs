@@ -1,0 +1,33 @@
+[profile.default]
+default-filter = "all()"
+
+retries = 2
+test-threads = "num-cpus"
+
+filter = 'package(rabbitmq_http_client)'
+# an overridable default
+priority = 0
+test-group = 'parallel_safe'
+
+status-level = "retry"
+final-status-level = "pass"
+failure-output = "immediate"
+
+[test-groups]
+parallel_safe = { max-threads = 8 }
+sequential = { max-threads = 1 }
+
+[[profile.default.overrides]]
+filter = 'test(unit)'
+priority = 100
+test-group = 'parallel_safe'
+
+[[profile.default.overrides]]
+filter = 'test(test_blocking_list)'
+priority = 90
+test-group = 'sequential'
+
+[[profile.default.overrides]]
+filter = 'test(test_async_list)'
+priority = 80
+test-group = 'sequential'
