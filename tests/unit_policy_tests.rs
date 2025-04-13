@@ -22,7 +22,7 @@ fn test_unit_policy_definition_has_cmq_keys_case1() {
     let mut m = Map::new();
     m.insert("max-length".to_owned(), json!(1000));
     let p = PolicyDefinition(Some(m));
-    assert_eq!(false, p.has_cmq_keys());
+    assert!(!p.has_cmq_keys());
 }
 
 #[test]
@@ -58,8 +58,8 @@ fn test_unit_policy_has_cmq_keys_case1() {
         definition: defs.clone(),
     };
 
-    assert_eq!(false, defs.has_cmq_keys());
-    assert_eq!(false, p.has_cmq_keys());
+    assert!(!defs.has_cmq_keys());
+    assert!(!p.has_cmq_keys());
 }
 
 #[test]
@@ -116,8 +116,8 @@ fn test_unit_policy_has_cmq_keys_case4() {
         definition: defs.clone(),
     };
 
-    assert_eq!(false, defs.has_cmq_keys());
-    assert_eq!(false, p.has_cmq_keys());
+    assert!(!defs.has_cmq_keys());
+    assert!(!p.has_cmq_keys());
 }
 
 #[test]
@@ -136,7 +136,7 @@ fn test_unit_policy_definition_without_keys_case1() {
 
     let m2 = defs2.0.unwrap();
     assert!(m2.contains_key(&k1));
-    assert_eq!(false, m2.contains_key(&k2));
+    assert!(!m2.contains_key(&k2));
 }
 
 #[test]
@@ -152,8 +152,8 @@ fn test_unit_policy_definition_without_keys_case2() {
     assert_eq!(0, defs2.len());
 
     let m2 = defs2.0.unwrap();
-    assert_eq!(false, m2.contains_key(&k1));
-    assert_eq!(false, m2.contains_key(&k2));
+    assert!(!m2.contains_key(&k1));
+    assert!(!m2.contains_key(&k2));
 }
 
 #[test]
@@ -175,8 +175,8 @@ fn test_unit_policy_definition_without_keys_case3() {
     assert_eq!(0, defs2.len());
 
     let m2 = defs2.0.unwrap();
-    assert_eq!(false, m2.contains_key(&k1));
-    assert_eq!(false, m2.contains_key(&k2));
+    assert!(!m2.contains_key(&k1));
+    assert!(!m2.contains_key(&k2));
 }
 
 #[test]
@@ -224,11 +224,11 @@ fn test_unit_policy_definition_without_cmq_keys_case1() {
     assert_eq!(1, defs2.len());
 
     let m2 = defs2.0.unwrap();
-    assert_eq!(false, m2.contains_key(&k1));
-    assert_eq!(false, m2.contains_key(&k2));
-    assert_eq!(false, m2.contains_key(&k3));
-    assert_eq!(false, m2.contains_key(&k4));
-    assert_eq!(false, m2.contains_key(&k5));
+    assert!(!m2.contains_key(&k1));
+    assert!(!m2.contains_key(&k2));
+    assert!(!m2.contains_key(&k3));
+    assert!(!m2.contains_key(&k4));
+    assert!(!m2.contains_key(&k5));
     assert!(m2.contains_key(&k6));
 }
 
@@ -265,22 +265,18 @@ fn test_unit_policy_does_match_case2() {
 
     assert!(p.does_match_name("/", "ca.on.to.1", PolicyTarget::Queues));
 
-    assert_eq!(
-        false,
-        p.does_match_name("/", "cdi.r.1", PolicyTarget::Queues)
+    assert!(
+        !p.does_match_name("/", "cdi.r.1", PolicyTarget::Queues)
     );
-    assert_eq!(false, p.does_match_name("/", "ca", PolicyTarget::Queues));
-    assert_eq!(
-        false,
-        p.does_match_name("/", "abc.r.1", PolicyTarget::Queues)
+    assert!(!p.does_match_name("/", "ca", PolicyTarget::Queues));
+    assert!(
+        !p.does_match_name("/", "abc.r.1", PolicyTarget::Queues)
     );
-    assert_eq!(
-        false,
-        p.does_match_name("/", "us.ny.nyc.1", PolicyTarget::Queues)
+    assert!(
+        !p.does_match_name("/", "us.ny.nyc.1", PolicyTarget::Queues)
     );
-    assert_eq!(
-        false,
-        p.does_match_name("a-different-vhost", "ca.on.to.2", PolicyTarget::Queues)
+    assert!(
+        !p.does_match_name("a-different-vhost", "ca.on.to.2", PolicyTarget::Queues)
     );
 }
 
@@ -300,29 +296,25 @@ fn test_unit_policy_does_match_case3() {
 
     assert!(p.does_match_name("/", "events.regional.na", PolicyTarget::Exchanges));
 
-    assert_eq!(
-        false,
-        p.does_match_name("/", "events.regional.na.partitions.1", PolicyTarget::Queues)
+    assert!(
+        !p.does_match_name("/", "events.regional.na.partitions.1", PolicyTarget::Queues)
     );
-    assert_eq!(
-        false,
-        p.does_match_name(
+    assert!(
+        !p.does_match_name(
             "/",
             "events.regional.na.partitions.1",
             PolicyTarget::ClassicQueues
         )
     );
-    assert_eq!(
-        false,
-        p.does_match_name(
+    assert!(
+        !p.does_match_name(
             "/",
             "events.regional.na.partitions.1",
             PolicyTarget::QuorumQueues
         )
     );
-    assert_eq!(
-        false,
-        p.does_match_name(
+    assert!(
+        !p.does_match_name(
             "/",
             "events.regional.na.partitions.1",
             PolicyTarget::Streams

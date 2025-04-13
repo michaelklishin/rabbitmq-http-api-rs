@@ -53,7 +53,7 @@ async fn test_async_list_virtual_host_connections() {
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let vh = "rust/http/api/async/test_list_virtual_host_connections";
-    let _ = rc.delete_vhost(vh, true).await.unwrap();
+    rc.delete_vhost(vh, true).await.unwrap();
 
     let vh_params = VirtualHostParams::named(vh);
     rc.create_vhost(&vh_params).await.unwrap();
@@ -65,7 +65,7 @@ async fn test_async_list_virtual_host_connections() {
         result1
     );
 
-    let _ = rc.delete_vhost(vh, true).await.unwrap();
+    rc.delete_vhost(vh, true).await.unwrap();
 }
 
 #[tokio::test]

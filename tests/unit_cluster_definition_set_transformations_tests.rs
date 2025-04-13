@@ -223,10 +223,10 @@ fn test_unit_strip_cmq_policies_case1() {
     let g1 = "cmq_group1";
     let cq1 = "group1.cq.1";
 
-    let mut defs0: ClusterDefinitionSet = serde_json::from_str(&json).unwrap();
+    let mut defs0: ClusterDefinitionSet = serde_json::from_str(json).unwrap();
     let p0 = defs0.find_policy(vh, g1).unwrap();
     assert_eq!(4, p0.definition.len());
-    assert_eq!(true, p0.definition.has_cmq_keys());
+    assert!(p0.definition.has_cmq_keys());
 
     let chain = TransformationChain {
         chain: vec![Box::new(StripCmqKeysFromPolicies::default())],
@@ -236,7 +236,7 @@ fn test_unit_strip_cmq_policies_case1() {
     // Three CMQ-related queues were stripped
     let p1 = defs1.find_policy(vh, g1).unwrap();
     assert_eq!(1, p1.definition.len());
-    assert_eq!(false, p1.definition.has_cmq_keys());
+    assert!(!p1.definition.has_cmq_keys());
     assert_eq!(
         "queue-version".to_owned(),
         p1.definition_keys().first().unwrap().to_owned()

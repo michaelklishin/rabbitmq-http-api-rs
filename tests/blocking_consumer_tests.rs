@@ -37,5 +37,5 @@ fn test_blocking_list_vhost_consumers() {
     let result2 = rc.list_consumers_in(vh_params.name);
     assert!(result2.is_ok(), "list_consumers_in returned {:?}", result2);
 
-    rc.delete_vhost(&vh_params.name, true).unwrap();
+    rc.delete_vhost(vh_params.name, true).unwrap();
 }

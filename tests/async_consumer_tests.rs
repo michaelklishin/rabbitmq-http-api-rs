@@ -37,5 +37,5 @@ async fn test_async_list_vhost_consumers() {
     let result2 = rc.list_consumers_in(vh_params.name).await;
     assert!(result2.is_ok(), "list_consumers_in returned {:?}", result2);
 
-    rc.delete_vhost(&vh_params.name, true).await.unwrap();
+    rc.delete_vhost(vh_params.name, true).await.unwrap();
 }

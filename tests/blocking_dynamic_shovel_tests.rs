@@ -43,9 +43,9 @@ fn test_blocking_declare_a_dynamic_amqp091_shovel() {
     let src_q = format!("{0}.src.q", sh);
     let dest_q = format!("{0}.dest.q", sh);
 
-    let amqp_endpoint = amqp_endpoint_with_vhost(&vh);
+    let amqp_endpoint = amqp_endpoint_with_vhost(vh);
     let shovel_params = Amqp091ShovelParams {
-        vhost: &vh,
+        vhost: vh,
         name: sh,
         acknowledgement_mode: MessageTransferAcknowledgementMode::WhenConfirmed,
         reconnect_delay: Some(5),
@@ -56,7 +56,7 @@ fn test_blocking_declare_a_dynamic_amqp091_shovel() {
     assert!(result2.is_ok());
 
     await_metric_emission(300);
-    let result3 = rc.get_queue_info(&vh, &src_q);
+    let result3 = rc.get_queue_info(vh, &src_q);
     assert!(result3.is_ok());
 
     let _ = rc.delete_vhost(vh_params.name, false);
@@ -93,9 +93,9 @@ fn test_blocking_declare_a_dynamic_amqp10_shovel() {
     let result3 = rc.declare_queue(vh, &dest_params);
     assert!(result3.is_ok());
 
-    let amqp_endpoint = amqp10_endpoint_with_vhost(&vh);
+    let amqp_endpoint = amqp10_endpoint_with_vhost(vh);
     let shovel_params = Amqp10ShovelParams {
-        vhost: &vh,
+        vhost: vh,
         name: sh,
         acknowledgement_mode: MessageTransferAcknowledgementMode::WhenConfirmed,
         reconnect_delay: Some(5),
@@ -131,9 +131,9 @@ fn test_blocking_declare_a_dynamic_amqp091_shovel_with_predeclared_source_topolo
     let result2 = rc.declare_queue(vh, &q_params);
     assert!(result2.is_ok());
 
-    let amqp_endpoint = amqp_endpoint_with_vhost(&vh);
+    let amqp_endpoint = amqp_endpoint_with_vhost(vh);
     let shovel_params = Amqp091ShovelParams {
-        vhost: &vh,
+        vhost: vh,
         name: sh,
         acknowledgement_mode: MessageTransferAcknowledgementMode::WhenConfirmed,
         reconnect_delay: Some(5),
@@ -144,7 +144,7 @@ fn test_blocking_declare_a_dynamic_amqp091_shovel_with_predeclared_source_topolo
     assert!(result3.is_ok());
 
     await_metric_emission(300);
-    let result4 = rc.get_queue_info(&vh, &src_q);
+    let result4 = rc.get_queue_info(vh, &src_q);
     assert!(result4.is_ok());
 
     let _ = rc.delete_vhost(vh_params.name, false);
@@ -173,9 +173,9 @@ fn test_blocking_declare_a_dynamic_amqp091_shovel_with_predeclared_destination_t
     let result2 = rc.declare_queue(vh, &q_params);
     assert!(result2.is_ok());
 
-    let amqp_endpoint = amqp_endpoint_with_vhost(&vh);
+    let amqp_endpoint = amqp_endpoint_with_vhost(vh);
     let shovel_params = Amqp091ShovelParams {
-        vhost: &vh,
+        vhost: vh,
         name: sh,
         acknowledgement_mode: MessageTransferAcknowledgementMode::WhenConfirmed,
         reconnect_delay: Some(5),
@@ -189,7 +189,7 @@ fn test_blocking_declare_a_dynamic_amqp091_shovel_with_predeclared_destination_t
     assert!(result3.is_ok());
 
     await_metric_emission(300);
-    let result4 = rc.get_queue_info(&vh, &dest_q);
+    let result4 = rc.get_queue_info(vh, &dest_q);
     assert!(result4.is_ok());
 
     let _ = rc.delete_vhost(vh_params.name, false);
@@ -214,9 +214,9 @@ fn test_blocking_delete_a_dynamic_amqp091_shovel() {
     let src_q = format!("{0}.src.q", sh);
     let dest_q = format!("{0}.dest.q", sh);
 
-    let amqp_endpoint = amqp_endpoint_with_vhost(&vh);
+    let amqp_endpoint = amqp_endpoint_with_vhost(vh);
     let shovel_params = Amqp091ShovelParams {
-        vhost: &vh,
+        vhost: vh,
         name: sh,
         acknowledgement_mode: MessageTransferAcknowledgementMode::WhenConfirmed,
         reconnect_delay: Some(5),
@@ -227,10 +227,10 @@ fn test_blocking_delete_a_dynamic_amqp091_shovel() {
     assert!(result2.is_ok());
 
     await_metric_emission(200);
-    let result3 = rc.delete_shovel(&vh, &sh, false);
+    let result3 = rc.delete_shovel(vh, sh, false);
     assert!(result3.is_ok());
 
-    let result4 = rc.delete_shovel(&vh, &sh, true);
+    let result4 = rc.delete_shovel(vh, sh, true);
     assert!(result4.is_ok());
 
     let _ = rc.delete_vhost(vh_params.name, false);

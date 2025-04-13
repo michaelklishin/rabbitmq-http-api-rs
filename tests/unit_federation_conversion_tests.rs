@@ -35,7 +35,7 @@ fn test_unit_deserialize_federation_upstream_case1() {
         }
     "#;
 
-    let param: RuntimeParameter = serde_json::from_str(&json).unwrap();
+    let param: RuntimeParameter = serde_json::from_str(json).unwrap();
     let upstream = FederationUpstream::try_from(param.clone()).unwrap();
 
     assert_eq!(param.name, upstream.name);
@@ -72,7 +72,7 @@ fn test_unit_deserialize_federation_upstream_case2() {
         }
     "#;
 
-    let param: RuntimeParameter = serde_json::from_str(&json).unwrap();
+    let param: RuntimeParameter = serde_json::from_str(json).unwrap();
     let upstream = FederationUpstream::try_from(param.clone()).unwrap();
 
     assert_eq!(param.name, upstream.name);
@@ -141,7 +141,7 @@ fn test_unit_deserialize_federation_link_case1() {
         }
     "#;
 
-    let link: FederationLink = serde_json::from_str(&json).unwrap();
+    let link: FederationLink = serde_json::from_str(json).unwrap();
     assert_eq!(link.uri, "amqp://localhost:5672/fed");
     assert_eq!(link.id, "e178dfad");
     assert_eq!(link.typ, FederationType::Queue);

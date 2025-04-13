@@ -45,7 +45,7 @@ fn test_blocking_list_virtual_host_connections() {
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let vh = "rust/http/api/blocking/test_list_virtual_host_connections";
-    let _ = rc.delete_vhost(vh, true).unwrap();
+    rc.delete_vhost(vh, true).unwrap();
 
     let vh_params = VirtualHostParams::named(vh);
     rc.create_vhost(&vh_params).unwrap();
@@ -57,7 +57,7 @@ fn test_blocking_list_virtual_host_connections() {
         result1
     );
 
-    let _ = rc.delete_vhost(vh, true).unwrap();
+    rc.delete_vhost(vh, true).unwrap();
 }
 
 #[test]

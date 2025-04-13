@@ -58,7 +58,7 @@ async fn test_async_dlx_policy() {
     let policy_definition = map.clone();
 
     let vh_params = VirtualHostParams::named("test_dlx_policy");
-    let _ = rc.delete_vhost(vh_params.name, false);
+    let _ = rc.delete_vhost(vh_params.name, false).await;
     let result1 = rc.create_vhost(&vh_params).await;
     assert!(result1.is_ok());
 
@@ -85,7 +85,7 @@ async fn test_async_operator_policy() {
     let policy_definition = map.clone();
 
     let vh_params = VirtualHostParams::named("test_operator_policy");
-    let _ = rc.delete_vhost(vh_params.name, false);
+    let _ = rc.delete_vhost(vh_params.name, false).await;
     let result1 = rc.create_vhost(&vh_params).await;
     assert!(result1.is_ok());
 

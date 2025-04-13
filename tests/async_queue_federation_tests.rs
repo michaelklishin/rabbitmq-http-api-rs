@@ -30,7 +30,7 @@ async fn test_async_declare_a_federation_upstream_with_queue_federation_paramete
     let result1 = rc.create_vhost(&vh_params).await;
     assert!(result1.is_ok());
 
-    let amqp_endpoint = amqp_endpoint_with_vhost(&vh);
+    let amqp_endpoint = amqp_endpoint_with_vhost(vh);
     let params = QueueFederationParams::new(q);
     let upstream_params =
         FederationUpstreamParams::new_queue_federation_upstream(vh, name, &amqp_endpoint, params);

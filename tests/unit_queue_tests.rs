@@ -358,8 +358,8 @@ fn test_unit_queue_info_policy_matching_case2() {
     let cq = serde_json::from_str::<QueueInfo>(input).unwrap();
 
     // names do not match
-    assert_eq!(false, cq.does_match(&p));
-    assert_eq!(false, p.does_match_object(&cq));
+    assert!(!cq.does_match(&p));
+    assert!(!p.does_match_object(&cq));
 }
 
 #[test]
@@ -426,8 +426,8 @@ fn test_unit_queue_info_policy_matching_case3() {
     let cq = serde_json::from_str::<QueueInfo>(input).unwrap();
 
     // policy target does not match
-    assert_eq!(false, cq.does_match(&p));
-    assert_eq!(false, p.does_match_object(&cq));
+    assert!(!cq.does_match(&p));
+    assert!(!p.does_match_object(&cq));
 }
 
 #[test]
@@ -494,6 +494,6 @@ fn test_unit_queue_info_policy_matching_case4() {
     let cq = serde_json::from_str::<QueueInfo>(input).unwrap();
 
     // virtual hosts do not match
-    assert_eq!(false, cq.does_match(&p));
-    assert_eq!(false, p.does_match_object(&cq));
+    assert!(!cq.does_match(&p));
+    assert!(!p.does_match_object(&cq));
 }

@@ -34,7 +34,7 @@ async fn test_async_upsert_runtime_parameter() {
     assert!(result2.is_ok());
 
     let result3 = rc
-        .get_runtime_parameter(&rpf.component, &rpf.vhost, &rpf.name)
+        .get_runtime_parameter(rpf.component, rpf.vhost, rpf.name)
         .await;
     assert!(result3.is_ok());
     assert_eq!(
@@ -49,7 +49,7 @@ async fn test_async_upsert_runtime_parameter() {
     );
 
     let _ = rc
-        .clear_runtime_parameter(&rpf.component, &rpf.vhost, &rpf.name)
+        .clear_runtime_parameter(rpf.component, rpf.vhost, rpf.name)
         .await;
     let _ = rc.delete_vhost(vh_params.name, false).await;
 }

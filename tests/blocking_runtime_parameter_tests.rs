@@ -34,7 +34,7 @@ fn test_blocking_upsert_runtime_parameter() {
     let result2 = rc.upsert_runtime_parameter(&rpf);
     assert!(result2.is_ok());
 
-    let result3 = rc.get_runtime_parameter(&rpf.component, &rpf.vhost, &rpf.name);
+    let result3 = rc.get_runtime_parameter(rpf.component, rpf.vhost, rpf.name);
     assert!(result3.is_ok());
     assert_eq!(
         9988,
@@ -47,7 +47,7 @@ fn test_blocking_upsert_runtime_parameter() {
             .unwrap()
     );
 
-    let _ = rc.clear_runtime_parameter(&rpf.component, &rpf.vhost, &rpf.name);
+    let _ = rc.clear_runtime_parameter(rpf.component, rpf.vhost, rpf.name);
     let _ = rc.delete_vhost(vh_params.name, false);
 }
 

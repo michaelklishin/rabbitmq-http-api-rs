@@ -42,7 +42,7 @@ async fn test_async_export_cluster_wide_definitions_as_data() {
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let vh = "rust/http/api/async/definitions";
-    let _ = rc.delete_vhost(vh, true).await.unwrap();
+    rc.delete_vhost(vh, true).await.unwrap();
 
     let vh_params = VirtualHostParams::named(vh);
     rc.create_vhost(&vh_params).await.unwrap();
@@ -52,7 +52,7 @@ async fn test_async_export_cluster_wide_definitions_as_data() {
     x_args_m.insert("x-alternate-exchange".to_owned(), json!("amq.fanout"));
     let x_args = Some(x_args_m);
     let xp = ExchangeParams::durable_fanout(x_name, x_args);
-    let _ = rc.declare_exchange(vh_params.name, &xp).await.unwrap();
+    rc.declare_exchange(vh_params.name, &xp).await.unwrap();
 
     let qq_pol_name = "definitions_test.async.policies.qq.length";
     let mut qq_pol_def_m = Map::<String, Value>::new();
@@ -133,9 +133,9 @@ async fn test_async_export_cluster_wide_definitions_as_data() {
         q_name
     );
 
-    let _ = rc.delete_exchange(vh, x_name, false).await.unwrap();
-    let _ = rc.delete_policy(vh, qq_pol_name).await.unwrap();
-    let _ = rc.delete_vhost(vh, true).await.unwrap();
+    rc.delete_exchange(vh, x_name, false).await.unwrap();
+    rc.delete_policy(vh, qq_pol_name).await.unwrap();
+    rc.delete_vhost(vh, true).await.unwrap();
 }
 
 #[tokio::test]
@@ -144,7 +144,7 @@ async fn test_async_export_vhost_definitions_as_data() {
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let vh = "rust/http/api/async/vhost.definitions";
-    let _ = rc.delete_vhost(vh, true).await.unwrap();
+    rc.delete_vhost(vh, true).await.unwrap();
 
     let vh_params = VirtualHostParams::named(vh);
     rc.create_vhost(&vh_params).await.unwrap();
@@ -154,7 +154,7 @@ async fn test_async_export_vhost_definitions_as_data() {
     x_args_m.insert("x-alternate-exchange".to_owned(), json!("amq.fanout"));
     let x_args = Some(x_args_m);
     let xp = ExchangeParams::durable_fanout(x_name, x_args);
-    let _ = rc.declare_exchange(vh_params.name, &xp).await.unwrap();
+    rc.declare_exchange(vh_params.name, &xp).await.unwrap();
 
     let qq_pol_name = "vhost.definitions_test.async.policies.qq.2.length";
     let mut qq_pol_def_m = Map::<String, Value>::new();
@@ -223,9 +223,9 @@ async fn test_async_export_vhost_definitions_as_data() {
         q_name
     );
 
-    let _ = rc.delete_exchange(vh, x_name, false).await.unwrap();
-    let _ = rc.delete_policy(vh, qq_pol_name).await.unwrap();
-    let _ = rc.delete_vhost(vh, true).await.unwrap();
+    rc.delete_exchange(vh, x_name, false).await.unwrap();
+    rc.delete_policy(vh, qq_pol_name).await.unwrap();
+    rc.delete_vhost(vh, true).await.unwrap();
 }
 
 #[tokio::test]
@@ -263,7 +263,7 @@ async fn test_async_import_vhost_definitions() {
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let vh = "rust/http/api/async/vhost.definitions.import";
-    let _ = rc.delete_vhost(vh, true).await.unwrap();
+    rc.delete_vhost(vh, true).await.unwrap();
 
     let vh_params = VirtualHostParams::named(vh);
     rc.create_vhost(&vh_params).await.unwrap();
@@ -293,5 +293,5 @@ async fn test_async_import_vhost_definitions() {
         result1
     );
 
-    let _ = rc.delete_vhost(vh, true).await.unwrap();
+    rc.delete_vhost(vh, true).await.unwrap();
 }
