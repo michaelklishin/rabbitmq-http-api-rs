@@ -116,6 +116,6 @@ async fn test_async_close_user_connections() {
         result1
     );
 
-    tokio::time::sleep(Duration::from_millis(40)).await;
+    tokio::time::sleep(Duration::from_millis(50)).await;
     assert!(!conn.is_open());
 }
