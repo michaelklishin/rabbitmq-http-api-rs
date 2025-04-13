@@ -6,6 +6,7 @@ on:
       - "main"
     paths:
       - ".github/workflows/ci.yaml"
+      - ".config/nextest.toml"
       - "Cargo.toml"
       - "Cargo.lock"
       - 'src/**'
@@ -76,4 +77,4 @@ jobs:
         run: RUST_HTTP_API_CLIENT_RABBITMQCTL=DOCKER:${{job.services.rabbitmq.id}} bin/ci/before_build.sh
 
       - name: Run all tests
-        run: RUST_BACKTRACE=1 TEST_STATS_DELAY=1500 cargo nextest run --profile ci --workspace --no-fail-fast --all-features
+        run: RUST_BACKTRACE=1 TEST_STATS_DELAY=1500 cargo nextest run --profile sequential --workspace --no-fail-fast --all-features

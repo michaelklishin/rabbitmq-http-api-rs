@@ -37,7 +37,7 @@ priority = 80
 test-group = 'sequential'
 
 
-[profile.ci]
+[profile.sequential]
 default-filter = "all()"
 retries = 4
 test-threads = 1
