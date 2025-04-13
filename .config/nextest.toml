@@ -28,6 +28,11 @@ priority = 90
 test-group = 'sequential'
 
 [[profile.default.overrides]]
+filter = 'test(blocking_feature)'
+priority = 89
+test-group = 'sequential'
+
+[[profile.default.overrides]]
 filter = 'test(test_async_list)'
 priority = 80
 test-group = 'sequential'
