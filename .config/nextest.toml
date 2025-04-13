@@ -1,6 +1,5 @@
 [profile.default]
 default-filter = "all()"
-
 retries = 2
 test-threads = "num-cpus"
 
@@ -36,3 +35,9 @@ test-group = 'sequential'
 filter = 'test(test_async_list)'
 priority = 80
 test-group = 'sequential'
+
+
+[profile.ci]
+default-filter = "all()"
+retries = 4
+test-threads = 1
