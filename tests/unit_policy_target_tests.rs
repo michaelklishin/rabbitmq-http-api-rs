@@ -32,39 +32,21 @@ fn test_unit_policy_target_does_apply_to() {
     assert!(PolicyTarget::Queues.does_apply_to(PolicyTarget::Queues));
     assert!(PolicyTarget::Queues.does_apply_to(PolicyTarget::Streams));
 
-    assert!(
-        !PolicyTarget::Queues.does_apply_to(PolicyTarget::Exchanges)
-    );
+    assert!(!PolicyTarget::Queues.does_apply_to(PolicyTarget::Exchanges));
 
     // "streams" only matches "streams" and "all"
     assert!(PolicyTarget::Streams.does_apply_to(PolicyTarget::All));
     assert!(PolicyTarget::Streams.does_apply_to(PolicyTarget::Streams));
-    assert!(
-        !PolicyTarget::Streams.does_apply_to(PolicyTarget::QuorumQueues)
-    );
-    assert!(
-        !PolicyTarget::Streams.does_apply_to(PolicyTarget::Queues)
-    );
-    assert!(
-        !PolicyTarget::Streams.does_apply_to(PolicyTarget::ClassicQueues)
-    );
-    assert!(
-        !PolicyTarget::Streams.does_apply_to(PolicyTarget::Exchanges)
-    );
+    assert!(!PolicyTarget::Streams.does_apply_to(PolicyTarget::QuorumQueues));
+    assert!(!PolicyTarget::Streams.does_apply_to(PolicyTarget::Queues));
+    assert!(!PolicyTarget::Streams.does_apply_to(PolicyTarget::ClassicQueues));
+    assert!(!PolicyTarget::Streams.does_apply_to(PolicyTarget::Exchanges));
 
     // "exchanges" only matches "exchanges" and "all"
     assert!(PolicyTarget::Exchanges.does_apply_to(PolicyTarget::All));
     assert!(PolicyTarget::Exchanges.does_apply_to(PolicyTarget::Exchanges));
-    assert!(
-        !PolicyTarget::Exchanges.does_apply_to(PolicyTarget::QuorumQueues)
-    );
-    assert!(
-        !PolicyTarget::Exchanges.does_apply_to(PolicyTarget::Queues)
-    );
-    assert!(
-        !PolicyTarget::Exchanges.does_apply_to(PolicyTarget::ClassicQueues)
-    );
-    assert!(
-        !PolicyTarget::Exchanges.does_apply_to(PolicyTarget::Streams)
-    );
+    assert!(!PolicyTarget::Exchanges.does_apply_to(PolicyTarget::QuorumQueues));
+    assert!(!PolicyTarget::Exchanges.does_apply_to(PolicyTarget::Queues));
+    assert!(!PolicyTarget::Exchanges.does_apply_to(PolicyTarget::ClassicQueues));
+    assert!(!PolicyTarget::Exchanges.does_apply_to(PolicyTarget::Streams));
 }

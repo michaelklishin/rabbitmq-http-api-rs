@@ -265,19 +265,11 @@ fn test_unit_policy_does_match_case2() {
 
     assert!(p.does_match_name("/", "ca.on.to.1", PolicyTarget::Queues));
 
-    assert!(
-        !p.does_match_name("/", "cdi.r.1", PolicyTarget::Queues)
-    );
+    assert!(!p.does_match_name("/", "cdi.r.1", PolicyTarget::Queues));
     assert!(!p.does_match_name("/", "ca", PolicyTarget::Queues));
-    assert!(
-        !p.does_match_name("/", "abc.r.1", PolicyTarget::Queues)
-    );
-    assert!(
-        !p.does_match_name("/", "us.ny.nyc.1", PolicyTarget::Queues)
-    );
-    assert!(
-        !p.does_match_name("a-different-vhost", "ca.on.to.2", PolicyTarget::Queues)
-    );
+    assert!(!p.does_match_name("/", "abc.r.1", PolicyTarget::Queues));
+    assert!(!p.does_match_name("/", "us.ny.nyc.1", PolicyTarget::Queues));
+    assert!(!p.does_match_name("a-different-vhost", "ca.on.to.2", PolicyTarget::Queues));
 }
 
 #[test]
@@ -296,28 +288,20 @@ fn test_unit_policy_does_match_case3() {
 
     assert!(p.does_match_name("/", "events.regional.na", PolicyTarget::Exchanges));
 
-    assert!(
-        !p.does_match_name("/", "events.regional.na.partitions.1", PolicyTarget::Queues)
-    );
-    assert!(
-        !p.does_match_name(
-            "/",
-            "events.regional.na.partitions.1",
-            PolicyTarget::ClassicQueues
-        )
-    );
-    assert!(
-        !p.does_match_name(
-            "/",
-            "events.regional.na.partitions.1",
-            PolicyTarget::QuorumQueues
-        )
-    );
-    assert!(
-        !p.does_match_name(
-            "/",
-            "events.regional.na.partitions.1",
-            PolicyTarget::Streams
-        )
-    );
+    assert!(!p.does_match_name("/", "events.regional.na.partitions.1", PolicyTarget::Queues));
+    assert!(!p.does_match_name(
+        "/",
+        "events.regional.na.partitions.1",
+        PolicyTarget::ClassicQueues
+    ));
+    assert!(!p.does_match_name(
+        "/",
+        "events.regional.na.partitions.1",
+        PolicyTarget::QuorumQueues
+    ));
+    assert!(!p.does_match_name(
+        "/",
+        "events.regional.na.partitions.1",
+        PolicyTarget::Streams
+    ));
 }

@@ -131,7 +131,10 @@ async fn test_an_operator_policy(rc: &Client<&str, &str, &str>, policy: &PolicyP
     assert!(result.is_ok(), "declare_policy returned {:?}", result);
 
     // validate it was created as expected
-    let fetched_policy = rc.get_operator_policy(policy.vhost, policy.name).await.unwrap();
+    let fetched_policy = rc
+        .get_operator_policy(policy.vhost, policy.name)
+        .await
+        .unwrap();
     assert_eq!(fetched_policy.definition.0.unwrap(), policy.definition);
 
     // delete it
