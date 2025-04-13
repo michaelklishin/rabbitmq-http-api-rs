@@ -76,5 +76,8 @@ jobs:
       - name: Pre-configure the node
         run: RUST_HTTP_API_CLIENT_RABBITMQCTL=DOCKER:${{job.services.rabbitmq.id}} bin/ci/before_build.sh
 
+      - name: Wait for the script changes to be applied
+        run: sleep 10
+
       - name: Run all tests
         run: RUST_BACKTRACE=1 TEST_STATS_DELAY=1500 cargo nextest run --profile sequential --workspace --no-fail-fast --all-features

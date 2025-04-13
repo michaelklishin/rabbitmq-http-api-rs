@@ -36,6 +36,10 @@ filter = 'test(test_async_list)'
 priority = 80
 test-group = 'sequential'
 
+[[profile.default.overrides]]
+filter = 'test(test_blocking_list_deprecated_features)'
+priority = 79
+test-group = 'sequential'
 
 [profile.sequential]
 default-filter = "all()"
