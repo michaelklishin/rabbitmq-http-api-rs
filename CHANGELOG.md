@@ -9,7 +9,7 @@ No changes yet.
 ### Breaking Changes
 
  * `PolicyDefinition` and specifically `requests::PolicyParams.definition` is now a `Map<String, Value>`
-   and not an `Option<Map<String, Value>>`. When creating a policy, the definition cannot be missing or black,
+   and not an `Option<Map<String, Value>>`. When creating a policy, the definition cannot be missing or blank,
    otherwise it would not pass server validation.
 
 
