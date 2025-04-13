@@ -41,7 +41,7 @@ filter = 'test(test_blocking_list_deprecated_features)'
 priority = 79
 test-group = 'sequential'
 
-[profile.sequential]
-default-filter = "all()"
+[profile.ci]
+default-filter = "(not test(blocking_feature_flag)) and (not test(blocking_deprecated_feature))"
 retries = 4
 test-threads = 1
