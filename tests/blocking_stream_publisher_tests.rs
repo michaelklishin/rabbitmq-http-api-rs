@@ -24,8 +24,7 @@ fn test_blocking_list_stream_publishers() {
     let result1 = rc.list_stream_publishers();
     assert!(
         result1.is_ok(),
-        "list_stream_publishers returned {:?}",
-        result1
+        "list_stream_publishers returned {result1:?}"
     );
 }
 
@@ -38,7 +37,6 @@ fn test_blocking_list_virtual_host_stream_publishers() {
     let result1 = rc.list_stream_publishers_in(vh_name);
     assert!(
         result1.is_ok(),
-        "list_stream_publishers_in returned {:?}",
-        result1
+        "list_stream_publishers_in returned {result1:?}"
     );
 }

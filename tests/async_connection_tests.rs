@@ -29,7 +29,7 @@ async fn test_async_list_connections() {
     assert!(conn.is_open());
 
     let result1 = rc.list_connections().await;
-    assert!(result1.is_ok(), "list_connections returned {:?}", result1);
+    assert!(result1.is_ok(), "list_connections returned {result1:?}");
 
     conn.close().await.unwrap();
 }
@@ -42,8 +42,7 @@ async fn test_async_list_user_connections() {
     let result1 = rc.list_user_connections(USERNAME).await;
     assert!(
         result1.is_ok(),
-        "list_user_connections returned {:?}",
-        result1
+        "list_user_connections returned {result1:?}"
     );
 }
 
@@ -61,8 +60,7 @@ async fn test_async_list_virtual_host_connections() {
     let result1 = rc.list_connections_in(vh).await;
     assert!(
         result1.is_ok(),
-        "list_connections_in returned {:?}",
-        result1
+        "list_connections_in returned {result1:?}"
     );
 
     rc.delete_vhost(vh, true).await.unwrap();
@@ -76,8 +74,7 @@ async fn test_async_list_stream_connections() {
     let result1 = rc.list_stream_connections().await;
     assert!(
         result1.is_ok(),
-        "list_stream_connections returned {:?}",
-        result1
+        "list_stream_connections returned {result1:?}"
     );
 }
 
@@ -90,8 +87,7 @@ async fn test_async_list_virtual_host_stream_connections() {
     let result1 = rc.list_stream_connections_in(vh_name).await;
     assert!(
         result1.is_ok(),
-        "list_stream_connections returned {:?}",
-        result1
+        "list_stream_connections returned {result1:?}"
     );
 }
 
@@ -112,8 +108,7 @@ async fn test_async_close_user_connections() {
         .await;
     assert!(
         result1.is_ok(),
-        "close_user_connections returned {:?}",
-        result1
+        "close_user_connections returned {result1:?}"
     );
 
     tokio::time::sleep(Duration::from_millis(50)).await;

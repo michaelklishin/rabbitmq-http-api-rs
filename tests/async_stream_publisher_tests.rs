@@ -24,8 +24,7 @@ async fn test_async_list_stream_publishers() {
     let result1 = rc.list_stream_publishers().await;
     assert!(
         result1.is_ok(),
-        "list_stream_publishers returned {:?}",
-        result1
+        "list_stream_publishers returned {result1:?}"
     );
 }
 
@@ -38,7 +37,6 @@ async fn test_async_list_virtual_host_stream_publishers() {
     let result1 = rc.list_stream_publishers_in(vh_name).await;
     assert!(
         result1.is_ok(),
-        "list_stream_publishers_in returned {:?}",
-        result1
+        "list_stream_publishers_in returned {result1:?}"
     );
 }

@@ -31,8 +31,7 @@ async fn test_async_export_definitions_as_string() {
 
     assert!(
         result.is_ok(),
-        "export_definitions_as_string returned {:?}",
-        result
+        "export_definitions_as_string returned {result:?}"
     );
 }
 
@@ -76,7 +75,7 @@ async fn test_async_export_cluster_wide_definitions_as_data() {
             &QueueParams::new_durable_classic_queue(q_name, None),
         )
         .await;
-    assert!(q_result.is_ok(), "failed to declare queue {}", q_name);
+    assert!(q_result.is_ok(), "failed to declare queue {q_name}");
 
     let _ = rc
         .bind_queue(vh_params.name, q_name, x_name, None, None)
@@ -87,8 +86,7 @@ async fn test_async_export_cluster_wide_definitions_as_data() {
 
     assert!(
         result.is_ok(),
-        "export_definitions_as_data returned {:?}",
-        result
+        "export_definitions_as_data returned {result:?}"
     );
 
     let defs = result.unwrap();
@@ -112,15 +110,13 @@ async fn test_async_export_cluster_wide_definitions_as_data() {
     let x_found = defs.exchanges.iter().any(|x| x.name == x_name);
     assert!(
         x_found,
-        "expected to find exchange {} in definitions",
-        x_name
+        "expected to find exchange {x_name} in definitions"
     );
 
     let qq_pol_found = defs.policies.iter().any(|p| p.name == qq_pol_name);
     assert!(
         qq_pol_found,
-        "expected to find policy {} in definitions",
-        qq_pol_name
+        "expected to find policy {qq_pol_name} in definitions"
     );
 
     let b_found = defs
@@ -129,8 +125,7 @@ async fn test_async_export_cluster_wide_definitions_as_data() {
         .any(|b| b.destination_type == "queue".into() && b.destination == q_name);
     assert!(
         b_found,
-        "expected to find a binding for queue {} in definitions",
-        q_name
+        "expected to find a binding for queue {q_name} in definitions"
     );
 
     rc.delete_exchange(vh, x_name, false).await.unwrap();
@@ -178,7 +173,7 @@ async fn test_async_export_vhost_definitions_as_data() {
             &QueueParams::new_durable_classic_queue(q_name, None),
         )
         .await;
-    assert!(q_result.is_ok(), "failed to declare queue {}", q_name);
+    assert!(q_result.is_ok(), "failed to declare queue {q_name}");
 
     let _ = rc
         .bind_queue(vh_params.name, q_name, x_name, None, None)
@@ -189,8 +184,7 @@ async fn test_async_export_vhost_definitions_as_data() {
 
     assert!(
         result.is_ok(),
-        "test_export_vhost_definitions_as_data returned {:?}",
-        result
+        "test_export_vhost_definitions_as_data returned {result:?}"
     );
 
     let defs = result.unwrap();
@@ -202,15 +196,13 @@ async fn test_async_export_vhost_definitions_as_data() {
     let x_found = defs.exchanges.iter().any(|x| x.name == x_name);
     assert!(
         x_found,
-        "expected to find exchange {} in definitions",
-        x_name
+        "expected to find exchange {x_name} in definitions"
     );
 
     let qq_pol_found = defs.policies.iter().any(|p| p.name == qq_pol_name);
     assert!(
         qq_pol_found,
-        "expected to find policy {} in definitions",
-        qq_pol_name
+        "expected to find policy {qq_pol_name} in definitions"
     );
 
     let b_found = defs
@@ -219,8 +211,7 @@ async fn test_async_export_vhost_definitions_as_data() {
         .any(|b| b.destination_type == "queue".into() && b.destination == q_name);
     assert!(
         b_found,
-        "expected to find a binding for queue {} in definitions",
-        q_name
+        "expected to find a binding for queue {q_name} in definitions"
     );
 
     rc.delete_exchange(vh, x_name, false).await.unwrap();
@@ -245,15 +236,13 @@ async fn test_async_import_cluster_definitions() {
     let result = rc.import_cluster_wide_definitions(defs).await;
     assert!(
         result.is_ok(),
-        "import_cluster_wide_definitions returned {:?}",
-        result
+        "import_cluster_wide_definitions returned {result:?}"
     );
 
     let result1 = rc.get_queue_info("/", "imported_queue").await;
     assert!(
         result1.is_ok(),
-        "can't get the imported queue: {:?}",
-        result1
+        "can't get the imported queue: {result1:?}"
     );
 }
 
@@ -280,8 +269,7 @@ async fn test_async_import_vhost_definitions() {
     let result = rc.import_vhost_definitions(vh, defs).await;
     assert!(
         result.is_ok(),
-        "import_vhost_definitions returned {:?}",
-        result
+        "import_vhost_definitions returned {result:?}"
     );
 
     await_queue_metric_emission();
@@ -289,8 +277,7 @@ async fn test_async_import_vhost_definitions() {
     let result1 = rc.get_queue_info(vh, q).await;
     assert!(
         result1.is_ok(),
-        "can't get the imported queue: {:?}",
-        result1
+        "can't get the imported queue: {result1:?}"
     );
 
     rc.delete_vhost(vh, true).await.unwrap();

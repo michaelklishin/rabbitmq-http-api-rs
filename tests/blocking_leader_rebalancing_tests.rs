@@ -24,7 +24,6 @@ fn test_blocking_leader_rebalancing() {
     let result1 = rc.rebalance_queue_leaders();
     assert!(
         result1.is_ok(),
-        "rebalance_queue_leaders returned {:?}",
-        result1
+        "rebalance_queue_leaders returned {result1:?}"
     );
 }

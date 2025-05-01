@@ -232,7 +232,7 @@ impl From<&SupportedProtocol> for String {
 impl fmt::Display for SupportedProtocol {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let proto: String = self.into();
-        write!(f, "{}", proto)
+        write!(f, "{proto}")
     }
 }
 
@@ -360,7 +360,7 @@ impl Display for QueueType {
             QueueType::Quorum => write!(f, "quorum"),
             QueueType::Stream => write!(f, "stream"),
             QueueType::Delayed => write!(f, "delayed"),
-            QueueType::Unsupported(s) => write!(f, "{}", s),
+            QueueType::Unsupported(s) => write!(f, "{s}"),
         }
     }
 }

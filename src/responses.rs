@@ -378,7 +378,7 @@ impl fmt::Display for NodeMemoryBreakdown {
         ];
 
         for (k, v) in data {
-            writeln!(f, "{}: {}", k, v)?;
+            writeln!(f, "{k}: {v}")?;
         }
 
         Ok(())

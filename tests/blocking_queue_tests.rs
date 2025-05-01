@@ -35,11 +35,11 @@ fn test_blocking_declare_and_redeclare_a_classic_queue() {
     let optional_args = Some(map);
     let params = QueueParams::new_durable_classic_queue(name, optional_args.clone());
     let result2 = rc.declare_queue(vhost, &params);
-    assert!(result2.is_ok(), "declare_queue returned {:?}", result2);
+    assert!(result2.is_ok(), "declare_queue returned {result2:?}");
 
     let params2 = QueueParams::new(name, QueueType::Classic, true, false, optional_args.clone());
     let result3 = rc.declare_queue(vhost, &params2);
-    assert!(result3.is_ok(), "declare_queue returned {:?}", result3);
+    assert!(result3.is_ok(), "declare_queue returned {result3:?}");
 
     let _ = rc.delete_queue(vhost, name, false);
 }
@@ -61,7 +61,7 @@ fn test_blocking_declare_a_quorum_queue() {
     let optional_args = Some(map);
     let params = QueueParams::new_quorum_queue(name, optional_args);
     let result2 = rc.declare_queue(vhost, &params);
-    assert!(result2.is_ok(), "declare_queue returned {:?}", result2);
+    assert!(result2.is_ok(), "declare_queue returned {result2:?}");
 
     let _ = rc.delete_queue(vhost, name, false);
 }
@@ -83,7 +83,7 @@ fn test_blocking_declare_a_stream_with_declare_queue() {
     let optional_args = Some(map);
     let params = QueueParams::new_stream(name, optional_args);
     let result2 = rc.declare_queue(vhost, &params);
-    assert!(result2.is_ok(), "declare_queue returned {:?}", result2);
+    assert!(result2.is_ok(), "declare_queue returned {result2:?}");
 
     let _ = rc.delete_queue(vhost, name, false);
 }
@@ -102,7 +102,7 @@ fn test_blocking_delete_queue() {
 
     let params = QueueParams::new_durable_classic_queue(name, None);
     let result2 = rc.declare_queue(vhost, &params);
-    assert!(result2.is_ok(), "declare_queue returned {:?}", result2);
+    assert!(result2.is_ok(), "declare_queue returned {result2:?}");
 
     rc.delete_queue(vhost, name, false).unwrap();
     let result3 = rc.get_queue_info(vhost, name);
@@ -118,12 +118,12 @@ fn test_blocking_list_all_queues() {
 
     let params = QueueParams::new_durable_classic_queue("rust.tests.cq.23487866", None);
     let result1 = rc.declare_queue(vh_name, &params);
-    assert!(result1.is_ok(), "declare_queue returned {:?}", result1);
+    assert!(result1.is_ok(), "declare_queue returned {result1:?}");
 
     test_helpers::await_queue_metric_emission();
 
     let result2 = rc.list_queues();
-    assert!(result2.is_ok(), "list_queues returned {:?}", result2);
+    assert!(result2.is_ok(), "list_queues returned {result2:?}");
 
     rc.delete_queue(vh_name, params.name, false).unwrap();
 }
@@ -137,12 +137,12 @@ fn test_blocking_list_queues_in_a_virtual_host() {
 
     let params = QueueParams::new_durable_classic_queue("rust.tests.cq.64692734867", None);
     let result1 = rc.declare_queue(vh_name, &params);
-    assert!(result1.is_ok(), "declare_queue returned {:?}", result1);
+    assert!(result1.is_ok(), "declare_queue returned {result1:?}");
 
     test_helpers::await_queue_metric_emission();
 
     let result2 = rc.list_queues_in(vh_name);
-    assert!(result2.is_ok(), "list_queues_in returned {:?}", result2);
+    assert!(result2.is_ok(), "list_queues_in returned {result2:?}");
 
     rc.delete_queue(vh_name, params.name, false).unwrap();
 }

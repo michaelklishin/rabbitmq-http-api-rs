@@ -98,7 +98,7 @@ impl Display for TagMap {
 impl Display for DeprecatedFeatureList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for df in &self.0 {
-            writeln!(f, "{}", df)?;
+            writeln!(f, "{df}")?;
         }
 
         Ok(())
@@ -142,7 +142,7 @@ impl Display for FeatureFlag {
 impl Display for FeatureFlagList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for ff in &self.0 {
-            writeln!(f, "{}", ff)?;
+            writeln!(f, "{ff}")?;
         }
 
         Ok(())
@@ -152,7 +152,7 @@ impl Display for FeatureFlagList {
 impl Display for MessageList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for msg in &self.0 {
-            writeln!(f, "{}", msg)?;
+            writeln!(f, "{msg}")?;
         }
 
         Ok(())
@@ -230,9 +230,9 @@ pub fn fmt_list_as_json_array(f: &mut fmt::Formatter<'_>, xs: &[String]) -> fmt:
             let mut xs = xs.to_owned();
             let last_element = xs.pop().unwrap();
             for elem in xs {
-                write!(f, "{}, ", elem)?;
+                write!(f, "{elem}, ")?;
             }
-            write!(f, "{}", last_element)?;
+            write!(f, "{last_element}")?;
             write!(f, "]")?;
             Ok(())
         }
@@ -248,9 +248,9 @@ pub fn fmt_comma_separated_list(f: &mut fmt::Formatter<'_>, xs: &[String]) -> fm
             let mut xs = xs.to_owned();
             let last_element = xs.pop().unwrap();
             for elem in xs {
-                write!(f, "{}, ", elem)?;
+                write!(f, "{elem}, ")?;
             }
-            write!(f, "{}", last_element)?;
+            write!(f, "{last_element}")?;
             Ok(())
         }
     }
@@ -265,9 +265,9 @@ pub fn fmt_vertical_list_with_bullets(f: &mut fmt::Formatter<'_>, xs: &[String])
             let mut xs = xs.to_owned();
             let last_element = xs.pop().unwrap();
             for elem in xs {
-                writeln!(f, "* {}", elem)?;
+                writeln!(f, "* {elem}")?;
             }
-            write!(f, "* {}", last_element)?;
+            write!(f, "* {last_element}")?;
             Ok(())
         }
     }
@@ -282,9 +282,9 @@ pub fn fmt_vertical_list_without_bullets(f: &mut fmt::Formatter<'_>, xs: &[Strin
             let mut xs = xs.to_owned();
             let last_element = xs.pop().unwrap();
             for elem in xs {
-                writeln!(f, "{}", elem)?;
+                writeln!(f, "{elem}")?;
             }
-            write!(f, "{}", last_element)?;
+            write!(f, "{last_element}")?;
             Ok(())
         }
     }
@@ -350,7 +350,7 @@ pub fn display_tag_list_option(opt: &Option<TagList>) -> String {
             let mut s = String::new();
             let iter = val.0.clone().into_iter();
             for t in iter {
-                let line = format!("{}\n", t);
+                let line = format!("{t}\n");
                 s += line.as_str()
             }
 

@@ -25,7 +25,7 @@ async fn test_async_overview() {
     let _ = generate_activity().await;
 
     let result1 = rc.overview().await;
-    assert!(result1.is_ok(), "overview returned {:?}", result1);
+    assert!(result1.is_ok(), "overview returned {result1:?}");
 
     let ov = result1.unwrap();
     assert!(ov.object_totals.exchanges > 0);

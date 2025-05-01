@@ -22,7 +22,7 @@ async fn test_async_list_consumers() {
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let result1 = rc.list_consumers().await;
-    assert!(result1.is_ok(), "list_consumers returned {:?}", result1);
+    assert!(result1.is_ok(), "list_consumers returned {result1:?}");
 }
 
 #[tokio::test]
@@ -35,7 +35,7 @@ async fn test_async_list_vhost_consumers() {
     assert!(result1.is_ok());
 
     let result2 = rc.list_consumers_in(vh_params.name).await;
-    assert!(result2.is_ok(), "list_consumers_in returned {:?}", result2);
+    assert!(result2.is_ok(), "list_consumers_in returned {result2:?}");
 
     rc.delete_vhost(vh_params.name, true).await.unwrap();
 }
