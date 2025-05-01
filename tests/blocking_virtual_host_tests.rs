@@ -70,6 +70,36 @@ fn test_blocking_create_vhost() {
 }
 
 #[test]
+fn test_blocking_create_vhost_without_dqt() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+    let name = "rust_test_create_vhost_without_dqt";
+
+    let _ = rc.delete_vhost(name, false);
+
+    let result1 = rc.get_vhost(name);
+    assert!(result1.is_err());
+
+    let desc = format!("{} description", &name);
+    let params = VirtualHostParams {
+        name,
+        description: Some(&desc),
+        tags: Some(vec!["tag-a", "tag-b"]),
+        default_queue_type: None,
+        tracing: false,
+    };
+    let result2 = rc.create_vhost(&params);
+    assert!(result2.is_ok());
+
+    let result3 = rc.get_vhost(name);
+    assert!(result3.is_ok());
+    let vh2 = result3.unwrap();
+    assert!(vh2.name == name);
+
+    let _ = rc.delete_vhost(name, false);
+}
+
+#[test]
 fn test_blocking_update_vhost() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
