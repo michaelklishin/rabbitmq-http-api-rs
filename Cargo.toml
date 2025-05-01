@@ -53,3 +53,6 @@ blocking = [
     "dep:percent-encoding",
 ]
 tabled = ["dep:tabled"]
+
+[lints.clippy]
+uninlined_format_args = "allow"
