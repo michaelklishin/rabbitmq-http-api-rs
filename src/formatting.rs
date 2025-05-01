@@ -295,7 +295,7 @@ pub fn fmt_map_as_colon_separated_pairs(
     xs: &Map<String, serde_json::Value>,
 ) -> fmt::Result {
     for (k, v) in xs.iter() {
-        writeln!(f, "{}: {}", k, v)?;
+        writeln!(f, "{k}: {v}")?;
     }
 
     Ok(())
@@ -307,7 +307,7 @@ where
 {
     match opt {
         None => "".to_owned(),
-        Some(val) => format!("{}", val).to_owned(),
+        Some(val) => format!("{val}").to_owned(),
     }
 }
 
@@ -321,7 +321,7 @@ pub fn display_option_details_rate(opt: &Option<Rate>) -> String {
 pub fn display_arg_table(xs: &XArguments) -> String {
     let mut s = String::new();
     for (k, v) in xs.0.iter() {
-        let line = format!("{}: {}\n", k, v);
+        let line = format!("{k}: {v}\n");
         s += line.as_str()
     }
 
@@ -334,7 +334,7 @@ pub fn display_tag_map_option(opt: &Option<TagMap>) -> String {
             let mut s = String::new();
             let iter = val.0.clone().into_iter();
             for (k, v) in iter {
-                let line = format!("\"{}\": {}\n", k, v);
+                let line = format!("\"{k}\": {v}\n");
                 s += line.as_str()
             }
 
