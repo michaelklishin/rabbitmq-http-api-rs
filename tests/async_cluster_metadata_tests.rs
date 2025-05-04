@@ -12,11 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 use rabbitmq_http_client::api::Client;
-use rabbitmq_http_client::requests::GlobalRuntimeParameterDefinition;
 use serde_json::{json, Map, Value};
 
 mod test_helpers;
-use crate::test_helpers::{cluster_tags, endpoint, PASSWORD, USERNAME};
+use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
 
 #[tokio::test]
 async fn test_async_get_cluster_name() {

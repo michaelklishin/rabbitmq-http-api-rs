@@ -15,8 +15,16 @@
 
 use crate::error::Error;
 use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
-use crate::requests::{Amqp091ShovelParams, Amqp10ShovelParams, EmptyPayload, FederationUpstreamParams, GlobalRuntimeParameterDefinition, StreamParams, FEDERATION_UPSTREAM_COMPONENT, SHOVEL_COMPONENT};
-use crate::responses::{ClusterTags, DeprecatedFeatureList, FeatureFlag, FeatureFlagList, FeatureFlagStability, FeatureFlagState, FederationUpstream, GetMessage, OAuthConfiguration, Overview, SchemaDefinitionSyncStatus, VirtualHostDefinitionSet, WarmStandbyReplicationStatus};
+use crate::requests::{
+    Amqp091ShovelParams, Amqp10ShovelParams, EmptyPayload, FederationUpstreamParams,
+    GlobalRuntimeParameterDefinition, StreamParams, FEDERATION_UPSTREAM_COMPONENT,
+    SHOVEL_COMPONENT,
+};
+use crate::responses::{
+    ClusterTags, DeprecatedFeatureList, FeatureFlag, FeatureFlagList, FeatureFlagStability,
+    FeatureFlagState, FederationUpstream, GetMessage, OAuthConfiguration, Overview,
+    SchemaDefinitionSyncStatus, VirtualHostDefinitionSet, WarmStandbyReplicationStatus,
+};
 use crate::{
     commons::{BindingDestinationType, SupportedProtocol, UserLimitTarget, VirtualHostLimitTarget},
     path,
@@ -1033,7 +1041,9 @@ where
         Ok(())
     }
 
-    pub async fn list_global_runtime_parameters(&self) -> Result<Vec<responses::GlobalRuntimeParameter>> {
+    pub async fn list_global_runtime_parameters(
+        &self,
+    ) -> Result<Vec<responses::GlobalRuntimeParameter>> {
         let response = self.http_get("global-parameters", None, None).await?;
         let response = response.json().await?;
         Ok(response)
@@ -1055,12 +1065,7 @@ where
         param: &'a GlobalRuntimeParameterDefinition<'a>,
     ) -> Result<()> {
         let _response = self
-            .http_put(
-                path!("global-parameters", param.name),
-                &param,
-                None,
-                None,
-            )
+            .http_put(path!("global-parameters", param.name), &param, None, None)
             .await?;
         Ok(())
     }
@@ -1068,7 +1073,7 @@ where
     pub async fn clear_global_runtime_parameter(&self, name: &str) -> Result<()> {
         let _response = self
             .http_delete(path!("global-parameters", name), None, None)
-        .await?;
+            .await?;
         Ok(())
     }
 
@@ -1170,7 +1175,7 @@ where
     pub async fn set_cluster_tags(&self, tags: Map<String, Value>) -> Result<()> {
         let grp = GlobalRuntimeParameterDefinition {
             name: "cluster_tags",
-            value: tags
+            value: tags,
         };
         self.upsert_global_runtime_parameter(&grp).await?;
         Ok(())

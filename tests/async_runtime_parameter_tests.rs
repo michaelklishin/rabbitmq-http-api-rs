@@ -17,10 +17,11 @@ use rabbitmq_http_client::requests::{
 use rabbitmq_http_client::responses::RuntimeParameter;
 use rabbitmq_http_client::{api::Client, requests::VirtualHostParams};
 use serde_json::{json, Map, Value};
-use std::collections::HashMap;
 
 mod test_helpers;
-use crate::test_helpers::{async_await_metric_emission, endpoint, PASSWORD, USERNAME, cluster_tags};
+use crate::test_helpers::{
+    async_await_metric_emission, cluster_tags, endpoint, PASSWORD, USERNAME,
+};
 
 #[tokio::test]
 async fn test_async_upsert_runtime_parameter() {

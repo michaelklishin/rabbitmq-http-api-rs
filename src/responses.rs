@@ -114,7 +114,7 @@ pub struct GlobalRuntimeParameterValue(pub serde_json::Value);
 
 impl fmt::Display for GlobalRuntimeParameterValue {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        writeln!(f, "{}", &self)?;
+        writeln!(f, "{}", &self.0)?;
 
         Ok(())
     }

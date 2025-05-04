@@ -2,7 +2,12 @@
 
 ## v0.30.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * `Client#list_global_runtime_parameters`, `Client#get_global_runtime_parameter`, `Client#upsert_global_runtime_parameter`, `Client#clear_global_runtime_parameter`
+   are new functions for working with [global runtime parameters](https://www.rabbitmq.com/docs/parameters)
+ * `Client#get_cluster_tags`, `Client#set_cluser_tags`, `Client#clear_cluster_tags` are new functions for operations on [cluster tags](https://www.rabbitmq.com/docs/parameters#cluster-tags)
+
 
 ## v0.29.0 (Apr 14, 2024)
 
