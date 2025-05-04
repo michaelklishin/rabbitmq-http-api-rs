@@ -33,6 +33,7 @@ use crate::transformers::{TransformerFn, TransformerFnOnce};
 use regex::Regex;
 #[cfg(feature = "tabled")]
 use std::borrow::Cow;
+use std::fmt::Formatter;
 #[cfg(feature = "tabled")]
 use tabled::Tabled;
 
@@ -104,6 +105,18 @@ impl ops::Deref for RuntimeParameterValue {
 impl fmt::Display for RuntimeParameterValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt_map_as_colon_separated_pairs(f, &self.0)
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(transparent)]
+pub struct GlobalRuntimeParameterValue(pub serde_json::Value);
+
+impl fmt::Display for GlobalRuntimeParameterValue {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        writeln!(f, "{}", &self)?;
+
+        Ok(())
     }
 }
 
@@ -1027,10 +1040,28 @@ pub struct RuntimeParameterWithoutVirtualHost {
     pub value: RuntimeParameterValue,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+#[allow(dead_code)]
+pub struct GlobalRuntimeParameter {
+    pub name: String,
+    pub value: GlobalRuntimeParameterValue,
+}
+
 #[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct ClusterIdentity {
     pub name: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[allow(dead_code)]
+pub struct ClusterTags(pub Map<String, serde_json::Value>);
+
+impl From<GlobalRuntimeParameterValue> for ClusterTags {
+    fn from(value: GlobalRuntimeParameterValue) -> Self {
+        ClusterTags(value.0.as_object().unwrap().clone())
+    }
 }
 
 pub trait PolicyDefinitionOps {

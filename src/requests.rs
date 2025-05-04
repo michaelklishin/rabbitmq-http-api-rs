@@ -380,6 +380,13 @@ pub struct RuntimeParameterDefinition<'a> {
     pub value: RuntimeParameterValue,
 }
 
+/// Represents a [global runtime parameter](https://rabbitmq.com/docs/parameters/).
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GlobalRuntimeParameterDefinition<'a> {
+    pub name: &'a str,
+    pub value: RuntimeParameterValue,
+}
+
 pub type PolicyDefinition = Map<String, Value>;
 
 /// Represents a [policy](https://rabbitmq.com/docs/parameters/#policies).
