@@ -1,6 +1,6 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.30.0 (in development)
+## v0.30.0 (May 6, 2025)
 
 ### Enhancements
 
@@ -9,7 +9,7 @@
  * `Client#get_cluster_tags`, `Client#set_cluser_tags`, `Client#clear_cluster_tags` are new functions for operations on [cluster tags](https://www.rabbitmq.com/docs/parameters#cluster-tags)
 
 
-## v0.29.0 (Apr 14, 2024)
+## v0.29.0 (Apr 14, 2025)
 
 ### Breaking Changes
 
@@ -18,7 +18,7 @@
    otherwise it would not pass server validation.
 
 
-## v0.28.0 (Mar 23, 2024)
+## v0.28.0 (Mar 23, 2025)
 
 ### Enhancements
 
@@ -29,7 +29,7 @@
    `exclude_users`, `exclude_permissions`, `exclude_runtime_parameters`, `exclude_policies`
 
 
-## v0.27.0 (Mar 11, 2024)
+## v0.27.0 (Mar 11, 2025)
 
 ### Enhancements
 
@@ -42,7 +42,7 @@
    The two are supposed to be used together.
 
 
-## v0.26.0  (Mar 10, 2024)
+## v0.26.0  (Mar 10, 2025)
 
 ### Enhancements
 
