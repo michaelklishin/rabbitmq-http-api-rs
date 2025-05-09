@@ -49,11 +49,11 @@ pub fn amqp_endpoint() -> String {
 }
 
 pub fn amqp_endpoint_with_vhost(name: &str) -> String {
-    format!("{0}/{1}", AMQP_ENDPOINT, name).to_owned()
+    format!("{AMQP_ENDPOINT}/{name}").to_owned()
 }
 
 pub fn amqp10_endpoint_with_vhost(name: &str) -> String {
-    format!("{0}?hostname='vhost:{1}'", AMQP_ENDPOINT, name).to_owned()
+    format!("{AMQP_ENDPOINT}?hostname='vhost:{name}'").to_owned()
 }
 
 //

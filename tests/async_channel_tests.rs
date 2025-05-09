@@ -30,7 +30,7 @@ async fn test_list_channels() {
     assert!(ch.is_open());
 
     let result1 = rc.list_channels().await;
-    assert!(result1.is_ok(), "list_channels returned {:?}", result1);
+    assert!(result1.is_ok(), "list_channels returned {result1:?}");
 
     // just to be explicit
     ch.close().await.unwrap();
@@ -51,7 +51,7 @@ async fn test_list_virtual_host_channels() {
 
     let vh_name = "/";
     let result1 = rc.list_channels_in(vh_name).await;
-    assert!(result1.is_ok(), "list_channels_in returned {:?}", result1);
+    assert!(result1.is_ok(), "list_channels_in returned {result1:?}");
 
     // just to be explicit
     ch.close().await.unwrap();

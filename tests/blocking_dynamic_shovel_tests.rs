@@ -40,8 +40,8 @@ fn test_blocking_declare_a_dynamic_amqp091_shovel() {
     let result1 = rc.create_vhost(&vh_params);
     assert!(result1.is_ok());
 
-    let src_q = format!("{0}.src.q", sh);
-    let dest_q = format!("{0}.dest.q", sh);
+    let src_q = format!("{sh}.src.q");
+    let dest_q = format!("{sh}.dest.q");
 
     let amqp_endpoint = amqp_endpoint_with_vhost(vh);
     let shovel_params = Amqp091ShovelParams {
@@ -80,10 +80,10 @@ fn test_blocking_declare_a_dynamic_amqp10_shovel() {
 
     // note: 4.1.0 will use a different addressing scheme,
     //       see https://www.rabbitmq.com/docs/next/amqp#address-v2
-    let src_queue = format!("{}.src.q", sh);
-    let src_address = format!("/queue/{}.src.q", sh);
-    let dest_queue = format!("{}.dest.q", sh);
-    let dest_address = format!("/queue/{}.dest.q", sh);
+    let src_queue = format!("{sh}.src.q");
+    let src_address = format!("/queue/{sh}.src.q");
+    let dest_queue = format!("{sh}.dest.q");
+    let dest_address = format!("/queue/{sh}.dest.q");
 
     let src_params = QueueParams::new_durable_classic_queue(&src_queue, None);
     let result2 = rc.declare_queue(vh, &src_params);
@@ -124,8 +124,8 @@ fn test_blocking_declare_a_dynamic_amqp091_shovel_with_predeclared_source_topolo
     let result1 = rc.create_vhost(&vh_params);
     assert!(result1.is_ok());
 
-    let src_q = format!("{0}.src.q", sh);
-    let dest_q = format!("{0}.dest.q", sh);
+    let src_q = format!("{sh}.src.q");
+    let dest_q = format!("{sh}.dest.q");
 
     let q_params = QueueParams::new_durable_classic_queue(&src_q, None);
     let result2 = rc.declare_queue(vh, &q_params);
@@ -166,8 +166,8 @@ fn test_blocking_declare_a_dynamic_amqp091_shovel_with_predeclared_destination_t
     let result1 = rc.create_vhost(&vh_params);
     assert!(result1.is_ok());
 
-    let src_q = format!("{0}.src.q", sh);
-    let dest_q = format!("{0}.dest.q", sh);
+    let src_q = format!("{sh}.src.q");
+    let dest_q = format!("{sh}.dest.q");
 
     let q_params = QueueParams::new_durable_classic_queue(&dest_q, None);
     let result2 = rc.declare_queue(vh, &q_params);
@@ -211,8 +211,8 @@ fn test_blocking_delete_a_dynamic_amqp091_shovel() {
     let result1 = rc.create_vhost(&vh_params);
     assert!(result1.is_ok());
 
-    let src_q = format!("{0}.src.q", sh);
-    let dest_q = format!("{0}.dest.q", sh);
+    let src_q = format!("{sh}.src.q");
+    let dest_q = format!("{sh}.dest.q");
 
     let amqp_endpoint = amqp_endpoint_with_vhost(vh);
     let shovel_params = Amqp091ShovelParams {
