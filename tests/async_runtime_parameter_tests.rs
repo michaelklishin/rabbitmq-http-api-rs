@@ -59,6 +59,69 @@ async fn test_async_upsert_runtime_parameter() {
 }
 
 #[tokio::test]
+async fn test_async_list_all_runtime_parameters() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let vh_params =
+        VirtualHostParams::named("rust/http/api/async/test_async_list_runtime_parameters");
+    let result1 = rc.create_vhost(&vh_params).await;
+    assert!(result1.is_ok());
+
+    let mut val = max_connections_limit(9988);
+    let rpf = example_runtime_parameter_definition(vh_params.name, &mut val);
+    let result2 = rc.upsert_runtime_parameter(&rpf).await;
+    assert!(result2.is_ok());
+
+    let result3 = rc.list_runtime_parameters().await;
+    dbg!(&result3);
+    assert!(result3.is_ok());
+    assert!(result3
+        .unwrap()
+        .iter()
+        .filter(|rp| rp.component == "vhost-limits" && rp.vhost == *vh_params.name)
+        .map(|rp| rp.value.get("max-connections").unwrap().as_u64().unwrap())
+        .any(|n| n == 9988));
+
+    let _ = rc
+        .clear_runtime_parameter(rpf.component, rpf.vhost, rpf.name)
+        .await;
+    let _ = rc.delete_vhost(vh_params.name, false).await;
+}
+
+#[tokio::test]
+async fn test_async_list_runtime_parameters_of_component_in_a_vhost() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let vh_params = VirtualHostParams::named(
+        "rust/http/api/async/test_async_list_runtime_parameters_of_component_in_a_vhost",
+    );
+    let result1 = rc.create_vhost(&vh_params).await;
+    assert!(result1.is_ok());
+
+    let mut val = max_connections_limit(9988);
+    let rpf = example_runtime_parameter_definition(vh_params.name, &mut val);
+    let result2 = rc.upsert_runtime_parameter(&rpf).await;
+    assert!(result2.is_ok());
+
+    let result3 = rc
+        .list_runtime_parameters_of_component_in("vhost-limits", vh_params.name)
+        .await;
+    assert!(result3.is_ok());
+    assert!(result3
+        .unwrap()
+        .iter()
+        .map(|rp| rp.value.get("max-connections").unwrap().as_u64().unwrap())
+        .any(|n| n == 9988));
+
+    let _ = rc
+        .clear_runtime_parameter(rpf.component, rpf.vhost, rpf.name)
+        .await;
+    let _ = rc.delete_vhost(vh_params.name, false).await;
+}
+
+#[tokio::test]
 async fn test_async_clear_runtime_parameter() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
