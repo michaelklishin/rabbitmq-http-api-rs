@@ -49,5 +49,4 @@ pub mod responses;
 #[cfg(any(feature = "async", feature = "blocking"))]
 pub mod error;
 pub mod transformers;
-#[cfg(any(feature = "async", feature = "blocking"))]
 mod utils;

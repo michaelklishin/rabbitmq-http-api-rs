@@ -23,7 +23,7 @@ percent-encoding = { version = "2", optional = true }
 tabled = { version = "0.19", features = ["derive", "macros"], optional = true }
 regex = { version = "1", features = ["std"] }
 
-reqwest = { version = "0.12.12", features = [
+reqwest = { version = "0.12.12", default-features = false, features = [
     "json",
     "multipart",
 ], optional = true }
@@ -33,17 +33,16 @@ tokio = "1.44"
 time = { version = "0.3.40", features = ["serde-human-readable"] }
 
 [dev-dependencies]
-amqprs = {  version = "2"}
+amqprs = { version = "2" }
 cargo-nextest = "0.9.92"
 
 [features]
-default = ["core", "blocking"]
-core = []
+default = ["blocking", "default-tls"]
 async = [
     "dep:reqwest",
     "dep:thiserror",
     "dep:backtrace",
-    "dep:percent-encoding"
+    "dep:percent-encoding",
 ]
 blocking = [
     "dep:reqwest",
@@ -53,6 +52,10 @@ blocking = [
     "dep:percent-encoding",
 ]
 tabled = ["dep:tabled"]
+default-tls = ["reqwest?/default-tls"]
+native-tls = ["reqwest?/native-tls"]
+rustls-tls = ["reqwest?/rustls-tls"]
+hickory-dns = ["reqwest?/hickory-dns"]
 
 [lints.clippy]
 uninlined_format_args = "allow"
