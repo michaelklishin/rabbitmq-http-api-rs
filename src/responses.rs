@@ -1097,6 +1097,18 @@ impl PolicyDefinition {
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
+
+    pub fn insert(&mut self, key: String, value: serde_json::Value) -> Option<serde_json::Value> {
+        match self.0 {
+            Some(ref mut m) => m.insert(key, value),
+            None => {
+                let mut m = Map::new();
+                m.insert(key, value);
+                self.0 = Some(m);
+                None
+            }
+        }
+    }
 }
 
 impl PolicyDefinitionOps for PolicyDefinition {
@@ -1157,6 +1169,10 @@ pub struct Policy {
 }
 
 impl Policy {
+    pub fn insert_definition_key(&mut self, key: String, value: serde_json::Value) -> Option<serde_json::Value> {
+        self.definition.insert(key, value)
+    }
+
     pub fn definition_keys(&self) -> Vec<&str> {
         match &self.definition.0 {
             None => Vec::new(),
