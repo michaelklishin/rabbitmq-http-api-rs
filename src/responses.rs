@@ -1169,7 +1169,11 @@ pub struct Policy {
 }
 
 impl Policy {
-    pub fn insert_definition_key(&mut self, key: String, value: serde_json::Value) -> Option<serde_json::Value> {
+    pub fn insert_definition_key(
+        &mut self,
+        key: String,
+        value: serde_json::Value,
+    ) -> Option<serde_json::Value> {
         self.definition.insert(key, value)
     }
 
