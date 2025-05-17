@@ -13,6 +13,11 @@ No changes yet.
    policy definition key-value pairs
  * `responses::Policy` now can be converted to `requests::PolicyParams` for easier policy definition
     updates
+ * More flexible use of optional `reqwest` features.
+
+   Contributed by @ikrivosheev.
+
+   GitHub issue: [#53](https://github.com/michaelklishin/rabbitmq-http-api-rs/pull/53).
 
 
 ## v0.30.0 (May 6, 2025)
