@@ -32,20 +32,20 @@ async fn test_async_list_all_bindings() {
     let result1 = rc
         .declare_queue(vh_name, &QueueParams::new_durable_classic_queue(cq, None))
         .await;
-    assert!(result1.is_ok(), "declare_queue returned {:?}", result1);
+    assert!(result1.is_ok(), "declare_queue returned {result1:?}");
 
     let result2 = rc.bind_queue(vh_name, cq, fanout, None, None).await;
-    assert!(result2.is_ok(), "bind_queue returned {:?}", result2);
+    assert!(result2.is_ok(), "bind_queue returned {result2:?}");
 
     let result3 = rc.list_bindings().await;
-    assert!(result3.is_ok(), "list_bindings returned {:?}", result3);
+    assert!(result3.is_ok(), "list_bindings returned {result3:?}");
     let vec = result3.unwrap();
     assert!(vec
         .iter()
         .any(|b| b.destination == cq && b.source == fanout));
 
     let result4 = rc.list_bindings_in(vh_name).await;
-    assert!(result4.is_ok(), "list_bindings_in returned {:?}", result4);
+    assert!(result4.is_ok(), "list_bindings_in returned {result4:?}");
     let vec = result4.unwrap();
     assert!(vec
         .iter()
@@ -66,16 +66,15 @@ async fn test_async_list_only_queue_bindings() {
     let result1 = rc
         .declare_queue(vh_name, &QueueParams::new_durable_classic_queue(cq, None))
         .await;
-    assert!(result1.is_ok(), "declare_queue returned {:?}", result1);
+    assert!(result1.is_ok(), "declare_queue returned {result1:?}");
 
     let result2 = rc.bind_queue(vh_name, cq, fanout, None, None).await;
-    assert!(result2.is_ok(), "bind_queue returned {:?}", result2);
+    assert!(result2.is_ok(), "bind_queue returned {result2:?}");
 
     let result3 = rc.list_queue_bindings(vh_name, cq).await;
     assert!(
         result3.is_ok(),
-        "list_queue_bindings returned {:?}",
-        result3
+        "list_queue_bindings returned {result3:?}"
     );
     let vec = result3.unwrap();
     assert!(vec
@@ -104,28 +103,27 @@ async fn test_async_list_only_exchange_bindings() {
             &ExchangeParams::fanout(fanout2, false, false, None),
         )
         .await;
-    assert!(result1.is_ok(), "declare_exchange returned {:?}", result1);
+    assert!(result1.is_ok(), "declare_exchange returned {result1:?}");
 
     let result2 = rc
         .bind_exchange(vh_name, fanout1, fanout2, None, None)
         .await;
-    assert!(result2.is_ok(), "bind_exchange returned {:?}", result2);
+    assert!(result2.is_ok(), "bind_exchange returned {result2:?}");
 
     let result3 = rc
         .declare_queue(vh_name, &QueueParams::new_durable_classic_queue(cq, None))
         .await;
-    assert!(result3.is_ok(), "declare_queue returned {:?}", result3);
+    assert!(result3.is_ok(), "declare_queue returned {result3:?}");
 
     let result4 = rc.bind_queue(vh_name, cq, fanout1, None, None).await;
-    assert!(result4.is_ok(), "bind_queue returned {:?}", result4);
+    assert!(result4.is_ok(), "bind_queue returned {result4:?}");
 
     let result5 = rc
         .list_exchange_bindings_with_source(vh_name, fanout2)
         .await;
     assert!(
         result5.is_ok(),
-        "list_exchange_bindings_with_source returned {:?}",
-        result5
+        "list_exchange_bindings_with_source returned {result5:?}"
     );
     let vec = result5.unwrap();
     assert!(!vec
@@ -143,8 +141,7 @@ async fn test_async_list_only_exchange_bindings() {
         .await;
     assert!(
         result6.is_ok(),
-        "list_exchange_bindings_with_destination returned {:?}",
-        result6
+        "list_exchange_bindings_with_destination returned {result6:?}"
     );
     let vec = result6.unwrap();
     assert!(!vec
@@ -173,16 +170,15 @@ async fn test_async_delete_queue_bindings() {
     let result1 = rc
         .declare_queue(vh_name, &QueueParams::new_durable_classic_queue(cq, None))
         .await;
-    assert!(result1.is_ok(), "declare_queue returned {:?}", result1);
+    assert!(result1.is_ok(), "declare_queue returned {result1:?}");
 
     let result2 = rc.bind_queue(vh_name, cq, fanout, Some("foo"), None).await;
-    assert!(result2.is_ok(), "bind_queue returned {:?}", result2);
+    assert!(result2.is_ok(), "bind_queue returned {result2:?}");
 
     let result3 = rc.list_queue_bindings(vh_name, cq).await;
     assert!(
         result3.is_ok(),
-        "list_queue_bindings returned {:?}",
-        result3
+        "list_queue_bindings returned {result3:?}"
     );
     let vec = result3.unwrap();
     assert!(vec
@@ -203,13 +199,12 @@ async fn test_async_delete_queue_bindings() {
             Some(m),
         )
         .await;
-    assert!(result4.is_ok(), "delete_binding returned {:?}", result4);
+    assert!(result4.is_ok(), "delete_binding returned {result4:?}");
 
     let result5 = rc.list_queue_bindings(vh_name, cq).await;
     assert!(
         result5.is_ok(),
-        "list_queue_bindings returned {:?}",
-        result5
+        "list_queue_bindings returned {result5:?}"
     );
     let vec = result5.unwrap();
     assert!(!vec
@@ -234,15 +229,14 @@ async fn test_async_delete_exchange_bindings() {
     let result2 = rc
         .bind_exchange(vh_name, direct, fanout, Some("foo"), None)
         .await;
-    assert!(result2.is_ok(), "bind_queue returned {:?}", result2);
+    assert!(result2.is_ok(), "bind_queue returned {result2:?}");
 
     let result3 = rc
         .list_exchange_bindings_with_destination(vh_name, direct)
         .await;
     assert!(
         result3.is_ok(),
-        "list_exchange_bindings_with_destination returned {:?}",
-        result3
+        "list_exchange_bindings_with_destination returned {result3:?}"
     );
     let vec = result3.unwrap();
     assert!(vec
@@ -263,15 +257,14 @@ async fn test_async_delete_exchange_bindings() {
             Some(m),
         )
         .await;
-    assert!(result4.is_ok(), "delete_binding returned {:?}", result4);
+    assert!(result4.is_ok(), "delete_binding returned {result4:?}");
 
     let result5 = rc
         .list_exchange_bindings_with_destination(vh_name, direct)
         .await;
     assert!(
         result5.is_ok(),
-        "list_exchange_bindings_with_destination returned {:?}",
-        result5
+        "list_exchange_bindings_with_destination returned {result5:?}"
     );
     let vec = result5.unwrap();
     assert!(!vec

@@ -55,7 +55,7 @@ fn test_blocking_list_permissions_in() {
     assert!(result1.is_ok());
 
     let result = rc.list_permissions_in("test_list_permissions_in");
-    assert!(result.is_ok(), "list_permissions_in returned {:?}", result);
+    assert!(result.is_ok(), "list_permissions_in returned {result:?}");
 
     let vec = result.unwrap();
     assert!(vec.iter().any(|p| p
@@ -81,7 +81,7 @@ fn test_blocking_list_permissions_of() {
     assert!(result1.is_ok());
 
     let result = rc.list_permissions_of("guest");
-    assert!(result.is_ok(), "list_permissions_of returned {:?}", result);
+    assert!(result.is_ok(), "list_permissions_of returned {result:?}");
 
     let vec = result.unwrap();
     assert!(vec.iter().any(|p| p
@@ -109,8 +109,7 @@ fn test_blocking_get_permissions() {
     let result2 = rc.get_permissions("test_get_permissions", "guest");
     assert!(
         result2.is_ok(),
-        "list_permissions_of returned {:?}",
-        result2
+        "list_permissions_of returned {result2:?}"
     );
 
     let result3 = result2.unwrap();
@@ -146,10 +145,10 @@ fn test_blocking_grant_permissions() {
         write: "write",
     };
     let result = rc.declare_permissions(&params);
-    assert!(result.is_ok(), "declare_permissions returned {:?}", result);
+    assert!(result.is_ok(), "declare_permissions returned {result:?}");
 
     let result2 = rc.get_permissions(vh_params.name, "guest");
-    assert!(result2.is_ok(), "get_permissions_of returned {:?}", result2);
+    assert!(result2.is_ok(), "get_permissions_of returned {result2:?}");
 
     let result3 = result2.unwrap();
     assert_eq!(
@@ -164,7 +163,7 @@ fn test_blocking_grant_permissions() {
     );
 
     let result4 = rc.grant_permissions(vh_params.name, "guest");
-    assert!(result4.is_ok(), "delete_permissions returned {:?}", result4);
+    assert!(result4.is_ok(), "delete_permissions returned {result4:?}");
 
     let result5 = rc.get_permissions(vh_params.name, "guest");
     assert!(result5.is_err(), "permissions found after deletion");

@@ -22,7 +22,7 @@ fn test_blocking_list_consumers() {
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let result1 = rc.list_consumers();
-    assert!(result1.is_ok(), "list_consumers returned {:?}", result1);
+    assert!(result1.is_ok(), "list_consumers returned {result1:?}");
 }
 
 #[test]
@@ -35,7 +35,7 @@ fn test_blocking_list_vhost_consumers() {
     assert!(result1.is_ok());
 
     let result2 = rc.list_consumers_in(vh_params.name);
-    assert!(result2.is_ok(), "list_consumers_in returned {:?}", result2);
+    assert!(result2.is_ok(), "list_consumers_in returned {result2:?}");
 
     rc.delete_vhost(vh_params.name, true).unwrap();
 }

@@ -43,7 +43,7 @@ fn test_blocking_declare_stream() {
     };
 
     let result2 = rc.declare_stream(vhost, &params);
-    assert!(result2.is_ok(), "declare_stream returned {:?}", result2);
+    assert!(result2.is_ok(), "declare_stream returned {result2:?}");
 
     let _ = rc.delete_stream(vhost, name, false);
 }
@@ -63,7 +63,7 @@ fn test_blocking_delete_stream() {
     let params = StreamParams::new(name, "7D");
 
     let result2 = rc.declare_stream(vhost, &params);
-    assert!(result2.is_ok(), "declare_stream returned {:?}", result2);
+    assert!(result2.is_ok(), "declare_stream returned {result2:?}");
 
     rc.delete_stream(vhost, name, false).unwrap();
     let result3 = rc.get_stream_info(vhost, name);

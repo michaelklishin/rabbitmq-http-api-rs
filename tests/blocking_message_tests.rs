@@ -32,7 +32,7 @@ fn test_blocking_publish_and_get() {
 
     let params = QueueParams::new_durable_classic_queue(queue, None);
     let result2 = rc.declare_queue(vhost, &params);
-    assert!(result2.is_ok(), "declare_queue returned {:?}", result2);
+    assert!(result2.is_ok(), "declare_queue returned {result2:?}");
 
     let result3 = rc.publish_message(
         vhost,
@@ -41,17 +41,17 @@ fn test_blocking_publish_and_get() {
         "rust test 1",
         requests::MessageProperties::default(),
     );
-    assert!(result3.is_ok(), "get_messages returned {:?}", result3);
+    assert!(result3.is_ok(), "get_messages returned {result3:?}");
     assert_eq!(result3.unwrap(), MessageRouted { routed: true });
 
     let mut props = Map::<String, Value>::new();
     props.insert(String::from("timestamp"), json!(123456789));
     let result4 = rc.publish_message(vhost, "", queue, "rust test 2", props.clone());
-    assert!(result4.is_ok(), "get_messages returned {:?}", result4);
+    assert!(result4.is_ok(), "get_messages returned {result4:?}");
     assert_eq!(result4.unwrap(), MessageRouted { routed: true });
 
     let result5 = rc.get_messages(vhost, queue, 1, "ack_requeue_false");
-    assert!(result5.is_ok(), "get_messages returned {:?}", result5);
+    assert!(result5.is_ok(), "get_messages returned {result5:?}");
 
     let msg_list = result5.unwrap();
     assert_eq!(
@@ -69,7 +69,7 @@ fn test_blocking_publish_and_get() {
     );
 
     let result7 = rc.get_messages(vhost, queue, 1, "ack_requeue_false");
-    assert!(result7.is_ok(), "get_messages returned {:?}", result7);
+    assert!(result7.is_ok(), "get_messages returned {result7:?}");
 
     let props = MessageProperties(props);
     let msg_list2 = result7.unwrap();
