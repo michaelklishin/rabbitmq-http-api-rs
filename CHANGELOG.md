@@ -1,5 +1,15 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
+## v0.31.0 (unreleased)
+
+### Enhancements
+
+ * `PolicyDefinition#insert` and `Policy#insert_definition_key` are new functions for adding or updating
+   policy definition key-value pairs
+ * `responses::Policy` now can be converted to `requests::PolicyParams` for easier policy definition
+    updates
+
+
 ## v0.30.0 (May 6, 2025)
 
 ### Enhancements
