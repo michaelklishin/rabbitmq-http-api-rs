@@ -128,8 +128,7 @@ fn test_blocking_clear_runtime_parameter() {
     let result4 = rc.list_runtime_parameters();
     assert!(
         result4.is_ok(),
-        "list_runtime_parameters returned {:?}",
-        result4
+        "list_runtime_parameters returned {result4:?}"
     );
     let vec = result4.unwrap();
     assert!(!vec

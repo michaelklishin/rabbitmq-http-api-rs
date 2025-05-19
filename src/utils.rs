@@ -18,7 +18,7 @@ pub fn percentage(a: u64, b: u64) -> f64 {
 
 pub fn percentage_as_text(a: u64, b: u64) -> String {
     let p = percentage(a, b);
-    format!("{:.2}%", p)
+    format!("{p:.2}%")
 }
 
 #[macro_export]

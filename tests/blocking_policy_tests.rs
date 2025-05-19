@@ -108,7 +108,7 @@ fn test_a_policy(rc: &Client<&str, &str, &str>, policy: &PolicyParams) {
     assert!(!policies.iter().any(|p| p.name == policy.name));
 
     let result = rc.declare_policy(policy);
-    assert!(result.is_ok(), "declare_policy returned {:?}", result);
+    assert!(result.is_ok(), "declare_policy returned {result:?}");
 
     // validate it was created as expected
     let fetched_policy = rc.get_policy(policy.vhost, policy.name).unwrap();
@@ -128,7 +128,7 @@ fn test_an_operator_policy(rc: &Client<&str, &str, &str>, policy: &PolicyParams)
     assert!(!policies.iter().any(|p| p.name == policy.name));
 
     let result = rc.declare_operator_policy(policy);
-    assert!(result.is_ok(), "declare_policy returned {:?}", result);
+    assert!(result.is_ok(), "declare_policy returned {result:?}");
 
     // validate it was created as expected
     let fetched_policy = rc.get_operator_policy(policy.vhost, policy.name).unwrap();
