@@ -22,7 +22,7 @@ fn test_blocking_overview() {
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let result1 = rc.overview();
-    assert!(result1.is_ok(), "overview returned {:?}", result1);
+    assert!(result1.is_ok(), "overview returned {result1:?}");
 
     let ov = result1.unwrap();
     assert!(ov.object_totals.exchanges > 0);

@@ -133,5 +133,5 @@ fn test_blocking_list_exchanges_in_a_virtual_host() {
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let result1 = rc.list_exchanges_in("/");
-    assert!(result1.is_ok(), "list_exchanges_in returned {:?}", result1);
+    assert!(result1.is_ok(), "list_exchanges_in returned {result1:?}");
 }
