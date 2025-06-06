@@ -1,8 +1,15 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.32.0 (in development)
+## v0.33.0 (in development)
 
 No changes yet.
+
+
+## v0.32.0 (Jun 6, 2025)
+
+### Enhancements
+
+ * Minor helper functions, such as `Policy#with_overrides` and `PolicyDefinition#merge`
 
 
 ## v0.31.0 (May 16, 2025)
