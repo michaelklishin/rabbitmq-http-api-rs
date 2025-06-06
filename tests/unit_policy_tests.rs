@@ -121,6 +121,25 @@ fn test_unit_policy_has_cmq_keys_case4() {
 }
 
 #[test]
+fn test_unit_policy_definition_merge_case1() {
+    let mut m1 = Map::new();
+    m1.insert("max-age".to_owned(), json!("1D"));
+    let mut defs_a = PolicyDefinition(Some(m1));
+
+    let mut m2 = Map::new();
+    m2.insert("max-age".to_owned(), json!("3D"));
+    m2.insert("max-length-bytes".to_owned(), json!("2000"));
+    let defs_b = PolicyDefinition(Some(m2));
+
+    defs_a.merge(&defs_b);
+
+    assert_eq!(2, defs_a.len());
+    assert!(defs_a.contains_key("max-age"));
+    assert!(defs_a.contains_key("max-length-bytes"));
+    assert!(!defs_a.contains_key("abc"));
+}
+
+#[test]
 fn test_unit_policy_definition_without_keys_case1() {
     let k1 = "max-age".to_owned();
     let k2 = "max-length-bytes".to_owned();
@@ -349,4 +368,37 @@ fn test_unit_policy_does_match_case3() {
         "events.regional.na.partitions.1",
         PolicyTarget::Streams
     ));
+}
+
+#[test]
+fn test_unit_policy_with_overrides_case1() {
+    let mut m1 = Map::new();
+    m1.insert("max-age".to_owned(), json!("1D"));
+    let defs_a = PolicyDefinition(Some(m1));
+
+    let mut m2 = Map::new();
+    m2.insert("max-age".to_owned(), json!("3D"));
+    m2.insert("max-length-bytes".to_owned(), json!("2000"));
+    let defs_b = PolicyDefinition(Some(m2));
+
+    let p1 = Policy {
+        name: "test_unit_policy_with_overrides.1".to_owned(),
+        vhost: "/".to_owned(),
+        pattern: r"^events\.".to_owned(),
+        apply_to: PolicyTarget::Exchanges,
+        priority: 11,
+        definition: defs_a.clone(),
+    };
+
+    let new_name = "test_unit_policy_with_overrides.1.override".to_owned();
+    let new_priority = 21;
+    let p2 = p1.with_overrides(&new_name, new_priority, &defs_b);
+
+    assert_eq!(new_name, p2.name);
+    assert_eq!(new_priority, p2.priority);
+
+    assert_eq!(2, p2.definition.len());
+    assert!(p2.definition.contains_key("max-age"));
+    assert!(p2.definition.contains_key("max-length-bytes"));
+    assert!(!p2.definition.contains_key("abc"));
 }

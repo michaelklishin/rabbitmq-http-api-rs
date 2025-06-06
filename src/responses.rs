@@ -1109,6 +1109,36 @@ impl PolicyDefinition {
             }
         }
     }
+
+    pub fn contains_key(&self, key: &str) -> bool {
+        match self.0 {
+            Some(ref m) => m.contains_key(key),
+            None => false,
+        }
+    }
+
+    pub fn remove(&mut self, key: &str) -> Option<serde_json::Value> {
+        match self.0 {
+            Some(ref mut m) => m.remove(key),
+            None => None,
+        }
+    }
+
+    pub fn merge(&mut self, other: &PolicyDefinition) {
+        let merged: Option<Map<String, serde_json::Value>> = match (self.0.clone(), other.0.clone())
+        {
+            (Some(a), Some(b)) => {
+                let mut m = a.clone();
+                m.extend(b);
+                Some(m)
+            }
+            (None, Some(b)) => Some(b),
+            (Some(a), None) => Some(a),
+            (None, None) => None,
+        };
+
+        self.0 = merged;
+    }
 }
 
 impl PolicyDefinitionOps for PolicyDefinition {
@@ -1240,6 +1270,15 @@ impl Policy {
         } else {
             false
         }
+    }
+
+    pub fn with_overrides(&self, name: &str, priority: i16, overrides: &PolicyDefinition) -> Self {
+        let mut copy = self.clone();
+        copy.name = name.to_owned();
+        copy.priority = priority;
+        copy.definition.merge(overrides);
+
+        copy
     }
 }
 
