@@ -50,6 +50,9 @@ jobs:
     name: Build and test
     strategy:
       matrix:
+        rabbitmq-series:
+          - "4.0"
+          - "4.1"
         rust-version:
           - stable
           - beta
