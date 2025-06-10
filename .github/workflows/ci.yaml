@@ -50,9 +50,6 @@ jobs:
     name: Build and test
     strategy:
       matrix:
-        runner:
-          - "ubuntu-22.04"
-          - "ubuntu-24.04"
         rust-version:
           - stable
           - beta
