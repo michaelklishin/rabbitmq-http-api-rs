@@ -1,8 +1,18 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.33.0 (in development)
+## v0.34.0 (in development)
 
 No changes yet.
+
+
+## v0.33.0 (Jun 10, 2025)
+
+### Bug Fixes
+
+ * `NoActiveProtocolListenerDetails` was split into `NoActiveProtocolListenerDetailsPre41` and `NoActiveProtocolListenerDetails41AndLater`
+    to support `GET /api/health/checks/protocol-listener/{protocols}` responses of both RabbitMQ 4.0.x and 4.1.x.
+
+    Relevant RabbitMQ change: [rabbitmq/rabbitmq-server#13871](https://github.com/rabbitmq/rabbitmq-server/pull/13871).
 
 
 ## v0.32.0 (Jun 6, 2025)
