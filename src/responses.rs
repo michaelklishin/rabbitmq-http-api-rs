@@ -1510,7 +1510,10 @@ pub enum HealthCheckFailureDetails {
     AlarmCheck(ClusterAlarmCheckDetails),
     NodeIsQuorumCritical(QuorumCriticalityCheckDetails),
     NoActivePortListener(NoActivePortListenerDetails),
-    NoActiveProtocolListener(NoActiveProtocolListenerDetails),
+    /// The pre-RabbitMQ 4.1 variant that reports a single missing listener
+    NoActiveProtocolListener(NoActiveProtocolListenerDetailsPre41),
+    /// The RabbitMQ 4.1+ variant that reports an array of missing listeners
+    NoActiveProtocolListeners(NoActiveProtocolListenerDetails41AndLater),
 }
 
 impl HealthCheckFailureDetails {
@@ -1520,6 +1523,7 @@ impl HealthCheckFailureDetails {
             HealthCheckFailureDetails::NodeIsQuorumCritical(details) => details.reason.clone(),
             HealthCheckFailureDetails::NoActivePortListener(details) => details.reason.clone(),
             HealthCheckFailureDetails::NoActiveProtocolListener(details) => details.reason.clone(),
+            HealthCheckFailureDetails::NoActiveProtocolListeners(details) => details.reason.clone(),
         }
     }
 }
@@ -1552,14 +1556,29 @@ pub struct NoActivePortListenerDetails {
 }
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
-pub struct NoActiveProtocolListenerDetails {
+pub struct NoActiveProtocolListenerDetailsPre41 {
     pub status: String,
     pub reason: String,
+    #[serde(rename(deserialize = "protocols"))]
+    pub active_protocols: Vec<String>,
     #[serde(rename(deserialize = "missing"))]
     // Note: switching this to SupportedProtocol will break serde's
     //       detection of various HealthCheckFailureDetails variants since
     //       that enum is untagged
     pub inactive_protocol: String,
+}
+
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+pub struct NoActiveProtocolListenerDetails41AndLater {
+    pub status: String,
+    pub reason: String,
+    #[serde(rename(deserialize = "protocols"))]
+    pub active_protocols: Vec<String>,
+    #[serde(rename(deserialize = "missing"))]
+    // Note: switching this to SupportedProtocol will break serde's
+    //       detection of various HealthCheckFailureDetails variants since
+    //       that enum is untagged
+    pub inactive_protocols: Vec<String>,
 }
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
