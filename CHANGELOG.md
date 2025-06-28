@@ -1,6 +1,17 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.35.0 (in development)
+## v0.36.0 (in development)
+
+No changes yet.
+
+
+## v0.35.0 (Jun 28, 2025)
+
+ * `ClientCapabilities` fields now default to `false` when not provided in
+    the API response.
+
+    GitHub issue: [#56](https://github.com/michaelklishin/rabbitmq-http-api-rs/issues/56).
+
 
 ## v0.34.0 (Jun 12, 2025)
 
