@@ -391,7 +391,7 @@ impl fmt::Display for NodeMemoryBreakdown {
         ];
 
         for (k, v) in data {
-            writeln!(f, "{}: {}", k, v)?;
+            writeln!(f, "{k}: {v}")?;
         }
 
         Ok(())
@@ -2440,8 +2440,8 @@ impl fmt::Display for WarmStandbyReplicationLinkStateOnDownstream {
 impl fmt::Display for WarmStandbyReplicationState {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            WarmStandbyReplicationState::Upstream(val) => write!(f, "{}", val),
-            WarmStandbyReplicationState::Downstream(val) => write!(f, "{}", val),
+            WarmStandbyReplicationState::Upstream(val) => write!(f, "{val}"),
+            WarmStandbyReplicationState::Downstream(val) => write!(f, "{val}"),
             WarmStandbyReplicationState::Unknown => write!(f, "(unknown)"),
         }
     }

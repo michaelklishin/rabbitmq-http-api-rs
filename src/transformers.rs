@@ -79,7 +79,7 @@ impl DefinitionSetTransformer for ObfuscateUsernames {
         let mut obfuscated = HashMap::<String, String>::new();
         let mut i = 1u16;
         for u in &defs.users {
-            let new_name = format!("obfuscated-user-{}", i);
+            let new_name = format!("obfuscated-user-{i}");
             i += 1;
             obfuscated.insert(u.name.clone(), new_name.clone());
         }
@@ -88,7 +88,7 @@ impl DefinitionSetTransformer for ObfuscateUsernames {
         let updated_users = defs.users.clone().into_iter().map(|u| {
             let new_name = obfuscated.get(&u.name).unwrap_or(&u.name).as_str();
             let salt = password_hashing::salt();
-            let new_password = format!("password-{}", i);
+            let new_password = format!("password-{i}");
             let hash =
                 password_hashing::base64_encoded_salted_password_hash_sha256(&salt, &new_password);
 
