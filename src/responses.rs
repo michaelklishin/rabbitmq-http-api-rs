@@ -574,15 +574,17 @@ pub struct ClientProperties {
 #[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct ClientCapabilities {
+    #[serde(default)]
     pub authentication_failure_close: bool,
-    #[serde(rename(deserialize = "basic.nack"))]
+    #[serde(rename(deserialize = "basic.nack"), default)]
     pub basic_nack: bool,
-    #[serde(rename(deserialize = "connection.blocked"))]
+    #[serde(rename(deserialize = "connection.blocked"), default)]
     pub connection_blocked: bool,
-    #[serde(rename(deserialize = "consumer_cancel_notify"))]
+    #[serde(rename(deserialize = "consumer_cancel_notify"), default)]
     pub consumer_cancel_notify: bool,
-    #[serde(rename(deserialize = "exchange_exchange_bindings"))]
+    #[serde(rename(deserialize = "exchange_exchange_bindings"), default)]
     pub exchange_to_exchange_bindings: bool,
+    #[serde(default)]
     pub publisher_confirms: bool,
 }
 
