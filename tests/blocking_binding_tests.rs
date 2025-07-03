@@ -68,10 +68,7 @@ fn test_blocking_list_only_queue_bindings() {
     assert!(result2.is_ok(), "bind_queue returned {result2:?}");
 
     let result3 = rc.list_queue_bindings(vh_name, cq);
-    assert!(
-        result3.is_ok(),
-        "list_queue_bindings returned {result3:?}"
-    );
+    assert!(result3.is_ok(), "list_queue_bindings returned {result3:?}");
     let vec = result3.unwrap();
     assert!(vec
         .iter()
@@ -160,10 +157,7 @@ fn test_blocking_delete_queue_bindings() {
     assert!(result2.is_ok(), "bind_queue returned {result2:?}");
 
     let result3 = rc.list_queue_bindings(vh_name, cq);
-    assert!(
-        result3.is_ok(),
-        "list_queue_bindings returned {result3:?}"
-    );
+    assert!(result3.is_ok(), "list_queue_bindings returned {result3:?}");
     let vec = result3.unwrap();
     assert!(vec
         .iter()
@@ -184,10 +178,7 @@ fn test_blocking_delete_queue_bindings() {
     assert!(result4.is_ok(), "delete_binding returned {result4:?}");
 
     let result5 = rc.list_queue_bindings(vh_name, cq);
-    assert!(
-        result5.is_ok(),
-        "list_queue_bindings returned {result5:?}"
-    );
+    assert!(result5.is_ok(), "list_queue_bindings returned {result5:?}");
     let vec = result5.unwrap();
     assert!(!vec
         .iter()

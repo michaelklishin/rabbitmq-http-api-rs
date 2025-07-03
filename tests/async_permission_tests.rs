@@ -107,10 +107,7 @@ async fn test_async_get_permissions() {
     assert!(result1.is_ok());
 
     let result2 = rc.get_permissions("test_get_permissions", "guest").await;
-    assert!(
-        result2.is_ok(),
-        "list_permissions_of returned {result2:?}"
-    );
+    assert!(result2.is_ok(), "list_permissions_of returned {result2:?}");
 
     let permissions = result2.unwrap();
     assert_eq!(

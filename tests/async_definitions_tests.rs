@@ -108,10 +108,7 @@ async fn test_async_export_cluster_wide_definitions_as_data() {
     assert!(u_found, "expected to find user {} in definitions", "rust3");
 
     let x_found = defs.exchanges.iter().any(|x| x.name == x_name);
-    assert!(
-        x_found,
-        "expected to find exchange {x_name} in definitions"
-    );
+    assert!(x_found, "expected to find exchange {x_name} in definitions");
 
     let qq_pol_found = defs.policies.iter().any(|p| p.name == qq_pol_name);
     assert!(
@@ -194,10 +191,7 @@ async fn test_async_export_vhost_definitions_as_data() {
     );
 
     let x_found = defs.exchanges.iter().any(|x| x.name == x_name);
-    assert!(
-        x_found,
-        "expected to find exchange {x_name} in definitions"
-    );
+    assert!(x_found, "expected to find exchange {x_name} in definitions");
 
     let qq_pol_found = defs.policies.iter().any(|p| p.name == qq_pol_name);
     assert!(
@@ -240,10 +234,7 @@ async fn test_async_import_cluster_definitions() {
     );
 
     let result1 = rc.get_queue_info("/", "imported_queue").await;
-    assert!(
-        result1.is_ok(),
-        "can't get the imported queue: {result1:?}"
-    );
+    assert!(result1.is_ok(), "can't get the imported queue: {result1:?}");
 }
 
 #[tokio::test]
@@ -275,10 +266,7 @@ async fn test_async_import_vhost_definitions() {
     await_queue_metric_emission();
 
     let result1 = rc.get_queue_info(vh, q).await;
-    assert!(
-        result1.is_ok(),
-        "can't get the imported queue: {result1:?}"
-    );
+    assert!(result1.is_ok(), "can't get the imported queue: {result1:?}");
 
     rc.delete_vhost(vh, true).await.unwrap();
 }

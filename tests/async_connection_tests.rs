@@ -58,10 +58,7 @@ async fn test_async_list_virtual_host_connections() {
     rc.create_vhost(&vh_params).await.unwrap();
 
     let result1 = rc.list_connections_in(vh).await;
-    assert!(
-        result1.is_ok(),
-        "list_connections_in returned {result1:?}"
-    );
+    assert!(result1.is_ok(), "list_connections_in returned {result1:?}");
 
     rc.delete_vhost(vh, true).await.unwrap();
 }

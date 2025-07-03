@@ -107,10 +107,7 @@ fn test_blocking_get_permissions() {
     assert!(result1.is_ok());
 
     let result2 = rc.get_permissions("test_get_permissions", "guest");
-    assert!(
-        result2.is_ok(),
-        "list_permissions_of returned {result2:?}"
-    );
+    assert!(result2.is_ok(), "list_permissions_of returned {result2:?}");
 
     let result3 = result2.unwrap();
     assert_eq!(

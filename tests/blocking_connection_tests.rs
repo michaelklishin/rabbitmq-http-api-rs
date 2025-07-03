@@ -50,10 +50,7 @@ fn test_blocking_list_virtual_host_connections() {
     rc.create_vhost(&vh_params).unwrap();
 
     let result1 = rc.list_connections_in(vh);
-    assert!(
-        result1.is_ok(),
-        "list_connections_in returned {result1:?}"
-    );
+    assert!(result1.is_ok(), "list_connections_in returned {result1:?}");
 
     rc.delete_vhost(vh, true).unwrap();
 }
