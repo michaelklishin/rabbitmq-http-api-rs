@@ -14,25 +14,25 @@ This library is relatively young, breaking API changes are possible.
 ### Blocking Client
 
 ```toml
-rabbitmq_http_client = { version = "0.29.0", features = ["core", "blocking"] }
+rabbitmq_http_client = { version = "0.35.0", features = ["core", "blocking"] }
 ```
 
 ### Async Client
 
 ```toml
-rabbitmq_http_client = { version = "0.29.0", features = ["core", "async"] }
+rabbitmq_http_client = { version = "0.35.0", features = ["core", "async"] }
 ```
 
 ### Blocking Client with Tabled Support
 
 ```toml
-rabbitmq_http_client = { version = "0.29.0", features = ["core", "blocking", "tabled"] }
+rabbitmq_http_client = { version = "0.35.0", features = ["core", "blocking", "tabled"] }
 ```
 
 ### Async Client with Tabled Support
 
 ```toml
-rabbitmq_http_client = { version = "0.29.0", features = ["core", "async", "tabled"] }
+rabbitmq_http_client = { version = "0.35.0", features = ["core", "async", "tabled"] }
 ```
 
 
@@ -177,7 +177,7 @@ let client = ClientBuilder::new()
 ```
 
 This design decision means that with this HTTP API client, it's up to the user to make
-some key TLS-related choices, for example, [what certificate store to use](https://github.com/rustls/rustls-platform-verifier?tab=readme-ov-file#deployment-considerations) for x.509 peer verification,
+some key TLS-related choices. For example, [what certificate store to use](https://github.com/rustls/rustls-platform-verifier?tab=readme-ov-file#deployment-considerations) for x.509 peer verification,
 what the acceptable minimum TLS version should be, and so on.
 
 ### Defaults

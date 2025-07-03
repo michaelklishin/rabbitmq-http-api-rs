@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 use rabbitmq_http_client::api::Client;
+use serde_json::{json, Map, Value};
 
 mod test_helpers;
 use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
@@ -48,4 +49,26 @@ async fn test_async_set_cluster_name() {
     assert!(meta3.name == *"rusty");
 
     let _ = rc.set_cluster_name(&meta1.name).await;
+}
+
+#[tokio::test]
+async fn test_async_set_cluster_tags() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let mut tags: Map<String, Value> = Map::new();
+    tags.insert("region".to_owned(), json!("ca-central-1"));
+
+    let result1 = rc.set_cluster_tags(tags).await;
+    assert!(result1.is_ok());
+
+    let result2 = rc.get_cluster_tags().await;
+    assert!(result2.is_ok());
+    assert_eq!(
+        &json!(result2.unwrap().0),
+        &json!({"region": "ca-central-1"})
+    );
+
+    let result3 = rc.clear_cluster_tags().await;
+    assert!(result3.is_ok());
 }

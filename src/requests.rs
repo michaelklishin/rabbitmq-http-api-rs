@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 use crate::commons::{ExchangeType, MessageTransferAcknowledgementMode, PolicyTarget, QueueType};
+use crate::responses;
+use crate::responses::{Policy, PolicyDefinition as PolDef};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 
@@ -380,7 +382,26 @@ pub struct RuntimeParameterDefinition<'a> {
     pub value: RuntimeParameterValue,
 }
 
+/// Represents a [global runtime parameter](https://rabbitmq.com/docs/parameters/).
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GlobalRuntimeParameterDefinition<'a> {
+    pub name: &'a str,
+    pub value: RuntimeParameterValue,
+}
+
 pub type PolicyDefinition = Map<String, Value>;
+
+impl From<PolDef> for PolicyDefinition {
+    fn from(policy: responses::PolicyDefinition) -> Self {
+        match policy.0 {
+            None => {
+                let empty: Map<String, Value> = Map::new();
+                empty
+            }
+            Some(value) => value,
+        }
+    }
+}
 
 /// Represents a [policy](https://rabbitmq.com/docs/parameters/#policies).
 #[derive(Serialize)]
@@ -392,6 +413,19 @@ pub struct PolicyParams<'a> {
     pub apply_to: PolicyTarget,
     pub priority: i32,
     pub definition: PolicyDefinition,
+}
+
+impl<'a> From<&'a Policy> for PolicyParams<'a> {
+    fn from(policy: &'a Policy) -> Self {
+        PolicyParams {
+            vhost: &policy.vhost,
+            name: &policy.name,
+            pattern: &policy.pattern,
+            apply_to: policy.apply_to.clone(),
+            priority: policy.priority as i32, // Converting i16 to i32
+            definition: policy.definition.clone().into(),
+        }
+    }
 }
 
 /// Represents a user's [permission in a particular virtual host](https://rabbitmq.com/docs/access-control/).

@@ -22,6 +22,7 @@ use amqprs::connection::{Connection, OpenConnectionArguments};
 use amqprs::BasicProperties;
 use rabbitmq_http_client::api::Client as AsyncClient;
 use regex::Regex;
+use serde_json::{json, Map, Value};
 use tokio::time;
 //
 // Common
@@ -135,4 +136,14 @@ pub async fn generate_activity() {
     async_await_queue_metric_emission().await;
 
     conn.close().await.unwrap()
+}
+
+//
+// Metadata, runtime parameters
+//
+
+pub fn cluster_tags(tags: Map<String, Value>) -> Map<String, Value> {
+    let mut val = Map::<String, Value>::new();
+    val.insert(String::from("cluster_tags"), json!(tags));
+    val
 }

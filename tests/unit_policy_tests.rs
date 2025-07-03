@@ -121,6 +121,25 @@ fn test_unit_policy_has_cmq_keys_case4() {
 }
 
 #[test]
+fn test_unit_policy_definition_merge_case1() {
+    let mut m1 = Map::new();
+    m1.insert("max-age".to_owned(), json!("1D"));
+    let mut defs_a = PolicyDefinition(Some(m1));
+
+    let mut m2 = Map::new();
+    m2.insert("max-age".to_owned(), json!("3D"));
+    m2.insert("max-length-bytes".to_owned(), json!("2000"));
+    let defs_b = PolicyDefinition(Some(m2));
+
+    defs_a.merge(&defs_b);
+
+    assert_eq!(2, defs_a.len());
+    assert!(defs_a.contains_key("max-age"));
+    assert!(defs_a.contains_key("max-length-bytes"));
+    assert!(!defs_a.contains_key("abc"));
+}
+
+#[test]
 fn test_unit_policy_definition_without_keys_case1() {
     let k1 = "max-age".to_owned();
     let k2 = "max-length-bytes".to_owned();
@@ -233,6 +252,51 @@ fn test_unit_policy_definition_without_cmq_keys_case1() {
 }
 
 #[test]
+fn test_unit_policy_definition_insert_case1() {
+    let k1 = "max-age".to_owned();
+    let k2 = "max-length-bytes".to_owned();
+
+    let mut m = Map::new();
+    m.insert(k1.clone(), json!("1D"));
+
+    let mut defs = PolicyDefinition(Some(m));
+    assert_eq!(1, defs.len());
+
+    defs.insert(k1.clone(), json!("2D"));
+    assert_eq!(1, defs.len());
+
+    defs.insert(k2.clone(), json!(1000000));
+    assert_eq!(2, defs.len());
+}
+
+#[test]
+fn test_unit_policy_insert_definition_key_case1() {
+    let k1 = "max-age".to_owned();
+    let k2 = "max-length-bytes".to_owned();
+
+    let mut m = Map::new();
+    m.insert(k1.clone(), json!("1D"));
+
+    let defs = PolicyDefinition(Some(m));
+    let mut pol = Policy {
+        name: "test_unit_policy_insert_case1".to_owned(),
+        vhost: "/".to_owned(),
+        pattern: ".*".to_owned(),
+        apply_to: PolicyTarget::Queues,
+        priority: 11,
+        definition: defs.clone(),
+    };
+
+    assert_eq!(1, pol.definition.len());
+
+    pol.insert_definition_key(k1.clone(), json!("2D"));
+    assert_eq!(1, pol.definition.len());
+
+    pol.insert_definition_key(k2.clone(), json!(1000000));
+    assert_eq!(2, pol.definition.len());
+}
+
+#[test]
 fn test_unit_policy_does_match_case1() {
     let mut m = Map::new();
     m.insert("max-length".to_owned(), json!(100000));
@@ -304,4 +368,37 @@ fn test_unit_policy_does_match_case3() {
         "events.regional.na.partitions.1",
         PolicyTarget::Streams
     ));
+}
+
+#[test]
+fn test_unit_policy_with_overrides_case1() {
+    let mut m1 = Map::new();
+    m1.insert("max-age".to_owned(), json!("1D"));
+    let defs_a = PolicyDefinition(Some(m1));
+
+    let mut m2 = Map::new();
+    m2.insert("max-age".to_owned(), json!("3D"));
+    m2.insert("max-length-bytes".to_owned(), json!("2000"));
+    let defs_b = PolicyDefinition(Some(m2));
+
+    let p1 = Policy {
+        name: "test_unit_policy_with_overrides.1".to_owned(),
+        vhost: "/".to_owned(),
+        pattern: r"^events\.".to_owned(),
+        apply_to: PolicyTarget::Exchanges,
+        priority: 11,
+        definition: defs_a.clone(),
+    };
+
+    let new_name = "test_unit_policy_with_overrides.1.override".to_owned();
+    let new_priority = 21;
+    let p2 = p1.with_overrides(&new_name, new_priority, &defs_b);
+
+    assert_eq!(new_name, p2.name);
+    assert_eq!(new_priority, p2.priority);
+
+    assert_eq!(2, p2.definition.len());
+    assert!(p2.definition.contains_key("max-age"));
+    assert!(p2.definition.contains_key("max-length-bytes"));
+    assert!(!p2.definition.contains_key("abc"));
 }

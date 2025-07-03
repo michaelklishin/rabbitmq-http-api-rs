@@ -16,12 +16,13 @@
 use crate::error::Error;
 use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
 use crate::requests::{
-    Amqp091ShovelParams, Amqp10ShovelParams, EmptyPayload, FederationUpstreamParams, StreamParams,
-    FEDERATION_UPSTREAM_COMPONENT, SHOVEL_COMPONENT,
+    Amqp091ShovelParams, Amqp10ShovelParams, EmptyPayload, FederationUpstreamParams,
+    GlobalRuntimeParameterDefinition, StreamParams, FEDERATION_UPSTREAM_COMPONENT,
+    SHOVEL_COMPONENT,
 };
 use crate::responses::{
-    DeprecatedFeatureList, FeatureFlag, FeatureFlagList, FeatureFlagStability, FeatureFlagState,
-    FederationUpstream, GetMessage, OAuthConfiguration, VirtualHostDefinitionSet,
+    ClusterTags, DeprecatedFeatureList, FeatureFlag, FeatureFlagList, FeatureFlagStability,
+    FeatureFlagState, FederationUpstream, GetMessage, OAuthConfiguration, VirtualHostDefinitionSet,
     WarmStandbyReplicationStatus,
 };
 use crate::{
@@ -918,6 +919,35 @@ where
         Ok(())
     }
 
+    pub fn list_global_runtime_parameters(&self) -> Result<Vec<responses::GlobalRuntimeParameter>> {
+        let response = self.http_get("global-parameters", None, None)?;
+        let response = response.json()?;
+        Ok(response)
+    }
+
+    pub fn get_global_runtime_parameter(
+        &self,
+        name: &str,
+    ) -> Result<responses::GlobalRuntimeParameter> {
+        let response = self.http_get(path!("global-parameters", name), None, None)?;
+        let response = response.json()?;
+        Ok(response)
+    }
+
+    pub fn upsert_global_runtime_parameter<'a>(
+        &self,
+        param: &'a GlobalRuntimeParameterDefinition<'a>,
+    ) -> Result<()> {
+        let _response =
+            self.http_put(path!("global-parameters", param.name), &param, None, None)?;
+        Ok(())
+    }
+
+    pub fn clear_global_runtime_parameter(&self, name: &str) -> Result<()> {
+        let _response = self.http_delete(path!("global-parameters", name), None, None)?;
+        Ok(())
+    }
+
     pub fn set_user_limit(
         &self,
         username: &str,
@@ -991,6 +1021,25 @@ where
     pub fn set_cluster_name(&self, new_name: &str) -> Result<()> {
         let body = json!({"name": new_name});
         let _response = self.http_put("cluster-name", &body, None, None)?;
+        Ok(())
+    }
+
+    pub fn get_cluster_tags(&self) -> Result<responses::ClusterTags> {
+        let response = self.get_global_runtime_parameter("cluster_tags")?;
+        Ok(ClusterTags::from(response.value))
+    }
+
+    pub fn set_cluster_tags(&self, tags: Map<String, Value>) -> Result<()> {
+        let grp = GlobalRuntimeParameterDefinition {
+            name: "cluster_tags",
+            value: tags,
+        };
+        self.upsert_global_runtime_parameter(&grp)?;
+        Ok(())
+    }
+
+    pub fn clear_cluster_tags(&self) -> Result<()> {
+        self.clear_global_runtime_parameter("cluster_tags")?;
         Ok(())
     }
 

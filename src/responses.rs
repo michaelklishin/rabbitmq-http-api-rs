@@ -33,6 +33,7 @@ use crate::transformers::{TransformerFn, TransformerFnOnce};
 use regex::Regex;
 #[cfg(feature = "tabled")]
 use std::borrow::Cow;
+use std::fmt::Formatter;
 #[cfg(feature = "tabled")]
 use tabled::Tabled;
 
@@ -104,6 +105,18 @@ impl ops::Deref for RuntimeParameterValue {
 impl fmt::Display for RuntimeParameterValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt_map_as_colon_separated_pairs(f, &self.0)
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(transparent)]
+pub struct GlobalRuntimeParameterValue(pub serde_json::Value);
+
+impl fmt::Display for GlobalRuntimeParameterValue {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        writeln!(f, "{}", &self.0)?;
+
+        Ok(())
     }
 }
 
@@ -561,15 +574,17 @@ pub struct ClientProperties {
 #[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct ClientCapabilities {
+    #[serde(default)]
     pub authentication_failure_close: bool,
-    #[serde(rename(deserialize = "basic.nack"))]
+    #[serde(rename(deserialize = "basic.nack"), default)]
     pub basic_nack: bool,
-    #[serde(rename(deserialize = "connection.blocked"))]
+    #[serde(rename(deserialize = "connection.blocked"), default)]
     pub connection_blocked: bool,
-    #[serde(rename(deserialize = "consumer_cancel_notify"))]
+    #[serde(rename(deserialize = "consumer_cancel_notify"), default)]
     pub consumer_cancel_notify: bool,
-    #[serde(rename(deserialize = "exchange_exchange_bindings"))]
+    #[serde(rename(deserialize = "exchange_exchange_bindings"), default)]
     pub exchange_to_exchange_bindings: bool,
+    #[serde(default)]
     pub publisher_confirms: bool,
 }
 
@@ -1027,10 +1042,28 @@ pub struct RuntimeParameterWithoutVirtualHost {
     pub value: RuntimeParameterValue,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+#[allow(dead_code)]
+pub struct GlobalRuntimeParameter {
+    pub name: String,
+    pub value: GlobalRuntimeParameterValue,
+}
+
 #[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct ClusterIdentity {
     pub name: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[allow(dead_code)]
+pub struct ClusterTags(pub Map<String, serde_json::Value>);
+
+impl From<GlobalRuntimeParameterValue> for ClusterTags {
+    fn from(value: GlobalRuntimeParameterValue) -> Self {
+        ClusterTags(value.0.as_object().unwrap().clone())
+    }
 }
 
 pub trait PolicyDefinitionOps {
@@ -1065,6 +1098,48 @@ impl PolicyDefinition {
 
     pub fn is_empty(&self) -> bool {
         self.len() == 0
+    }
+
+    pub fn insert(&mut self, key: String, value: serde_json::Value) -> Option<serde_json::Value> {
+        match self.0 {
+            Some(ref mut m) => m.insert(key, value),
+            None => {
+                let mut m = Map::new();
+                m.insert(key, value);
+                self.0 = Some(m);
+                None
+            }
+        }
+    }
+
+    pub fn contains_key(&self, key: &str) -> bool {
+        match self.0 {
+            Some(ref m) => m.contains_key(key),
+            None => false,
+        }
+    }
+
+    pub fn remove(&mut self, key: &str) -> Option<serde_json::Value> {
+        match self.0 {
+            Some(ref mut m) => m.remove(key),
+            None => None,
+        }
+    }
+
+    pub fn merge(&mut self, other: &PolicyDefinition) {
+        let merged: Option<Map<String, serde_json::Value>> = match (self.0.clone(), other.0.clone())
+        {
+            (Some(a), Some(b)) => {
+                let mut m = a.clone();
+                m.extend(b);
+                Some(m)
+            }
+            (None, Some(b)) => Some(b),
+            (Some(a), None) => Some(a),
+            (None, None) => None,
+        };
+
+        self.0 = merged;
     }
 }
 
@@ -1126,6 +1201,14 @@ pub struct Policy {
 }
 
 impl Policy {
+    pub fn insert_definition_key(
+        &mut self,
+        key: String,
+        value: serde_json::Value,
+    ) -> Option<serde_json::Value> {
+        self.definition.insert(key, value)
+    }
+
     pub fn definition_keys(&self) -> Vec<&str> {
         match &self.definition.0 {
             None => Vec::new(),
@@ -1189,6 +1272,15 @@ impl Policy {
         } else {
             false
         }
+    }
+
+    pub fn with_overrides(&self, name: &str, priority: i16, overrides: &PolicyDefinition) -> Self {
+        let mut copy = self.clone();
+        copy.name = name.to_owned();
+        copy.priority = priority;
+        copy.definition.merge(overrides);
+
+        copy
     }
 }
 
@@ -1420,7 +1512,10 @@ pub enum HealthCheckFailureDetails {
     AlarmCheck(ClusterAlarmCheckDetails),
     NodeIsQuorumCritical(QuorumCriticalityCheckDetails),
     NoActivePortListener(NoActivePortListenerDetails),
-    NoActiveProtocolListener(NoActiveProtocolListenerDetails),
+    /// The pre-RabbitMQ 4.1 variant that reports a single missing listener
+    NoActiveProtocolListener(NoActiveProtocolListenerDetailsPre41),
+    /// The RabbitMQ 4.1+ variant that reports an array of missing listeners
+    NoActiveProtocolListeners(NoActiveProtocolListenerDetails41AndLater),
 }
 
 impl HealthCheckFailureDetails {
@@ -1430,6 +1525,7 @@ impl HealthCheckFailureDetails {
             HealthCheckFailureDetails::NodeIsQuorumCritical(details) => details.reason.clone(),
             HealthCheckFailureDetails::NoActivePortListener(details) => details.reason.clone(),
             HealthCheckFailureDetails::NoActiveProtocolListener(details) => details.reason.clone(),
+            HealthCheckFailureDetails::NoActiveProtocolListeners(details) => details.reason.clone(),
         }
     }
 }
@@ -1462,14 +1558,29 @@ pub struct NoActivePortListenerDetails {
 }
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
-pub struct NoActiveProtocolListenerDetails {
+pub struct NoActiveProtocolListenerDetailsPre41 {
     pub status: String,
     pub reason: String,
+    #[serde(rename(deserialize = "protocols"))]
+    pub active_protocols: Vec<String>,
     #[serde(rename(deserialize = "missing"))]
     // Note: switching this to SupportedProtocol will break serde's
     //       detection of various HealthCheckFailureDetails variants since
     //       that enum is untagged
     pub inactive_protocol: String,
+}
+
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+pub struct NoActiveProtocolListenerDetails41AndLater {
+    pub status: String,
+    pub reason: String,
+    #[serde(rename(deserialize = "protocols"))]
+    pub active_protocols: Vec<String>,
+    #[serde(rename(deserialize = "missing"))]
+    // Note: switching this to SupportedProtocol will break serde's
+    //       detection of various HealthCheckFailureDetails variants since
+    //       that enum is untagged
+    pub inactive_protocols: Vec<String>,
 }
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]

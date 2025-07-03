@@ -1,10 +1,65 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.30.0 (in development)
+## v0.36.0 (in development)
 
 No changes yet.
 
-## v0.29.0 (Apr 14, 2024)
+
+## v0.35.0 (Jun 28, 2025)
+
+ * `ClientCapabilities` fields now default to `false` when not provided in
+    the API response.
+
+    GitHub issue: [#56](https://github.com/michaelklishin/rabbitmq-http-api-rs/issues/56).
+
+
+## v0.34.0 (Jun 12, 2025)
+
+ * `tabled` was upgraded to `0.20.0`
+
+
+## v0.33.0 (Jun 10, 2025)
+
+### Bug Fixes
+
+ * `NoActiveProtocolListenerDetails` was split into `NoActiveProtocolListenerDetailsPre41` and `NoActiveProtocolListenerDetails41AndLater`
+    to support `GET /api/health/checks/protocol-listener/{protocols}` responses of both RabbitMQ 4.0.x and 4.1.x.
+
+    Relevant RabbitMQ change: [rabbitmq/rabbitmq-server#13871](https://github.com/rabbitmq/rabbitmq-server/pull/13871).
+
+
+## v0.32.0 (Jun 6, 2025)
+
+### Enhancements
+
+ * Minor helper functions, such as `Policy#with_overrides` and `PolicyDefinition#merge`
+
+
+## v0.31.0 (May 16, 2025)
+
+### Enhancements
+
+ * `PolicyDefinition#insert` and `Policy#insert_definition_key` are new functions for adding or updating
+   policy definition key-value pairs
+ * `responses::Policy` now can be converted to `requests::PolicyParams` for easier policy definition
+    updates
+ * More flexible use of optional `reqwest` features.
+
+   Contributed by @ikrivosheev.
+
+   GitHub issue: [#53](https://github.com/michaelklishin/rabbitmq-http-api-rs/pull/53).
+
+
+## v0.30.0 (May 6, 2025)
+
+### Enhancements
+
+ * `Client#list_global_runtime_parameters`, `Client#get_global_runtime_parameter`, `Client#upsert_global_runtime_parameter`, `Client#clear_global_runtime_parameter`
+   are new functions for working with [global runtime parameters](https://www.rabbitmq.com/docs/parameters)
+ * `Client#get_cluster_tags`, `Client#set_cluser_tags`, `Client#clear_cluster_tags` are new functions for operations on [cluster tags](https://www.rabbitmq.com/docs/parameters#cluster-tags)
+
+
+## v0.29.0 (Apr 14, 2025)
 
 ### Breaking Changes
 
@@ -13,7 +68,7 @@ No changes yet.
    otherwise it would not pass server validation.
 
 
-## v0.28.0 (Mar 23, 2024)
+## v0.28.0 (Mar 23, 2025)
 
 ### Enhancements
 
@@ -24,7 +79,7 @@ No changes yet.
    `exclude_users`, `exclude_permissions`, `exclude_runtime_parameters`, `exclude_policies`
 
 
-## v0.27.0 (Mar 11, 2024)
+## v0.27.0 (Mar 11, 2025)
 
 ### Enhancements
 
@@ -37,7 +92,7 @@ No changes yet.
    The two are supposed to be used together.
 
 
-## v0.26.0  (Mar 10, 2024)
+## v0.26.0  (Mar 10, 2025)
 
 ### Enhancements
 
