@@ -23,7 +23,7 @@ fn test_blocking_list_connections() {
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let result1 = rc.list_connections();
-    assert!(result1.is_ok(), "list_connections returned {:?}", result1);
+    assert!(result1.is_ok(), "list_connections returned {result1:?}");
 }
 
 #[test]
@@ -34,8 +34,7 @@ fn test_blocking_list_user_connections() {
     let result1 = rc.list_user_connections(USERNAME);
     assert!(
         result1.is_ok(),
-        "list_user_connections returned {:?}",
-        result1
+        "list_user_connections returned {result1:?}"
     );
 }
 
@@ -51,11 +50,7 @@ fn test_blocking_list_virtual_host_connections() {
     rc.create_vhost(&vh_params).unwrap();
 
     let result1 = rc.list_connections_in(vh);
-    assert!(
-        result1.is_ok(),
-        "list_connections_in returned {:?}",
-        result1
-    );
+    assert!(result1.is_ok(), "list_connections_in returned {result1:?}");
 
     rc.delete_vhost(vh, true).unwrap();
 }
@@ -68,8 +63,7 @@ fn test_blocking_list_stream_connections() {
     let result1 = rc.list_stream_connections();
     assert!(
         result1.is_ok(),
-        "list_stream_connections returned {:?}",
-        result1
+        "list_stream_connections returned {result1:?}"
     );
 }
 
@@ -82,7 +76,6 @@ fn test_blocking_list_virtual_host_stream_connections() {
     let result1 = rc.list_stream_connections_in(vh_name);
     assert!(
         result1.is_ok(),
-        "list_stream_connections returned {:?}",
-        result1
+        "list_stream_connections returned {result1:?}"
     );
 }

@@ -43,7 +43,7 @@ async fn test_async_declare_stream() {
     };
 
     let result2 = rc.declare_stream(vhost, &params).await;
-    assert!(result2.is_ok(), "declare_stream returned {:?}", result2);
+    assert!(result2.is_ok(), "declare_stream returned {result2:?}");
 
     let _ = rc.delete_stream(vhost, name, false).await;
 }
@@ -63,7 +63,7 @@ async fn test_async_delete_stream() {
     let params = StreamParams::new(name, "7D");
 
     let result2 = rc.declare_stream(vhost, &params).await;
-    assert!(result2.is_ok(), "declare_stream returned {:?}", result2);
+    assert!(result2.is_ok(), "declare_stream returned {result2:?}");
 
     rc.delete_stream(vhost, name, false).await.unwrap();
     let result3 = rc.get_stream_info(vhost, name).await;

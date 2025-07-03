@@ -33,7 +33,7 @@ async fn test_async_list_users_without_permissions() {
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let test_name = "test_async_list_users_without_permissions";
 
-    let username = format!("{}.1", test_name);
+    let username = format!("{test_name}.1");
     rc.delete_user(&username, true)
         .await
         .expect("failed to delete a user");

@@ -22,7 +22,7 @@ fn test_blocking_list_channels() {
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     let result1 = rc.list_channels();
-    assert!(result1.is_ok(), "list_channels returned {:?}", result1);
+    assert!(result1.is_ok(), "list_channels returned {result1:?}");
 }
 
 #[test]
@@ -32,5 +32,5 @@ fn test_blocking_list_virtual_host_channels() {
 
     let vh_name = "/";
     let result1 = rc.list_channels_in(vh_name);
-    assert!(result1.is_ok(), "list_channels_in returned {:?}", result1);
+    assert!(result1.is_ok(), "list_channels_in returned {result1:?}");
 }
