@@ -1,11 +1,25 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.36.0 (in development)
+## v0.37.0 (in development)
 
 No changes yet.
 
 
+## v0.36.0 (Jul 4, 2025)
+
+### Enhancements
+
+ * `response::Connection` now can represent direct connections,
+   a special kind of connections supported by the Erlang AMQP 0-9-1 client,
+   that shovels and federation links use when connecting to the local
+   node.
+
+   GitHub issues: [rabbitmq/rabbitmqadmin-ng#68](https://github.com/rabbitmq/rabbitmqadmin-ng/issues/68), [#61](https://github.com/michaelklishin/rabbitmq-http-api-rs/pull/61)
+
+
 ## v0.35.0 (Jun 28, 2025)
+
+### Enhancements
 
  * `ClientCapabilities` fields now default to `false` when not provided in
     the API response.
@@ -14,6 +28,8 @@ No changes yet.
 
 
 ## v0.34.0 (Jun 12, 2025)
+
+### Upgrades
 
  * `tabled` was upgraded to `0.20.0`
 
