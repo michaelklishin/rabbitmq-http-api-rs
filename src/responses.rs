@@ -523,9 +523,11 @@ pub struct Connection {
     pub name: String,
     /// To what node the client is connected
     pub node: String,
-    /// Connection state
-    #[serde(default = "undefined")]
-    pub state: String,
+    /// Connection state.
+    /// Regular client connections (a.k.a. network connections) will usually
+    /// have this state, while direct AMQP 0-9-1 Erlang client connections won't.
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub state: Option<String>,
     /// What protocol the connection uses
     pub protocol: String,
     /// The name of the authenticated user
@@ -535,16 +537,20 @@ pub struct Connection {
     pub connected_at: u64,
     /// The hostname used to connect.
     #[serde(rename(deserialize = "host"))]
-    pub server_hostname: String,
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub server_hostname: Option<String>,
     /// The port used to connect.
     #[serde(rename(deserialize = "port"))]
-    pub server_port: u32,
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub server_port: Option<u32>,
     /// Client hostname.
     #[serde(rename(deserialize = "peer_host"))]
-    pub client_hostname: String,
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub client_hostname: Option<String>,
     /// Ephemeral client port.
     #[serde(rename(deserialize = "peer_port"))]
-    pub client_port: u32,
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub client_port: Option<u32>,
     /// Maximum number of channels that can be opened on this connection.
     #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub channel_max: Option<u16>,
