@@ -9,7 +9,7 @@
 ### Enhancements
 
  * `responses::OptionalArgumentSourceOps` now supports more operations on [optional queue arguments](https://www.rabbitmq.com/docs/queues#optional-arguments)
-    as well as `responses::PolicyDefinition` and `responses::Policy`
+    of `responses::QueueDefinition` as well as policy definitions (`responses::PolicyDefinition`, `responses::Policy`)
 
 
 ## v0.36.0 (Jul 4, 2025)

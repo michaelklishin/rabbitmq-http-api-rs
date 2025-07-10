@@ -55,7 +55,7 @@ impl XArguments {
         "ha-sync-mode",
         "ha-sync-batch-size",
     ];
-    pub const QUORUM_QUEUE_INCOMPATIBLE_KEYS: [&'static str; 7] = [
+    pub const QUORUM_QUEUE_INCOMPATIBLE_KEYS: [&'static str; 8] = [
         "ha-mode",
         "ha-params",
         "ha-promote-on-shutdown",
@@ -63,6 +63,7 @@ impl XArguments {
         "ha-sync-mode",
         "ha-sync-batch-size",
         "queue-mode",
+        "max-priority"
     ];
 
     pub fn get(&self, key: &str) -> Option<&serde_json::Value> {
