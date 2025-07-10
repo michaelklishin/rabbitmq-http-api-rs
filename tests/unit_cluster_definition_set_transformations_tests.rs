@@ -14,7 +14,7 @@
 mod test_helpers;
 
 use rabbitmq_http_client::commons::{QueueType, X_ARGUMENT_KEY_X_QUEUE_TYPE};
-use rabbitmq_http_client::responses::{ClusterDefinitionSet, PolicyDefinitionAndXArgumentsOps};
+use rabbitmq_http_client::responses::{ClusterDefinitionSet, OptionalArgumentSourceOps};
 use rabbitmq_http_client::transformers::{StripCmqKeysFromPolicies, TransformationChain};
 use serde_json::json;
 

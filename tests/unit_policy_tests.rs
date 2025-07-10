@@ -14,7 +14,7 @@
 mod test_helpers;
 
 use rabbitmq_http_client::commons::PolicyTarget;
-use rabbitmq_http_client::responses::{Policy, PolicyDefinition, PolicyDefinitionAndXArgumentsOps};
+use rabbitmq_http_client::responses::{OptionalArgumentSourceOps, Policy, PolicyDefinition};
 use serde_json::{json, Map};
 
 #[test]

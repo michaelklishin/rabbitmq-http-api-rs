@@ -911,9 +911,12 @@ impl QueueOps for QueueDefinition {
     }
 }
 
-impl PolicyDefinitionAndXArgumentsOps for QueueDefinition {
+impl OptionalArgumentSourceOps for QueueDefinition {
     fn contains_any_keys_of(&self, keys: Vec<&str>) -> bool {
-        self.arguments.keys().iter().any(|key| keys.contains(&key.as_str()))
+        self.arguments
+            .keys()
+            .iter()
+            .any(|key| keys.contains(&key.as_str()))
     }
 
     fn has_cmq_keys(&self) -> bool {
@@ -1149,7 +1152,7 @@ impl From<GlobalRuntimeParameterValue> for ClusterTags {
     }
 }
 
-pub trait PolicyDefinitionAndXArgumentsOps {
+pub trait OptionalArgumentSourceOps {
     fn contains_any_keys_of(&self, keys: Vec<&str>) -> bool;
 
     fn has_cmq_keys(&self) -> bool;
@@ -1241,7 +1244,7 @@ impl PolicyDefinition {
     }
 }
 
-impl PolicyDefinitionAndXArgumentsOps for PolicyDefinition {
+impl OptionalArgumentSourceOps for PolicyDefinition {
     fn has_cmq_keys(&self) -> bool {
         self.contains_any_keys_of(Self::CMQ_KEYS.to_vec())
     }
@@ -1393,7 +1396,7 @@ impl Policy {
     }
 }
 
-impl PolicyDefinitionAndXArgumentsOps for Policy {
+impl OptionalArgumentSourceOps for Policy {
     fn contains_any_keys_of(&self, keys: Vec<&str>) -> bool {
         self.definition.contains_any_keys_of(keys)
     }
@@ -1453,7 +1456,7 @@ impl PolicyWithoutVirtualHost {
     }
 }
 
-impl PolicyDefinitionAndXArgumentsOps for PolicyWithoutVirtualHost {
+impl OptionalArgumentSourceOps for PolicyWithoutVirtualHost {
     fn contains_any_keys_of(&self, keys: Vec<&str>) -> bool {
         self.definition.contains_any_keys_of(keys)
     }

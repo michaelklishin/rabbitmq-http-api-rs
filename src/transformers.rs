@@ -15,7 +15,7 @@
 use std::collections::HashMap;
 
 use crate::commons::QueueType;
-use crate::responses::{ClusterDefinitionSet, Policy, PolicyDefinitionAndXArgumentsOps};
+use crate::responses::{ClusterDefinitionSet, OptionalArgumentSourceOps, Policy};
 
 use crate::password_hashing;
 
