@@ -2,7 +2,14 @@
 
 ## v0.37.0 (in development)
 
-No changes yet.
+### Breaking Changes
+
+ * `responses::PolicyDefinitionOps` was extended and renamed to `responses::OptionalArgumentSourceOps`
+
+### Enhancements
+
+ * `responses::OptionalArgumentSourceOps` now supports more operations on [optional queue arguments](https://www.rabbitmq.com/docs/queues#optional-arguments)
+    as well as `responses::PolicyDefinition` and `responses::Policy`
 
 
 ## v0.36.0 (Jul 4, 2025)
