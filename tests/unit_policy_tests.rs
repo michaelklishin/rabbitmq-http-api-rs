@@ -14,7 +14,7 @@
 mod test_helpers;
 
 use rabbitmq_http_client::commons::PolicyTarget;
-use rabbitmq_http_client::responses::{Policy, PolicyDefinition, PolicyDefinitionOps};
+use rabbitmq_http_client::responses::{Policy, PolicyDefinition, PolicyDefinitionAndXArgumentsOps};
 use serde_json::{json, Map};
 
 #[test]
@@ -143,19 +143,44 @@ fn test_unit_policy_definition_merge_case1() {
 fn test_unit_policy_definition_without_keys_case1() {
     let k1 = "max-age".to_owned();
     let k2 = "max-length-bytes".to_owned();
+    let k3 = "queue-mode".to_owned();
 
     let mut m = Map::new();
     m.insert(k1.clone(), json!("1D"));
     m.insert(k2.clone(), json!(20_000_000));
+    m.insert(k3.clone(), json!("lazy"));
     let defs1 = PolicyDefinition(Some(m));
-    let defs2 = defs1.without_keys(vec!["max-length-bytes"]);
+    let defs2 = defs1.without_keys(vec!["max-length-bytes", "queue-mode"]);
 
-    assert_eq!(2, defs1.len());
+    assert_eq!(3, defs1.len());
     assert_eq!(1, defs2.len());
 
     let m2 = defs2.0.unwrap();
     assert!(m2.contains_key(&k1));
     assert!(!m2.contains_key(&k2));
+    assert!(!m2.contains_key(&k3));
+}
+
+#[test]
+fn test_unit_policy_definition_without_quorum_queue_incompatible_keys_case1() {
+    let k1 = "ha-mode".to_owned();
+    let k2 = "max-length-bytes".to_owned();
+    let k3 = "queue-mode".to_owned();
+
+    let mut m = Map::new();
+    m.insert(k1.clone(), json!("all"));
+    m.insert(k2.clone(), json!(20_000_000));
+    m.insert(k3.clone(), json!("lazy"));
+    let defs1 = PolicyDefinition(Some(m));
+    let defs2 = defs1.without_quorum_queue_incompatible_keys();
+
+    assert_eq!(3, defs1.len());
+    assert_eq!(1, defs2.len());
+
+    let m2 = defs2.0.unwrap();
+    assert!(!m2.contains_key(&k1));
+    assert!(m2.contains_key(&k2));
+    assert!(!m2.contains_key(&k3));
 }
 
 #[test]

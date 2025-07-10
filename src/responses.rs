@@ -47,16 +47,57 @@ pub struct PluginList(pub Vec<String>);
 pub struct XArguments(pub Map<String, serde_json::Value>);
 
 impl XArguments {
+    pub const CMQ_KEYS: [&'static str; 6] = [
+        "ha-mode",
+        "ha-params",
+        "ha-promote-on-shutdown",
+        "ha-promote-on-failure",
+        "ha-sync-mode",
+        "ha-sync-batch-size",
+    ];
+    pub const QUORUM_QUEUE_INCOMPATIBLE_KEYS: [&'static str; 7] = [
+        "ha-mode",
+        "ha-params",
+        "ha-promote-on-shutdown",
+        "ha-promote-on-failure",
+        "ha-sync-mode",
+        "ha-sync-batch-size",
+        "queue-mode",
+    ];
+
     pub fn get(&self, key: &str) -> Option<&serde_json::Value> {
         self.0.get(key)
     }
 
-    pub fn insert(&mut self, key: &str, value: serde_json::Value) -> Option<serde_json::Value> {
-        self.0.insert(key.to_owned(), value)
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    pub fn keys(&self) -> Vec<String> {
+        self.0.keys().cloned().collect()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    pub fn insert(&mut self, key: String, value: serde_json::Value) -> Option<serde_json::Value> {
+        self.0.insert(key, value)
+    }
+
+    pub fn contains_key(&self, key: &str) -> bool {
+        self.0.contains_key(key)
     }
 
     pub fn remove(&mut self, key: &str) -> Option<serde_json::Value> {
         self.0.remove(key)
+    }
+
+    pub fn merge(&mut self, other: &Self) {
+        let mut m: Map<String, serde_json::Value> = self.0.clone();
+        m.extend(other.0.clone());
+
+        self.0 = m;
     }
 }
 
@@ -870,11 +911,47 @@ impl QueueOps for QueueDefinition {
     }
 }
 
+impl PolicyDefinitionAndXArgumentsOps for QueueDefinition {
+    fn contains_any_keys_of(&self, keys: Vec<&str>) -> bool {
+        self.arguments.keys().iter().any(|key| keys.contains(&key.as_str()))
+    }
+
+    fn has_cmq_keys(&self) -> bool {
+        self.contains_any_keys_of(XArguments::CMQ_KEYS.to_vec())
+    }
+
+    fn has_quorum_queue_incompatible_keys(&self) -> bool {
+        self.contains_any_keys_of(XArguments::QUORUM_QUEUE_INCOMPATIBLE_KEYS.to_vec())
+    }
+
+    fn is_empty(&self) -> bool {
+        self.arguments.is_empty()
+    }
+
+    fn without_keys(&self, keys: Vec<&str>) -> Self {
+        let mut new_args = self.arguments.clone();
+        for key in keys {
+            new_args.0.remove(key);
+        }
+        let mut copy = self.clone();
+        copy.arguments = new_args;
+        copy
+    }
+
+    fn without_cmq_keys(&self) -> Self {
+        self.without_keys(XArguments::CMQ_KEYS.to_vec())
+    }
+
+    fn without_quorum_queue_incompatible_keys(&self) -> Self {
+        self.without_keys(XArguments::QUORUM_QUEUE_INCOMPATIBLE_KEYS.to_vec())
+    }
+}
+
 impl QueueDefinition {
     pub fn update_queue_type(&mut self, typ: QueueType) -> &mut Self {
         self.arguments.remove(X_ARGUMENT_KEY_X_QUEUE_TYPE);
         self.arguments
-            .insert(X_ARGUMENT_KEY_X_QUEUE_TYPE, json!(typ));
+            .insert(X_ARGUMENT_KEY_X_QUEUE_TYPE.to_owned(), json!(typ));
 
         self
     }
@@ -1072,14 +1149,20 @@ impl From<GlobalRuntimeParameterValue> for ClusterTags {
     }
 }
 
-pub trait PolicyDefinitionOps {
+pub trait PolicyDefinitionAndXArgumentsOps {
+    fn contains_any_keys_of(&self, keys: Vec<&str>) -> bool;
+
     fn has_cmq_keys(&self) -> bool;
+
+    fn has_quorum_queue_incompatible_keys(&self) -> bool;
 
     fn is_empty(&self) -> bool;
 
     fn without_keys(&self, keys: Vec<&str>) -> Self;
 
     fn without_cmq_keys(&self) -> Self;
+
+    fn without_quorum_queue_incompatible_keys(&self) -> Self;
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -1093,6 +1176,15 @@ impl PolicyDefinition {
         "ha-promote-on-failure",
         "ha-sync-mode",
         "ha-sync-batch-size",
+    ];
+    pub const QUORUM_QUEUE_INCOMPATIBLE_KEYS: [&'static str; 7] = [
+        "ha-mode",
+        "ha-params",
+        "ha-promote-on-shutdown",
+        "ha-promote-on-failure",
+        "ha-sync-mode",
+        "ha-sync-batch-size",
+        "queue-mode",
     ];
 
     pub fn len(&self) -> usize {
@@ -1149,13 +1241,20 @@ impl PolicyDefinition {
     }
 }
 
-impl PolicyDefinitionOps for PolicyDefinition {
+impl PolicyDefinitionAndXArgumentsOps for PolicyDefinition {
     fn has_cmq_keys(&self) -> bool {
-        match &self.0 {
-            None => false,
-            Some(m) => m
-                .keys()
-                .any(|k| PolicyDefinition::CMQ_KEYS.contains(&k.as_str())),
+        self.contains_any_keys_of(Self::CMQ_KEYS.to_vec())
+    }
+
+    fn has_quorum_queue_incompatible_keys(&self) -> bool {
+        self.contains_any_keys_of(Self::QUORUM_QUEUE_INCOMPATIBLE_KEYS.to_vec())
+    }
+
+    fn contains_any_keys_of(&self, keys: Vec<&str>) -> bool {
+        if let Some(ref map) = self.0 {
+            map.keys().any(|key| keys.contains(&key.as_str()))
+        } else {
+            false
         }
     }
 
@@ -1179,7 +1278,11 @@ impl PolicyDefinitionOps for PolicyDefinition {
     }
 
     fn without_cmq_keys(&self) -> Self {
-        self.without_keys(Vec::from(PolicyDefinition::CMQ_KEYS))
+        self.without_keys(PolicyDefinition::CMQ_KEYS.to_vec())
+    }
+
+    fn without_quorum_queue_incompatible_keys(&self) -> Self {
+        self.without_keys(PolicyDefinition::QUORUM_QUEUE_INCOMPATIBLE_KEYS.to_vec())
     }
 }
 
@@ -1290,9 +1393,17 @@ impl Policy {
     }
 }
 
-impl PolicyDefinitionOps for Policy {
+impl PolicyDefinitionAndXArgumentsOps for Policy {
+    fn contains_any_keys_of(&self, keys: Vec<&str>) -> bool {
+        self.definition.contains_any_keys_of(keys)
+    }
+
     fn has_cmq_keys(&self) -> bool {
         self.definition.has_cmq_keys()
+    }
+
+    fn has_quorum_queue_incompatible_keys(&self) -> bool {
+        self.definition.has_quorum_queue_incompatible_keys()
     }
 
     fn is_empty(&self) -> bool {
@@ -1313,13 +1424,11 @@ impl PolicyDefinitionOps for Policy {
     }
 
     fn without_cmq_keys(&self) -> Self {
-        self.without_keys(Vec::from(PolicyDefinition::CMQ_KEYS))
+        self.without_keys(PolicyDefinition::CMQ_KEYS.to_vec())
     }
-}
 
-impl PolicyWithoutVirtualHost {
-    pub fn does_match(&self, name: &str, typ: PolicyTarget) -> bool {
-        Policy::is_a_name_match(&self.pattern, self.apply_to.clone(), name, typ)
+    fn without_quorum_queue_incompatible_keys(&self) -> Self {
+        self.without_keys(PolicyDefinition::QUORUM_QUEUE_INCOMPATIBLE_KEYS.to_vec())
     }
 }
 
@@ -1336,6 +1445,50 @@ pub struct PolicyWithoutVirtualHost {
     pub apply_to: PolicyTarget,
     pub priority: i16,
     pub definition: PolicyDefinition,
+}
+
+impl PolicyWithoutVirtualHost {
+    pub fn does_match(&self, name: &str, typ: PolicyTarget) -> bool {
+        Policy::is_a_name_match(&self.pattern, self.apply_to.clone(), name, typ)
+    }
+}
+
+impl PolicyDefinitionAndXArgumentsOps for PolicyWithoutVirtualHost {
+    fn contains_any_keys_of(&self, keys: Vec<&str>) -> bool {
+        self.definition.contains_any_keys_of(keys)
+    }
+
+    fn has_cmq_keys(&self) -> bool {
+        self.definition.has_cmq_keys()
+    }
+
+    fn has_quorum_queue_incompatible_keys(&self) -> bool {
+        self.definition.has_quorum_queue_incompatible_keys()
+    }
+
+    fn is_empty(&self) -> bool {
+        self.definition.is_empty()
+    }
+
+    fn without_keys(&self, keys: Vec<&str>) -> Self {
+        let defs = self.definition.without_keys(keys);
+
+        Self {
+            name: self.name.clone(),
+            pattern: self.pattern.clone(),
+            apply_to: self.apply_to.clone(),
+            priority: self.priority,
+            definition: defs,
+        }
+    }
+
+    fn without_cmq_keys(&self) -> Self {
+        self.without_keys(PolicyDefinition::CMQ_KEYS.to_vec())
+    }
+
+    fn without_quorum_queue_incompatible_keys(&self) -> Self {
+        self.without_keys(PolicyDefinition::QUORUM_QUEUE_INCOMPATIBLE_KEYS.to_vec())
+    }
 }
 
 /// Represents an object a policy can match: a queue, a stream, an exchange.
@@ -1464,7 +1617,7 @@ impl ClusterDefinitionSet {
     ) -> Option<QueueDefinition> {
         if let Some(qd) = self.find_queue_mut(vhost, name) {
             let mut args = qd.arguments.clone();
-            args.insert(X_ARGUMENT_KEY_X_QUEUE_TYPE, json!(typ.clone()));
+            args.insert(X_ARGUMENT_KEY_X_QUEUE_TYPE.to_owned(), json!(typ.clone()));
 
             qd.arguments = args;
 
