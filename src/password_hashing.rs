@@ -29,7 +29,7 @@ pub fn salt() -> Vec<u8> {
     Vec::from(&buf)
 }
 
-/// Produces a SHA-256 hashed, salted passowrd hash.
+/// Produces a SHA-256 hashed, salted password hash.
 /// Prefer [`base64_encoded_salted_password_hash_sha256`].
 ///
 /// See the [Credentials and Passwords guide](https://rabbitmq.com/docs/passwords/).
@@ -110,10 +110,12 @@ pub enum HashingError {
 
 impl HashingAlgorithm {
     pub fn salt_and_hash(&self, salt: &[u8], password: &str) -> Result<Vec<u8>, HashingError> {
-        match self {
-            HashingAlgorithm::SHA256 => Ok(salted_password_hash_sha256(salt, password)),
-            HashingAlgorithm::SHA512 => Ok(salted_password_hash_sha512(salt, password)),
-        }
+        let hash = match self {
+            HashingAlgorithm::SHA256 => salted_password_hash_sha256(salt, password),
+            HashingAlgorithm::SHA512 => salted_password_hash_sha512(salt, password),
+        };
+        let encoded = rbase64::encode(hash.as_slice());
+        Ok(encoded.as_bytes().to_vec())
     }
 }
 
