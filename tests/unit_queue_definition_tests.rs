@@ -41,7 +41,7 @@ fn test_unit_queue_definition_without_quorum_queue_incompatible_keys_case1() {
     assert!(def1.arguments.contains_key(&k1));
     assert!(def1.arguments.contains_key(&k2));
     assert!(def1.arguments.contains_key(&k3));
-    
+
     assert!(def2.arguments.contains_key(&k1));
     assert!(!def2.arguments.contains_key(&k2));
     assert!(!def2.arguments.contains_key(&k3));

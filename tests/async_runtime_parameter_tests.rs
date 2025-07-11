@@ -74,7 +74,6 @@ async fn test_async_list_all_runtime_parameters() {
     assert!(result2.is_ok());
 
     let result3 = rc.list_runtime_parameters().await;
-    dbg!(&result3);
     assert!(result3.is_ok());
     assert!(result3
         .unwrap()
