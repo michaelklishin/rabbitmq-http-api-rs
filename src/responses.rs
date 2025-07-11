@@ -966,12 +966,11 @@ impl QueueDefinition {
         value: &str,
         new_value: &str,
     ) -> &mut Self {
-        if let Some(val) = self.arguments.get(argument) {
-            if let Some(s) = val.as_str() {
-                if s == value {
-                    self.arguments.insert(argument.to_owned(), json!(new_value));
-                }
-            }
+        if let Some(val) = self.arguments.get(argument)
+            && let Some(s) = val.as_str()
+            && s == value
+        {
+            self.arguments.insert(argument.to_owned(), json!(new_value));
         }
 
         self
@@ -1283,14 +1282,12 @@ impl PolicyDefinition {
         value: &str,
         new_value: &str,
     ) -> &mut Self {
-        if let Some(m) = &self.0 {
-            if let Some(raw_val) = m.get(argument) {
-                if let Some(s) = raw_val.as_str() {
-                    if s == value {
-                        self.insert(argument.to_owned(), json!(new_value));
-                    }
-                }
-            }
+        if let Some(m) = &self.0
+            && let Some(raw_val) = m.get(argument)
+            && let Some(s) = raw_val.as_str()
+            && s == value
+        {
+            self.insert(argument.to_owned(), json!(new_value));
         }
 
         self

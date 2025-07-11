@@ -60,13 +60,13 @@ impl DefinitionSetTransformer for PrepareForQuorumQueueMigration {
         // Queue x-arguments:
         // replace x-overflow values that are equal to "reject-publish-dlx"
         let f3 = Box::new(|mut qd: QueueDefinition| {
-            if let Some(val) = qd.arguments.get(X_ARGUMENT_KEY_X_OVERFLOW) {
-                if val.as_str().unwrap_or(OVERFLOW_REJECT_PUBLISH) == OVERFLOW_REJECT_PUBLISH_DLX {
-                    qd.arguments.insert(
-                        X_ARGUMENT_KEY_X_OVERFLOW.to_owned(),
-                        json!(OverflowBehavior::RejectPublish),
-                    );
-                }
+            if let Some(val) = qd.arguments.get(X_ARGUMENT_KEY_X_OVERFLOW)
+                && val.as_str().unwrap_or(OVERFLOW_REJECT_PUBLISH) == OVERFLOW_REJECT_PUBLISH_DLX
+            {
+                qd.arguments.insert(
+                    X_ARGUMENT_KEY_X_OVERFLOW.to_owned(),
+                    json!(OverflowBehavior::RejectPublish),
+                );
             }
             qd
         });
@@ -76,11 +76,11 @@ impl DefinitionSetTransformer for PrepareForQuorumQueueMigration {
         // replace x-overflow values that are equal to "reject-publish-dlx"
         let f4 = Box::new(|mut p: Policy| {
             let key = "overflow";
-            if let Some(val) = p.definition.get(key) {
-                if val.as_str().unwrap_or(OVERFLOW_REJECT_PUBLISH) == OVERFLOW_REJECT_PUBLISH_DLX {
-                    p.definition
-                        .insert(key.to_owned(), json!(OverflowBehavior::RejectPublish));
-                }
+            if let Some(val) = p.definition.get(key)
+                && val.as_str().unwrap_or(OVERFLOW_REJECT_PUBLISH) == OVERFLOW_REJECT_PUBLISH_DLX
+            {
+                p.definition
+                    .insert(key.to_owned(), json!(OverflowBehavior::RejectPublish));
             }
             p
         });
