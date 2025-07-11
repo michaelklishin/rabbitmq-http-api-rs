@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 use rand::RngCore;
-use ring::digest::{Context, SHA256};
+use ring::digest::{Context, SHA256, SHA512};
+use std::fmt;
+use thiserror::Error;
 
 const SALT_LENGTH: usize = 4;
 
@@ -32,14 +34,15 @@ pub fn salt() -> Vec<u8> {
 ///
 /// See the [Credentials and Passwords guide](https://rabbitmq.com/docs/passwords/).
 pub fn salted_password_hash_sha256(salt: &[u8], password: &str) -> Vec<u8> {
-    let mut ctx = Context::new(&SHA256);
-    let vec = [salt, password.as_bytes()].concat();
+    salted_password_hash(salt, password, &SHA256)
+}
 
-    ctx.update(&vec);
-    let digest = ctx.finish();
-    let digest_vec = Vec::from(digest.as_ref());
-
-    [salt, &digest_vec[..]].concat()
+/// Produces a SHA-512 hashed, salted password hash.
+/// Prefer [`base64_encoded_salted_password_hash_sha512`].
+///
+/// See the [Credentials and Passwords guide](https://rabbitmq.com/docs/passwords/).
+pub fn salted_password_hash_sha512(salt: &[u8], password: &str) -> Vec<u8> {
+    salted_password_hash(salt, password, &SHA512)
 }
 
 ///
@@ -50,4 +53,85 @@ pub fn salted_password_hash_sha256(salt: &[u8], password: &str) -> Vec<u8> {
 pub fn base64_encoded_salted_password_hash_sha256(salt: &[u8], password: &str) -> String {
     let salted = salted_password_hash_sha256(salt, password);
     rbase64::encode(salted.as_slice())
+}
+
+///
+/// Produces a Base64-encoded, SHA-512 hashed, salted password hash that can be passed
+/// as [`crate::requests::UserParams::password_hash`] when adding a user with [`crate::blocking_api::Client::create_user`].
+///
+/// See the [Credentials and Passwords guide](https://rabbitmq.com/docs/passwords/).
+pub fn base64_encoded_salted_password_hash_sha512(salt: &[u8], password: &str) -> String {
+    let salted = salted_password_hash_sha512(salt, password);
+    rbase64::encode(salted.as_slice())
+}
+
+#[derive(Clone, Default, PartialEq, Eq, Hash, Debug)]
+pub enum HashingAlgorithm {
+    #[default]
+    SHA256,
+    SHA512,
+    // Unlike RabbitMQ that accepts module implementations via configuration,
+    // we cannot support salting and hashing for arbitrary algorithm names,
+    // so Other(String) is omitted by design
+}
+
+impl fmt::Display for HashingAlgorithm {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            HashingAlgorithm::SHA256 => write!(f, "SHA-256"),
+            HashingAlgorithm::SHA512 => write!(f, "SHA-512"),
+        }
+    }
+}
+
+impl From<&str> for HashingAlgorithm {
+    fn from(s: &str) -> Self {
+        match s.to_uppercase().as_str() {
+            "SHA256" => HashingAlgorithm::SHA256,
+            "SHA-256" => HashingAlgorithm::SHA256,
+            "SHA512" => HashingAlgorithm::SHA512,
+            "SHA-512" => HashingAlgorithm::SHA512,
+            _ => HashingAlgorithm::default(),
+        }
+    }
+}
+
+impl From<String> for HashingAlgorithm {
+    fn from(s: String) -> Self {
+        HashingAlgorithm::from(s.as_str())
+    }
+}
+
+#[derive(Error, Debug)]
+pub enum HashingError {
+    #[error("Provided algorithm is not supported")]
+    UnsupportedAlgorithm,
+}
+
+impl HashingAlgorithm {
+    pub fn salt_and_hash(&self, salt: &[u8], password: &str) -> Result<Vec<u8>, HashingError> {
+        match self {
+            HashingAlgorithm::SHA256 => Ok(salted_password_hash_sha256(salt, password)),
+            HashingAlgorithm::SHA512 => Ok(salted_password_hash_sha512(salt, password)),
+        }
+    }
+}
+
+//
+// Implementation
+//
+
+fn salted_password_hash(
+    salt: &[u8],
+    password: &str,
+    algo: &'static ring::digest::Algorithm,
+) -> Vec<u8> {
+    let mut ctx = Context::new(algo);
+    let vec = [salt, password.as_bytes()].concat();
+
+    ctx.update(&vec);
+    let digest = ctx.finish();
+    let digest_vec = Vec::from(digest.as_ref());
+
+    [salt, &digest_vec[..]].concat()
 }

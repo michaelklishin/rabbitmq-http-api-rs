@@ -13,9 +13,7 @@
 // limitations under the License.
 mod test_helpers;
 
-use rabbitmq_http_client::responses::{
-    NamedPolicyTargetObject, OptionalArgumentSourceOps, QueueDefinition, QueueOps,
-};
+use rabbitmq_http_client::responses::{OptionalArgumentSourceOps, QueueDefinition};
 
 #[test]
 fn test_unit_queue_definition_without_quorum_queue_incompatible_keys_case1() {

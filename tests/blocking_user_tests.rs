@@ -71,7 +71,7 @@ fn test_blocking_get_user() {
 }
 
 #[test]
-fn test_blocking_user_creation() {
+fn test_blocking_user_creation_using_default_hashing_algorithm() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -86,6 +86,30 @@ fn test_blocking_user_creation() {
     };
     let result = rc.create_user(&params);
     assert!(result.is_ok());
+
+    rc.delete_user(&params.name, true)
+        .expect("failed to delete a user");
+}
+
+#[test]
+fn test_blocking_user_creation_using_sha512() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let salt = password_hashing::salt();
+    let password_hash =
+        password_hashing::base64_encoded_salted_password_hash_sha512(&salt, "rust4_t0p_sEkr37");
+
+    let params = UserParams {
+        name: "rust4",
+        password_hash: &password_hash,
+        tags: "management",
+    };
+    let result = rc.create_user(&params);
+    assert!(result.is_ok());
+
+    rc.delete_user(&params.name, true)
+        .expect("failed to delete a user");
 }
 
 #[test]
