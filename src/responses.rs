@@ -21,11 +21,11 @@ use crate::error::ConversionError;
 use crate::formatting::*;
 use crate::utils::{percentage, percentage_as_text};
 use serde::{
-    de::{MapAccess, Visitor},
     Deserialize, Serialize,
+    de::{MapAccess, Visitor},
 };
 use serde_aux::prelude::*;
-use serde_json::{json, Map};
+use serde_json::{Map, json};
 
 use time::OffsetDateTime;
 

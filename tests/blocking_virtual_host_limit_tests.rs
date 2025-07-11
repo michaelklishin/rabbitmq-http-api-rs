@@ -18,7 +18,7 @@ use rabbitmq_http_client::{
 };
 
 mod test_helpers;
-use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
+use crate::test_helpers::{PASSWORD, USERNAME, endpoint};
 
 #[test]
 fn test_blocking_list_all_vhost_limits() {
@@ -39,13 +39,15 @@ fn test_blocking_list_all_vhost_limits() {
     assert!(vec.iter().any(|it| it.vhost == vh_params.name));
 
     let key1 = VirtualHostLimitTarget::MaxConnections;
-    assert!(!vec
-        .iter()
-        .any(|it| it.vhost == vh_params.name && it.limits.get(key1.as_ref()).is_some()));
+    assert!(
+        !vec.iter()
+            .any(|it| it.vhost == vh_params.name && it.limits.get(key1.as_ref()).is_some())
+    );
     let key2 = VirtualHostLimitTarget::MaxQueues;
-    assert!(vec
-        .iter()
-        .any(|it| it.vhost == vh_params.name && it.limits.get(key2.as_ref()).is_some()));
+    assert!(
+        vec.iter()
+            .any(|it| it.vhost == vh_params.name && it.limits.get(key2.as_ref()).is_some())
+    );
 
     rc.delete_vhost(vh_params.name, false).unwrap();
 }
@@ -68,13 +70,15 @@ fn test_blocking_list_vhost_limits() {
     let vec = result3.unwrap();
 
     let key1 = VirtualHostLimitTarget::MaxConnections;
-    assert!(vec
-        .iter()
-        .any(|it| it.vhost == vh_params.name && it.limits.get(key1.as_ref()).is_some()));
+    assert!(
+        vec.iter()
+            .any(|it| it.vhost == vh_params.name && it.limits.get(key1.as_ref()).is_some())
+    );
     let key2 = VirtualHostLimitTarget::MaxQueues;
-    assert!(!vec
-        .iter()
-        .any(|it| it.vhost == vh_params.name && it.limits.get(key2.as_ref()).is_some()));
+    assert!(
+        !vec.iter()
+            .any(|it| it.vhost == vh_params.name && it.limits.get(key2.as_ref()).is_some())
+    );
 
     rc.delete_vhost(vh_params.name, false).unwrap();
 }

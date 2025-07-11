@@ -14,7 +14,7 @@
 use rabbitmq_http_client::blocking_api::Client;
 
 mod test_helpers;
-use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
+use crate::test_helpers::{PASSWORD, USERNAME, endpoint};
 
 //
 // Authentication configuration info

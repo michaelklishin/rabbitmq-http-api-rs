@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 use rabbitmq_http_client::{api::Client, commons::QueueType, requests::QueueParams};
-use serde_json::{json, Map, Value};
+use serde_json::{Map, Value, json};
 
 mod test_helpers;
-use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
+use crate::test_helpers::{PASSWORD, USERNAME, endpoint};
 
 #[tokio::test]
 async fn test_async_declare_and_redeclare_a_classic_queue() {

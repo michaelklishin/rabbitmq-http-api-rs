@@ -17,7 +17,7 @@ use rabbitmq_http_client::api::Client;
 use rabbitmq_http_client::requests::VirtualHostParams;
 
 mod test_helpers;
-use crate::test_helpers::{endpoint, hostname, PASSWORD, USERNAME};
+use crate::test_helpers::{PASSWORD, USERNAME, endpoint, hostname};
 
 #[tokio::test]
 async fn test_async_list_connections() {

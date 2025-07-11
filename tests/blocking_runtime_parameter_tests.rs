@@ -14,10 +14,10 @@
 use rabbitmq_http_client::requests::{RuntimeParameterDefinition, RuntimeParameterValue};
 use rabbitmq_http_client::responses::RuntimeParameter;
 use rabbitmq_http_client::{blocking_api::Client, requests::VirtualHostParams};
-use serde_json::{json, Map, Value};
+use serde_json::{Map, Value, json};
 
 mod test_helpers;
-use crate::test_helpers::{await_metric_emission, endpoint, PASSWORD, USERNAME};
+use crate::test_helpers::{PASSWORD, USERNAME, await_metric_emission, endpoint};
 
 #[test]
 fn test_blocking_upsert_runtime_parameter() {
@@ -68,12 +68,14 @@ fn test_blocking_list_all_runtime_parameters() {
 
     let result3 = rc.list_runtime_parameters();
     assert!(result3.is_ok());
-    assert!(result3
-        .unwrap()
-        .iter()
-        .filter(|rp| rp.component == "vhost-limits" && rp.vhost == *vh_params.name)
-        .map(|rp| rp.value.get("max-connections").unwrap().as_u64().unwrap())
-        .any(|n| n == 9988));
+    assert!(
+        result3
+            .unwrap()
+            .iter()
+            .filter(|rp| rp.component == "vhost-limits" && rp.vhost == *vh_params.name)
+            .map(|rp| rp.value.get("max-connections").unwrap().as_u64().unwrap())
+            .any(|n| n == 9988)
+    );
 
     let _ = rc.clear_runtime_parameter(rpf.component, rpf.vhost, rpf.name);
     let _ = rc.delete_vhost(vh_params.name, false);
@@ -97,11 +99,13 @@ fn test_blocking_list_runtime_parameters_of_component_in_a_vhost() {
 
     let result3 = rc.list_runtime_parameters_of_component_in("vhost-limits", vh_params.name);
     assert!(result3.is_ok());
-    assert!(result3
-        .unwrap()
-        .iter()
-        .map(|rp| rp.value.get("max-connections").unwrap().as_u64().unwrap())
-        .any(|n| n == 9988));
+    assert!(
+        result3
+            .unwrap()
+            .iter()
+            .map(|rp| rp.value.get("max-connections").unwrap().as_u64().unwrap())
+            .any(|n| n == 9988)
+    );
 
     let _ = rc.clear_runtime_parameter(rpf.component, rpf.vhost, rpf.name);
     let _ = rc.delete_vhost(vh_params.name, false);
@@ -131,9 +135,10 @@ fn test_blocking_clear_runtime_parameter() {
         "list_runtime_parameters returned {result4:?}"
     );
     let vec = result4.unwrap();
-    assert!(!vec
-        .iter()
-        .any(|p| p.component == "vhost-limits" && p.vhost == *vh_params.name));
+    assert!(
+        !vec.iter()
+            .any(|p| p.component == "vhost-limits" && p.vhost == *vh_params.name)
+    );
 
     let _ = rc.delete_vhost(vh_params.name, false);
 }

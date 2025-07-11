@@ -17,9 +17,9 @@ use rabbitmq_http_client::{
     requests::{PolicyParams, VirtualHostParams},
 };
 
-use serde_json::{json, Map, Value};
+use serde_json::{Map, Value, json};
 mod test_helpers;
-use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
+use crate::test_helpers::{PASSWORD, USERNAME, endpoint};
 
 #[tokio::test]
 async fn test_async_message_ttl_policy() {
@@ -138,10 +138,11 @@ async fn test_an_operator_policy(rc: &Client<&str, &str, &str>, policy: &PolicyP
     assert_eq!(fetched_policy.definition.0.unwrap(), policy.definition);
 
     // delete it
-    assert!(rc
-        .delete_operator_policy(policy.vhost, policy.name)
-        .await
-        .is_ok());
+    assert!(
+        rc.delete_operator_policy(policy.vhost, policy.name)
+            .await
+            .is_ok()
+    );
 
     // there should be no such policy anymore
     let policies = rc.list_operator_policies().await.unwrap();

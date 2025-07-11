@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 use rabbitmq_http_client::{api::Client, error::Error as APIClientError, requests::ExchangeParams};
-use serde_json::{json, Map, Value};
+use serde_json::{Map, Value, json};
 
 mod test_helpers;
-use crate::test_helpers::{async_testing_against_3_13_x, endpoint, PASSWORD, USERNAME};
+use crate::test_helpers::{PASSWORD, USERNAME, async_testing_against_3_13_x, endpoint};
 
 use rabbitmq_http_client::commons::ExchangeType;
 

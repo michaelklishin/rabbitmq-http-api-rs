@@ -15,13 +15,13 @@ use rabbitmq_http_client::api::Client;
 
 mod test_helpers;
 use crate::test_helpers::{
-    await_metric_emission, await_queue_metric_emission, endpoint, PASSWORD, USERNAME,
+    PASSWORD, USERNAME, await_metric_emission, await_queue_metric_emission, endpoint,
 };
 use rabbitmq_http_client::commons::PolicyTarget;
 use rabbitmq_http_client::requests::{
     ExchangeParams, PolicyParams, QueueParams, VirtualHostParams,
 };
-use serde_json::{json, Map, Value};
+use serde_json::{Map, Value, json};
 
 #[tokio::test]
 async fn test_async_export_definitions_as_string() {

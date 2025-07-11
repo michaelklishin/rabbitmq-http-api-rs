@@ -15,7 +15,7 @@ use crate::commons::{ExchangeType, MessageTransferAcknowledgementMode, PolicyTar
 use crate::responses;
 use crate::responses::{Policy, PolicyDefinition as PolDef};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Map, Value};
+use serde_json::{Map, Value, json};
 
 /// Properties of a [virtual host](https://rabbitmq.com/docs/vhosts/) to be created or updated.
 #[derive(Serialize)]

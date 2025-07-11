@@ -17,7 +17,7 @@ use rabbitmq_http_client::commons::{PolicyTarget, QueueType};
 use rabbitmq_http_client::responses::{
     NamedPolicyTargetObject, Policy, PolicyDefinition, QueueInfo, QueueOps,
 };
-use serde_json::{json, Map};
+use serde_json::{Map, json};
 
 #[test]
 fn test_unit_queue_type_from_str() {

@@ -15,7 +15,7 @@
 use rabbitmq_http_client::api::Client;
 
 mod test_helpers;
-use crate::test_helpers::{endpoint, generate_activity, PASSWORD, USERNAME};
+use crate::test_helpers::{PASSWORD, USERNAME, endpoint, generate_activity};
 
 #[tokio::test]
 async fn test_async_overview() {

@@ -16,10 +16,10 @@ use rabbitmq_http_client::{
     requests::{self, QueueParams},
     responses::{GetMessage, MessageProperties, MessageRouted},
 };
-use serde_json::{json, Map, Value};
+use serde_json::{Map, Value, json};
 
 mod test_helpers;
-use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
+use crate::test_helpers::{PASSWORD, USERNAME, endpoint};
 
 #[test]
 fn test_blocking_publish_and_get() {

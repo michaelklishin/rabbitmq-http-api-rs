@@ -17,7 +17,7 @@ use rabbitmq_http_client::{
 };
 
 mod test_helpers;
-use crate::test_helpers::{endpoint, testing_against_3_13_x, PASSWORD, USERNAME};
+use crate::test_helpers::{PASSWORD, USERNAME, endpoint, testing_against_3_13_x};
 
 #[test]
 fn test_blocking_list_feature_flags() {
@@ -31,10 +31,11 @@ fn test_blocking_list_feature_flags() {
     let result = rc.list_feature_flags();
     assert!(result.is_ok());
     let vec = result.unwrap();
-    assert!(vec
-        .0
-        .into_iter()
-        .any(|ff| ff.name == "rabbitmq_4.0.0" && ff.stability == FeatureFlagStability::Stable));
+    assert!(
+        vec.0
+            .into_iter()
+            .any(|ff| ff.name == "rabbitmq_4.0.0" && ff.stability == FeatureFlagStability::Stable)
+    );
 }
 
 #[test]
@@ -54,10 +55,11 @@ fn test_blocking_enable_a_feature_flag() {
 
     assert!(result2.is_ok());
     let vec = result2.unwrap();
-    assert!(vec
-        .0
-        .into_iter()
-        .any(|ff| ff.name == ff_name && ff.state == FeatureFlagState::Enabled));
+    assert!(
+        vec.0
+            .into_iter()
+            .any(|ff| ff.name == ff_name && ff.state == FeatureFlagState::Enabled)
+    );
 }
 
 #[test]
@@ -77,8 +79,9 @@ fn test_blocking_enable_all_stable_feature_flags() {
 
     assert!(result2.is_ok());
     let vec = result2.unwrap();
-    assert!(vec
-        .0
-        .into_iter()
-        .any(|ff| ff.name == ff_name && ff.state == FeatureFlagState::Enabled));
+    assert!(
+        vec.0
+            .into_iter()
+            .any(|ff| ff.name == ff_name && ff.state == FeatureFlagState::Enabled)
+    );
 }

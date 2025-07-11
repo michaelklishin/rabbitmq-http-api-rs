@@ -15,7 +15,7 @@ use rabbitmq_http_client::responses::DeprecationPhase;
 use rabbitmq_http_client::{blocking_api::Client, commons::QueueType, requests::QueueParams};
 
 mod test_helpers;
-use crate::test_helpers::{endpoint, testing_against_3_13_x, PASSWORD, USERNAME};
+use crate::test_helpers::{PASSWORD, USERNAME, endpoint, testing_against_3_13_x};
 
 #[test]
 fn test_blocking_list_all_deprecated_features() {
@@ -25,10 +25,11 @@ fn test_blocking_list_all_deprecated_features() {
 
     assert!(result.is_ok());
     let vec = result.unwrap();
-    assert!(vec
-        .0
-        .into_iter()
-        .any(|df| df.deprecation_phase == DeprecationPhase::PermittedByDefault));
+    assert!(
+        vec.0
+            .into_iter()
+            .any(|df| df.deprecation_phase == DeprecationPhase::PermittedByDefault)
+    );
 }
 
 #[test]
@@ -51,10 +52,11 @@ fn test_blocking_list_deprecated_features_in_use() {
     let result2 = rc.list_deprecated_features_in_use();
     assert!(result2.is_ok());
     let vec = result2.unwrap();
-    assert!(vec
-        .0
-        .into_iter()
-        .any(|df| df.deprecation_phase == DeprecationPhase::PermittedByDefault));
+    assert!(
+        vec.0
+            .into_iter()
+            .any(|df| df.deprecation_phase == DeprecationPhase::PermittedByDefault)
+    );
 
     rc.delete_queue(vh, q, true).unwrap();
 }

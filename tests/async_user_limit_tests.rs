@@ -19,7 +19,7 @@ use rabbitmq_http_client::{
 };
 
 mod test_helpers;
-use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
+use crate::test_helpers::{PASSWORD, USERNAME, endpoint};
 
 #[tokio::test]
 async fn test_async_list_all_user_limits() {
@@ -48,13 +48,15 @@ async fn test_async_list_all_user_limits() {
     assert!(vec.iter().any(|it| it.username == params.name));
 
     let key1 = UserLimitTarget::MaxConnections;
-    assert!(!vec
-        .iter()
-        .any(|it| it.username == params.name && it.limits.get(key1.as_ref()).is_some()));
+    assert!(
+        !vec.iter()
+            .any(|it| it.username == params.name && it.limits.get(key1.as_ref()).is_some())
+    );
     let key2 = UserLimitTarget::MaxChannels;
-    assert!(vec
-        .iter()
-        .any(|it| it.username == params.name && it.limits.get(key2.as_ref()).is_some()));
+    assert!(
+        vec.iter()
+            .any(|it| it.username == params.name && it.limits.get(key2.as_ref()).is_some())
+    );
 
     rc.delete_user(params.name, false).await.unwrap();
 }
@@ -85,13 +87,15 @@ async fn test_async_list_user_limits() {
     let vec = result3.unwrap();
 
     let key1 = UserLimitTarget::MaxChannels;
-    assert!(vec
-        .iter()
-        .any(|it| it.username == params.name && it.limits.get(key1.as_ref()).is_some()));
+    assert!(
+        vec.iter()
+            .any(|it| it.username == params.name && it.limits.get(key1.as_ref()).is_some())
+    );
     let key2 = UserLimitTarget::MaxConnections;
-    assert!(!vec
-        .iter()
-        .any(|it| it.username == params.name && it.limits.get(key2.as_ref()).is_some()));
+    assert!(
+        !vec.iter()
+            .any(|it| it.username == params.name && it.limits.get(key2.as_ref()).is_some())
+    );
 
     rc.delete_user(params.name, false).await.unwrap();
 }

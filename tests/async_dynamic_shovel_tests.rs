@@ -13,15 +13,15 @@
 // limitations under the License.
 use rabbitmq_http_client::commons::MessageTransferAcknowledgementMode;
 use rabbitmq_http_client::requests::{
-    Amqp091ShovelDestinationParams, Amqp091ShovelParams, Amqp091ShovelSourceParams,
-    Amqp10ShovelDestinationParams, Amqp10ShovelParams, Amqp10ShovelSourceParams, QueueParams,
+    Amqp10ShovelDestinationParams, Amqp10ShovelParams, Amqp10ShovelSourceParams,
+    Amqp091ShovelDestinationParams, Amqp091ShovelParams, Amqp091ShovelSourceParams, QueueParams,
 };
 use rabbitmq_http_client::{api::Client, requests::VirtualHostParams};
 
 mod test_helpers;
 use crate::test_helpers::{
-    amqp10_endpoint_with_vhost, amqp_endpoint_with_vhost, async_testing_against_3_13_x,
-    await_metric_emission, endpoint, PASSWORD, USERNAME,
+    PASSWORD, USERNAME, amqp_endpoint_with_vhost, amqp10_endpoint_with_vhost,
+    async_testing_against_3_13_x, await_metric_emission, endpoint,
 };
 
 #[tokio::test]

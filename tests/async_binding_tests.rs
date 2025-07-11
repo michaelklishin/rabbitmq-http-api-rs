@@ -18,7 +18,7 @@ use rabbitmq_http_client::{
 };
 
 mod test_helpers;
-use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
+use crate::test_helpers::{PASSWORD, USERNAME, endpoint};
 
 #[tokio::test]
 async fn test_async_list_all_bindings() {
@@ -40,16 +40,18 @@ async fn test_async_list_all_bindings() {
     let result3 = rc.list_bindings().await;
     assert!(result3.is_ok(), "list_bindings returned {result3:?}");
     let vec = result3.unwrap();
-    assert!(vec
-        .iter()
-        .any(|b| b.destination == cq && b.source == fanout));
+    assert!(
+        vec.iter()
+            .any(|b| b.destination == cq && b.source == fanout)
+    );
 
     let result4 = rc.list_bindings_in(vh_name).await;
     assert!(result4.is_ok(), "list_bindings_in returned {result4:?}");
     let vec = result4.unwrap();
-    assert!(vec
-        .iter()
-        .any(|vh| vh.vhost == vh_name && vh.source == fanout));
+    assert!(
+        vec.iter()
+            .any(|vh| vh.vhost == vh_name && vh.source == fanout)
+    );
 
     let _ = rc.delete_queue(vh_name, cq, false).await;
 }
@@ -74,12 +76,13 @@ async fn test_async_list_only_queue_bindings() {
     let result3 = rc.list_queue_bindings(vh_name, cq).await;
     assert!(result3.is_ok(), "list_queue_bindings returned {result3:?}");
     let vec = result3.unwrap();
-    assert!(vec
-        .iter()
-        .any(|b| b.destination_type == BindingDestinationType::Queue
-            && b.vhost == vh_name
-            && b.destination == cq
-            && b.source == fanout));
+    assert!(
+        vec.iter()
+            .any(|b| b.destination_type == BindingDestinationType::Queue
+                && b.vhost == vh_name
+                && b.destination == cq
+                && b.source == fanout)
+    );
 
     let _ = rc.delete_queue(vh_name, cq, false).await;
 }
@@ -123,15 +126,17 @@ async fn test_async_list_only_exchange_bindings() {
         "list_exchange_bindings_with_source returned {result5:?}"
     );
     let vec = result5.unwrap();
-    assert!(!vec
-        .iter()
-        .any(|b| b.destination_type == BindingDestinationType::Queue));
-    assert!(vec
-        .iter()
-        .any(|b| b.destination_type == BindingDestinationType::Exchange
-            && b.vhost == vh_name
-            && b.destination == fanout1
-            && b.source == fanout2));
+    assert!(
+        !vec.iter()
+            .any(|b| b.destination_type == BindingDestinationType::Queue)
+    );
+    assert!(
+        vec.iter()
+            .any(|b| b.destination_type == BindingDestinationType::Exchange
+                && b.vhost == vh_name
+                && b.destination == fanout1
+                && b.source == fanout2)
+    );
 
     let result6 = rc
         .list_exchange_bindings_with_destination(vh_name, fanout1)
@@ -141,15 +146,17 @@ async fn test_async_list_only_exchange_bindings() {
         "list_exchange_bindings_with_destination returned {result6:?}"
     );
     let vec = result6.unwrap();
-    assert!(!vec
-        .iter()
-        .any(|b| b.destination_type == BindingDestinationType::Queue));
-    assert!(vec
-        .iter()
-        .any(|b| b.destination_type == BindingDestinationType::Exchange
-            && b.vhost == vh_name
-            && b.destination == fanout1
-            && b.source == fanout2));
+    assert!(
+        !vec.iter()
+            .any(|b| b.destination_type == BindingDestinationType::Queue)
+    );
+    assert!(
+        vec.iter()
+            .any(|b| b.destination_type == BindingDestinationType::Exchange
+                && b.vhost == vh_name
+                && b.destination == fanout1
+                && b.source == fanout2)
+    );
 
     let _ = rc.delete_queue(vh_name, cq, false).await;
     let _ = rc.delete_exchange(vh_name, fanout2, false).await;
@@ -175,12 +182,13 @@ async fn test_async_delete_queue_bindings() {
     let result3 = rc.list_queue_bindings(vh_name, cq).await;
     assert!(result3.is_ok(), "list_queue_bindings returned {result3:?}");
     let vec = result3.unwrap();
-    assert!(vec
-        .iter()
-        .any(|b| b.destination_type == BindingDestinationType::Queue
-            && b.vhost == vh_name
-            && b.destination == cq
-            && b.source == fanout));
+    assert!(
+        vec.iter()
+            .any(|b| b.destination_type == BindingDestinationType::Queue
+                && b.vhost == vh_name
+                && b.destination == cq
+                && b.source == fanout)
+    );
 
     let m: serde_json::Map<String, serde_json::Value> = serde_json::Map::new();
     let result4 = rc
@@ -198,12 +206,13 @@ async fn test_async_delete_queue_bindings() {
     let result5 = rc.list_queue_bindings(vh_name, cq).await;
     assert!(result5.is_ok(), "list_queue_bindings returned {result5:?}");
     let vec = result5.unwrap();
-    assert!(!vec
-        .iter()
-        .any(|b| b.destination_type == BindingDestinationType::Queue
-            && b.vhost == vh_name
-            && b.destination == cq
-            && b.source == fanout));
+    assert!(
+        !vec.iter()
+            .any(|b| b.destination_type == BindingDestinationType::Queue
+                && b.vhost == vh_name
+                && b.destination == cq
+                && b.source == fanout)
+    );
 
     let _ = rc.delete_queue(vh_name, cq, false).await;
 }
@@ -230,12 +239,13 @@ async fn test_async_delete_exchange_bindings() {
         "list_exchange_bindings_with_destination returned {result3:?}"
     );
     let vec = result3.unwrap();
-    assert!(vec
-        .iter()
-        .any(|b| b.destination_type == BindingDestinationType::Exchange
-            && b.vhost == vh_name
-            && b.destination == direct
-            && b.source == fanout));
+    assert!(
+        vec.iter()
+            .any(|b| b.destination_type == BindingDestinationType::Exchange
+                && b.vhost == vh_name
+                && b.destination == direct
+                && b.source == fanout)
+    );
 
     let m: serde_json::Map<String, serde_json::Value> = serde_json::Map::new();
     let result4 = rc
@@ -258,10 +268,11 @@ async fn test_async_delete_exchange_bindings() {
         "list_exchange_bindings_with_destination returned {result5:?}"
     );
     let vec = result5.unwrap();
-    assert!(!vec
-        .iter()
-        .any(|b| b.destination_type == BindingDestinationType::Exchange
-            && b.vhost == vh_name
-            && b.destination == direct
-            && b.source == fanout));
+    assert!(
+        !vec.iter()
+            .any(|b| b.destination_type == BindingDestinationType::Exchange
+                && b.vhost == vh_name
+                && b.destination == direct
+                && b.source == fanout)
+    );
 }

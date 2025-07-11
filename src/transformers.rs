@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use crate::commons::{
-    OverflowBehavior, QueueType, OVERFLOW_REJECT_PUBLISH, OVERFLOW_REJECT_PUBLISH_DLX,
+    OVERFLOW_REJECT_PUBLISH, OVERFLOW_REJECT_PUBLISH_DLX, OverflowBehavior, QueueType,
     X_ARGUMENT_KEY_X_OVERFLOW,
 };
 use crate::responses::{ClusterDefinitionSet, OptionalArgumentSourceOps, Policy, QueueDefinition};

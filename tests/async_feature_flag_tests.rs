@@ -17,7 +17,7 @@ use rabbitmq_http_client::{
 };
 
 mod test_helpers;
-use crate::test_helpers::{async_testing_against_3_13_x, endpoint, PASSWORD, USERNAME};
+use crate::test_helpers::{PASSWORD, USERNAME, async_testing_against_3_13_x, endpoint};
 
 #[tokio::test]
 async fn test_async_list_feature_flags() {
@@ -31,10 +31,11 @@ async fn test_async_list_feature_flags() {
     let result = rc.list_feature_flags().await;
     assert!(result.is_ok());
     let vec = result.unwrap();
-    assert!(vec
-        .0
-        .into_iter()
-        .any(|ff| ff.name == "rabbitmq_4.0.0" && ff.stability == FeatureFlagStability::Stable));
+    assert!(
+        vec.0
+            .into_iter()
+            .any(|ff| ff.name == "rabbitmq_4.0.0" && ff.stability == FeatureFlagStability::Stable)
+    );
 }
 
 #[tokio::test]
@@ -54,10 +55,11 @@ async fn test_async_enable_a_feature_flag() {
 
     assert!(result2.is_ok());
     let vec = result2.unwrap();
-    assert!(vec
-        .0
-        .into_iter()
-        .any(|ff| ff.name == ff_name && ff.state == FeatureFlagState::Enabled));
+    assert!(
+        vec.0
+            .into_iter()
+            .any(|ff| ff.name == ff_name && ff.state == FeatureFlagState::Enabled)
+    );
 }
 
 #[tokio::test]
@@ -77,8 +79,9 @@ async fn test_async_enable_all_stable_feature_flags() {
 
     assert!(result2.is_ok());
     let vec = result2.unwrap();
-    assert!(vec
-        .0
-        .into_iter()
-        .any(|ff| ff.name == ff_name && ff.state == FeatureFlagState::Enabled));
+    assert!(
+        vec.0
+            .into_iter()
+            .any(|ff| ff.name == ff_name && ff.state == FeatureFlagState::Enabled)
+    );
 }

@@ -15,7 +15,7 @@ use rabbitmq_http_client::blocking_api::Client;
 use rabbitmq_http_client::requests::VirtualHostParams;
 
 mod test_helpers;
-use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
+use crate::test_helpers::{PASSWORD, USERNAME, endpoint};
 
 #[test]
 fn test_blocking_list_connections() {

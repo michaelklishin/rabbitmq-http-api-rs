@@ -14,7 +14,7 @@
 use rabbitmq_http_client::{api::Client, commons::SupportedProtocol};
 
 mod test_helpers;
-use crate::test_helpers::{endpoint, PASSWORD, USERNAME};
+use crate::test_helpers::{PASSWORD, USERNAME, endpoint};
 
 #[tokio::test]
 async fn test_async_health_check_cluster_wide_alarms() {

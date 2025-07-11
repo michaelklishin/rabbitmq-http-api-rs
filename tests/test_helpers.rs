@@ -17,12 +17,12 @@ use rabbitmq_http_client::blocking_api::Client as BlockingClient;
 use std::env;
 use std::time::Duration;
 
+use amqprs::BasicProperties;
 use amqprs::channel::BasicPublishArguments;
 use amqprs::connection::{Connection, OpenConnectionArguments};
-use amqprs::BasicProperties;
 use rabbitmq_http_client::api::Client as AsyncClient;
 use regex::Regex;
-use serde_json::{json, Map, Value};
+use serde_json::{Map, Value, json};
 use tokio::time;
 //
 // Common

@@ -15,7 +15,7 @@ use rabbitmq_http_client::responses::DeprecationPhase;
 use rabbitmq_http_client::{api::Client, commons::QueueType, requests::QueueParams};
 
 mod test_helpers;
-use crate::test_helpers::{async_testing_against_3_13_x, endpoint, PASSWORD, USERNAME};
+use crate::test_helpers::{PASSWORD, USERNAME, async_testing_against_3_13_x, endpoint};
 
 #[tokio::test]
 async fn test_async_list_all_deprecated_features() {
@@ -25,10 +25,11 @@ async fn test_async_list_all_deprecated_features() {
 
     assert!(result.is_ok());
     let vec = result.unwrap();
-    assert!(vec
-        .0
-        .into_iter()
-        .any(|df| df.deprecation_phase == DeprecationPhase::PermittedByDefault));
+    assert!(
+        vec.0
+            .into_iter()
+            .any(|df| df.deprecation_phase == DeprecationPhase::PermittedByDefault)
+    );
 }
 
 #[tokio::test]
@@ -51,10 +52,11 @@ async fn test_async_list_deprecated_features_in_use() {
     let result2 = rc.list_deprecated_features_in_use().await;
     assert!(result2.is_ok());
     let vec = result2.unwrap();
-    assert!(vec
-        .0
-        .into_iter()
-        .any(|df| df.deprecation_phase == DeprecationPhase::PermittedByDefault));
+    assert!(
+        vec.0
+            .into_iter()
+            .any(|df| df.deprecation_phase == DeprecationPhase::PermittedByDefault)
+    );
 
     rc.delete_queue(vh, q, true).await.unwrap();
 }

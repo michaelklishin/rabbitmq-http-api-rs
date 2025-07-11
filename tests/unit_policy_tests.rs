@@ -15,7 +15,7 @@ mod test_helpers;
 
 use rabbitmq_http_client::commons::PolicyTarget;
 use rabbitmq_http_client::responses::{OptionalArgumentSourceOps, Policy, PolicyDefinition};
-use serde_json::{json, Map};
+use serde_json::{Map, json};
 
 #[test]
 fn test_unit_policy_definition_has_cmq_keys_case1() {

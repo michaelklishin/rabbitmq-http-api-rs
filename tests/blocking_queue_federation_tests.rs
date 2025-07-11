@@ -15,7 +15,7 @@ use rabbitmq_http_client::requests::{FederationUpstreamParams, QueueFederationPa
 use rabbitmq_http_client::{blocking_api::Client, requests::VirtualHostParams};
 
 mod test_helpers;
-use crate::test_helpers::{amqp_endpoint_with_vhost, endpoint, PASSWORD, USERNAME};
+use crate::test_helpers::{PASSWORD, USERNAME, amqp_endpoint_with_vhost, endpoint};
 
 #[test]
 fn test_blocking_declare_a_federation_upstream_with_queue_federation_parameters() {

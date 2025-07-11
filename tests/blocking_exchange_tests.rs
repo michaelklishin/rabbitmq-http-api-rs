@@ -14,10 +14,10 @@
 use rabbitmq_http_client::{
     blocking_api::Client, error::Error as APIClientError, requests::ExchangeParams,
 };
-use serde_json::{json, Map, Value};
+use serde_json::{Map, Value, json};
 
 mod test_helpers;
-use crate::test_helpers::{endpoint, testing_against_3_13_x, PASSWORD, USERNAME};
+use crate::test_helpers::{PASSWORD, USERNAME, endpoint, testing_against_3_13_x};
 
 use rabbitmq_http_client::commons::ExchangeType;
 

@@ -16,9 +16,8 @@
 use crate::error::Error;
 use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
 use crate::requests::{
-    Amqp091ShovelParams, Amqp10ShovelParams, EmptyPayload, FederationUpstreamParams,
-    GlobalRuntimeParameterDefinition, StreamParams, FEDERATION_UPSTREAM_COMPONENT,
-    SHOVEL_COMPONENT,
+    Amqp10ShovelParams, Amqp091ShovelParams, EmptyPayload, FEDERATION_UPSTREAM_COMPONENT,
+    FederationUpstreamParams, GlobalRuntimeParameterDefinition, SHOVEL_COMPONENT, StreamParams,
 };
 use crate::responses::{
     ClusterTags, DeprecatedFeatureList, FeatureFlag, FeatureFlagList, FeatureFlagStability,
@@ -36,11 +35,11 @@ use crate::{
 };
 use backtrace::Backtrace;
 use reqwest::{
-    header::{HeaderMap, HeaderValue},
     Client as HttpClient, StatusCode,
+    header::{HeaderMap, HeaderValue},
 };
 use serde::Serialize;
-use serde_json::{json, Map, Value};
+use serde_json::{Map, Value, json};
 use std::fmt;
 
 pub type HttpClientResponse = reqwest::Response;

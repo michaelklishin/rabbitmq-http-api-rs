@@ -18,8 +18,8 @@ use thiserror::Error;
 
 use backtrace::Backtrace;
 use reqwest::{
-    header::{HeaderMap, InvalidHeaderValue},
     StatusCode, Url,
+    header::{HeaderMap, InvalidHeaderValue},
 };
 
 #[derive(Error, Debug)]
@@ -56,7 +56,9 @@ pub enum Error<U, S, E, BT> {
     },
     #[error("API responded with a 404 Not Found")]
     NotFound,
-    #[error("Cannot delete a binding: multiple matching bindings were found, provide additional properties")]
+    #[error(
+        "Cannot delete a binding: multiple matching bindings were found, provide additional properties"
+    )]
     MultipleMatchingBindings,
     #[error("could not convert provided value into an HTTP header value")]
     InvalidHeaderValue { error: InvalidHeaderValue },
