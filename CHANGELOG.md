@@ -8,6 +8,13 @@
 
 ### Enhancements
 
+ * New `DefinitionSetTransformer`: `PrepareForQuorumQueueMigration`.
+
+   This one not only strips off the CMQ-related keys
+   but also handles an incompatible `"overflow"`/`"x-overflow"` key value
+   and `"queue-mode"`/`"x-queue-mode"` keys, both not supported
+   by quorum queues.
+
  * `responses::OptionalArgumentSourceOps` now supports more operations on [optional queue arguments](https://www.rabbitmq.com/docs/queues#optional-arguments)
     of `responses::QueueDefinition` as well as policy definitions (`responses::PolicyDefinition`, `responses::Policy`)
 
