@@ -2,7 +2,10 @@
 
 ## v0.38.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * Introduce `password_hashing::HashingAlgorithm` with two variants, SHA-256 and SHA-512
+ * Support for SHA-512 hashing of salted passwords
 
 
 ## v0.37.0 (Jul 11, 2025)
