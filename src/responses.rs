@@ -14,8 +14,8 @@
 use std::{fmt, ops};
 
 use crate::commons::{
-    BindingDestinationType, MessageTransferAcknowledgementMode, PolicyTarget, QueueType,
-    X_ARGUMENT_KEY_X_QUEUE_TYPE,
+    BindingDestinationType, MessageTransferAcknowledgementMode, OverflowBehavior, PolicyTarget,
+    QueueType, X_ARGUMENT_KEY_X_OVERFLOW, X_ARGUMENT_KEY_X_QUEUE_TYPE,
 };
 use crate::error::ConversionError;
 use crate::formatting::*;
@@ -48,22 +48,22 @@ pub struct XArguments(pub Map<String, serde_json::Value>);
 
 impl XArguments {
     pub const CMQ_KEYS: [&'static str; 6] = [
-        "ha-mode",
-        "ha-params",
-        "ha-promote-on-shutdown",
-        "ha-promote-on-failure",
-        "ha-sync-mode",
-        "ha-sync-batch-size",
+        "x-ha-mode",
+        "x-ha-params",
+        "x-ha-promote-on-shutdown",
+        "x-ha-promote-on-failure",
+        "x-ha-sync-mode",
+        "x-ha-sync-batch-size",
     ];
     pub const QUORUM_QUEUE_INCOMPATIBLE_KEYS: [&'static str; 8] = [
-        "ha-mode",
-        "ha-params",
-        "ha-promote-on-shutdown",
-        "ha-promote-on-failure",
-        "ha-sync-mode",
-        "ha-sync-batch-size",
-        "queue-mode",
-        "max-priority"
+        "x-ha-mode",
+        "x-ha-params",
+        "x-ha-promote-on-shutdown",
+        "x-ha-promote-on-failure",
+        "x-ha-sync-mode",
+        "x-ha-sync-batch-size",
+        "x-queue-mode",
+        "x-max-priority",
     ];
 
     pub fn get(&self, key: &str) -> Option<&serde_json::Value> {
@@ -959,6 +959,35 @@ impl QueueDefinition {
 
         self
     }
+
+    pub fn compare_and_swap_string_argument(
+        &mut self,
+        argument: &str,
+        value: &str,
+        new_value: &str,
+    ) -> &mut Self {
+        if let Some(val) = self.arguments.get(argument) {
+            if let Some(s) = val.as_str() {
+                if s == value {
+                    self.arguments.insert(argument.to_owned(), json!(new_value));
+                }
+            }
+        }
+
+        self
+    }
+
+    pub fn compare_and_swap_overflow_argument(
+        &mut self,
+        value: OverflowBehavior,
+        new_value: OverflowBehavior,
+    ) -> &mut Self {
+        self.compare_and_swap_string_argument(
+            X_ARGUMENT_KEY_X_OVERFLOW,
+            value.into(),
+            new_value.into(),
+        )
+    }
 }
 
 /// Used in virtual host-specific definitions.
@@ -1202,6 +1231,10 @@ impl PolicyDefinition {
         self.len() == 0
     }
 
+    pub fn get(&self, key: &str) -> Option<&serde_json::Value> {
+        self.0.as_ref()?.get(key)
+    }
+
     pub fn insert(&mut self, key: String, value: serde_json::Value) -> Option<serde_json::Value> {
         match self.0 {
             Some(ref mut m) => m.insert(key, value),
@@ -1242,6 +1275,37 @@ impl PolicyDefinition {
         };
 
         self.0 = merged;
+    }
+
+    pub fn compare_and_swap_string_argument(
+        &mut self,
+        argument: &str,
+        value: &str,
+        new_value: &str,
+    ) -> &mut Self {
+        if let Some(m) = &self.0 {
+            if let Some(raw_val) = m.get(argument) {
+                if let Some(s) = raw_val.as_str() {
+                    if s == value {
+                        self.insert(argument.to_owned(), json!(new_value));
+                    }
+                }
+            }
+        }
+
+        self
+    }
+
+    pub fn compare_and_swap_overflow_argument(
+        &mut self,
+        value: OverflowBehavior,
+        new_value: OverflowBehavior,
+    ) -> &mut Self {
+        self.compare_and_swap_string_argument(
+            X_ARGUMENT_KEY_X_OVERFLOW,
+            value.into(),
+            new_value.into(),
+        )
     }
 }
 
@@ -1649,6 +1713,13 @@ impl ClusterDefinitionSet {
         } else {
             None
         }
+    }
+
+    pub fn update_queues(&mut self, f: TransformerFn<QueueDefinition>) -> Vec<QueueDefinition> {
+        let updated = self.queues.iter().map(|p| f(p.clone())).collect::<Vec<_>>();
+        self.queues = updated.clone();
+
+        updated.clone()
     }
 }
 

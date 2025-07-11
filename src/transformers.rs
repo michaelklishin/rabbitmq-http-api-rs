@@ -12,10 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::commons::{
+    OverflowBehavior, QueueType, OVERFLOW_REJECT_PUBLISH, OVERFLOW_REJECT_PUBLISH_DLX,
+    X_ARGUMENT_KEY_X_OVERFLOW,
+};
+use crate::responses::{ClusterDefinitionSet, OptionalArgumentSourceOps, Policy, QueueDefinition};
+use serde_json::json;
 use std::collections::HashMap;
-
-use crate::commons::QueueType;
-use crate::responses::{ClusterDefinitionSet, OptionalArgumentSourceOps, Policy};
 
 use crate::password_hashing;
 
@@ -32,6 +35,57 @@ pub type TransformerFnMut<T> = Box<dyn FnMut(T) -> T>;
 pub struct NoOp {}
 impl DefinitionSetTransformer for NoOp {
     fn transform<'a>(&self, defs: &'a mut ClusterDefinitionSet) -> &'a mut ClusterDefinitionSet {
+        defs
+    }
+}
+
+#[derive(Default, Debug)]
+pub struct PrepareForQuorumQueueMigration {}
+
+impl DefinitionSetTransformer for PrepareForQuorumQueueMigration {
+    fn transform<'a>(&self, defs: &'a mut ClusterDefinitionSet) -> &'a mut ClusterDefinitionSet {
+        // remove CMQ-related keys policies
+        let f1 = Box::new(|p: Policy| p.without_cmq_keys());
+        let matched_policies = defs.update_policies(f1);
+
+        // for the queue matched by the above policies, inject an "x-queue-type" set to `QueueType::Quorum`
+        for mp in matched_policies {
+            defs.update_queue_type_of_matching(&mp, QueueType::Quorum)
+        }
+
+        // remove other policy keys that are not supported by quorum queues
+        let f2 = Box::new(|p: Policy| p.without_quorum_queue_incompatible_keys());
+        defs.update_policies(f2);
+
+        // Queue x-arguments:
+        // replace x-overflow values that are equal to "reject-publish-dlx"
+        let f3 = Box::new(|mut qd: QueueDefinition| {
+            if let Some(val) = qd.arguments.get(X_ARGUMENT_KEY_X_OVERFLOW) {
+                if val.as_str().unwrap_or(OVERFLOW_REJECT_PUBLISH) == OVERFLOW_REJECT_PUBLISH_DLX {
+                    qd.arguments.insert(
+                        X_ARGUMENT_KEY_X_OVERFLOW.to_owned(),
+                        json!(OverflowBehavior::RejectPublish),
+                    );
+                }
+            }
+            qd
+        });
+        defs.update_queues(f3);
+
+        // Policy definitions:
+        // replace x-overflow values that are equal to "reject-publish-dlx"
+        let f4 = Box::new(|mut p: Policy| {
+            let key = "overflow";
+            if let Some(val) = p.definition.get(key) {
+                if val.as_str().unwrap_or(OVERFLOW_REJECT_PUBLISH) == OVERFLOW_REJECT_PUBLISH_DLX {
+                    p.definition
+                        .insert(key.to_owned(), json!(OverflowBehavior::RejectPublish));
+                }
+            }
+            p
+        });
+        defs.update_policies(f4);
+
         defs
     }
 }
@@ -162,6 +216,9 @@ impl From<Vec<&str>> for TransformationChain {
         let mut vec: Vec<Box<dyn DefinitionSetTransformer>> = Vec::new();
         for name in names {
             match name {
+                "prepare_for_quorum_queue_migration" => {
+                    vec.push(Box::new(PrepareForQuorumQueueMigration::default()));
+                }
                 "strip_cmq_keys_from_policies" => {
                     vec.push(Box::new(StripCmqKeysFromPolicies::default()));
                 }

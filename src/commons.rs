@@ -279,6 +279,7 @@ pub enum ExchangeType {
 }
 
 pub const X_ARGUMENT_KEY_X_QUEUE_TYPE: &str = "x-queue-type";
+pub const X_ARGUMENT_KEY_X_OVERFLOW: &str = "x-overflow";
 
 pub const EXCHANGE_TYPE_FANOUT: &str = "fanout";
 pub const EXCHANGE_TYPE_TOPIC: &str = "topic";
@@ -479,6 +480,38 @@ impl From<QueueType> for PolicyTarget {
             QueueType::Stream => PolicyTarget::Streams,
             QueueType::Delayed => PolicyTarget::Queues,
             QueueType::Unsupported(_) => PolicyTarget::Queues,
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub enum OverflowBehavior {
+    DropHead,
+    RejectPublish,
+    RejectPublishDlx,
+}
+
+pub const OVERFLOW_REJECT_PUBLISH: &str = "reject-publish";
+pub const OVERFLOW_REJECT_PUBLISH_DLX: &str = "reject-publish-dlx";
+pub const OVERFLOW_DROP_HEAD: &str = "drop-head";
+
+impl From<OverflowBehavior> for &str {
+    fn from(value: OverflowBehavior) -> Self {
+        match value {
+            OverflowBehavior::DropHead => OVERFLOW_DROP_HEAD,
+            OverflowBehavior::RejectPublish => OVERFLOW_REJECT_PUBLISH,
+            OverflowBehavior::RejectPublishDlx => OVERFLOW_REJECT_PUBLISH_DLX,
+        }
+    }
+}
+
+impl From<OverflowBehavior> for String {
+    fn from(value: OverflowBehavior) -> Self {
+        match value {
+            OverflowBehavior::DropHead => OVERFLOW_DROP_HEAD.to_owned(),
+            OverflowBehavior::RejectPublish => OVERFLOW_REJECT_PUBLISH.to_owned(),
+            OverflowBehavior::RejectPublishDlx => OVERFLOW_REJECT_PUBLISH_DLX.to_owned(),
         }
     }
 }
