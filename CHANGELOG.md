@@ -2,7 +2,9 @@
 
 ## v0.39.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * Support for a new deprecated feature flag state column, introduced in [rabbitmq/rabbitmq-server#14227](https://github.com/rabbitmq/rabbitmq-server/pull/14227)
 
 
 ## v0.38.0 (Jul 11, 2025)
