@@ -2174,6 +2174,8 @@ pub struct DeprecatedFeature {
     pub deprecation_phase: DeprecationPhase,
     pub doc_url: String,
     pub provided_by: String,
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub state: Option<String>
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
