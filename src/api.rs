@@ -1193,12 +1193,15 @@ where
         Ok(response)
     }
 
+    /// Lists all policies in the cluster (across all virtual hosts), taking the user's
+    /// permissions into account.
     pub async fn list_policies(&self) -> Result<Vec<responses::Policy>> {
         let response = self.http_get("policies", None, None).await?;
         let response = response.json().await?;
         Ok(response)
     }
 
+    /// Lists policies in a virtual host.
     pub async fn list_policies_in(&self, vhost: &str) -> Result<Vec<responses::Policy>> {
         let response = self.http_get(path!("policies", vhost), None, None).await?;
         let response = response.json().await?;
@@ -1217,6 +1220,17 @@ where
         Ok(())
     }
 
+    /// Declares multiple policies. Note that this function will still issue
+    /// as many HTTP API requests as there are policies to declare.
+    pub async fn declare_policies(&self, params: Vec<&PolicyParams<'_>>) -> Result<()> {
+        for p in params {
+            let _response = self
+                .http_put(path!("policies", p.vhost, p.name), p, None, None)
+                .await?;
+        }
+        Ok(())
+    }
+
     pub async fn delete_policy(&self, vhost: &str, name: &str) -> Result<()> {
         let _response = self
             .http_delete(
@@ -1225,6 +1239,21 @@ where
                 None,
             )
             .await?;
+        Ok(())
+    }
+
+    /// Deletes multiple policies. Note that this function will still issue
+    /// as many HTTP API requests as there are policies to delete.
+    pub async fn delete_policies_in(&self, vhost: &str, names: Vec<&str>) -> Result<()> {
+        for name in names {
+            let _response = self
+                .http_delete(
+                    path!("policies", vhost, name),
+                    Some(StatusCode::NOT_FOUND),
+                    None,
+                )
+                .await?;
+        }
         Ok(())
     }
 
@@ -1262,6 +1291,15 @@ where
         Ok(())
     }
 
+    pub async fn declare_operator_policies(&self, params: Vec<&PolicyParams<'_>>) -> Result<()> {
+        for p in params {
+            let _response = self
+                .http_put(path!("operator-policies", p.vhost, p.name), p, None, None)
+                .await?;
+        }
+        Ok(())
+    }
+
     pub async fn delete_operator_policy(&self, vhost: &str, name: &str) -> Result<()> {
         let _response = self
             .http_delete(
@@ -1270,6 +1308,19 @@ where
                 None,
             )
             .await?;
+        Ok(())
+    }
+
+    pub async fn delete_operator_policies_in(&self, vhost: &str, names: Vec<&str>) -> Result<()> {
+        for name in names {
+            let _response = self
+                .http_delete(
+                    path!("operator-policies", vhost, name),
+                    Some(StatusCode::NOT_FOUND),
+                    None,
+                )
+                .await?;
+        }
         Ok(())
     }
 

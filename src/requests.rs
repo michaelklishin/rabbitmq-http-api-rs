@@ -404,7 +404,7 @@ impl From<PolDef> for PolicyDefinition {
 }
 
 /// Represents a [policy](https://rabbitmq.com/docs/parameters/#policies).
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct PolicyParams<'a> {
     pub vhost: &'a str,
     pub name: &'a str,
@@ -429,7 +429,7 @@ impl<'a> From<&'a Policy> for PolicyParams<'a> {
 }
 
 /// Represents a user's [permission in a particular virtual host](https://rabbitmq.com/docs/access-control/).
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct Permissions<'a> {
     pub user: &'a str,
     pub vhost: &'a str,

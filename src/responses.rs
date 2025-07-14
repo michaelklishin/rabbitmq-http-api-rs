@@ -2175,7 +2175,7 @@ pub struct DeprecatedFeature {
     pub doc_url: String,
     pub provided_by: String,
     #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub state: Option<String>
+    pub state: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

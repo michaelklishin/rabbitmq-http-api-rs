@@ -5,7 +5,10 @@
 ### Enhancements
 
  * Support for a new deprecated feature flag state column, introduced in [rabbitmq/rabbitmq-server#14227](https://github.com/rabbitmq/rabbitmq-server/pull/14227)
-
+ * `Client#declare_policies` and `Client#declare_operator_policies` are two new helper functions for declaring multiple policies at once.
+    Note that both functions will still issue the same number of API requests, so it only exists for convenience
+ * `Client#delete_policies_in` and `Client#delete_operator_policies_in` are two new helper functions for deleting multiple policies at once.
+    Note that both functions will still issue the same number of API requests, so it only exists for convenience
 
 ## v0.38.0 (Jul 11, 2025)
 
