@@ -229,48 +229,32 @@ where
 
     /// Lists cluster nodes.
     pub async fn list_nodes(&self) -> Result<Vec<responses::ClusterNode>> {
-        let response = self.http_get("nodes", None, None).await?;
-        let response = response.json().await?;
-        Ok(response)
+        self.get_api_request("nodes").await
     }
 
     /// Lists virtual hosts in the cluster.
     pub async fn list_vhosts(&self) -> Result<Vec<responses::VirtualHost>> {
-        let response = self.http_get("vhosts", None, None).await?;
-        let response = response.json().await?;
-        Ok(response)
+        self.get_api_request("vhosts").await
     }
 
     /// Lists users in the internal database.
     pub async fn list_users(&self) -> Result<Vec<responses::User>> {
-        let response = self.http_get("users", None, None).await?;
-        let response = response.json().await?;
-        Ok(response)
+        self.get_api_request("users").await
     }
 
     /// Lists users in the internal database that do not have access
     /// to any virtual hosts.
     pub async fn list_users_without_permissions(&self) -> Result<Vec<responses::User>> {
-        let response = self
-            .http_get("users/without-permissions", None, None)
-            .await?;
-        let response = response.json().await?;
-        Ok(response)
+        self.get_api_request("users/without-permissions").await
     }
 
     /// Lists all AMQP 1.0 and 0-9-1 client connections across the cluster.
     pub async fn list_connections(&self) -> Result<Vec<responses::Connection>> {
-        let response = self.http_get("connections", None, None).await?;
-        let response = response.json().await?;
-        Ok(response)
+        self.get_api_request("connections").await
     }
 
     pub async fn get_connection_info(&self, name: &str) -> Result<responses::Connection> {
-        let response = self
-            .http_get(path!("connections", name), None, None)
-            .await?;
-        let response = response.json().await?;
-        Ok(response)
+        self.get_api_request(path!("connections", name)).await
     }
 
     pub async fn get_stream_connection_info(
@@ -278,15 +262,8 @@ where
         virtual_host: &str,
         name: &str,
     ) -> Result<responses::Connection> {
-        let response = self
-            .http_get(
-                path!("stream", "connections", virtual_host, name),
-                None,
-                None,
-            )
-            .await?;
-        let response = response.json().await?;
-        Ok(response)
+        self.get_api_request(path!("stream", "connections", virtual_host, name))
+            .await
     }
 
     pub async fn close_connection(&self, name: &str, reason: Option<&str>) -> Result<()> {
@@ -341,11 +318,8 @@ where
         &self,
         virtual_host: &str,
     ) -> Result<Vec<responses::Connection>> {
-        let response = self
-            .http_get(path!("vhosts", virtual_host, "connections"), None, None)
-            .await?;
-        let response = response.json().await?;
-        Ok(response)
+        self.get_api_request(path!("vhosts", virtual_host, "connections"))
+            .await
     }
 
     /// Lists all connections of a specific user.
@@ -353,18 +327,13 @@ where
         &self,
         username: &str,
     ) -> Result<Vec<responses::UserConnection>> {
-        let response = self
-            .http_get(path!("connections", "username", username), None, None)
-            .await?;
-        let response = response.json().await?;
-        Ok(response)
+        self.get_api_request(path!("connections", "username", username))
+            .await
     }
 
     /// Lists all RabbitMQ Stream Protocol client connections across the cluster.
     pub async fn list_stream_connections(&self) -> Result<Vec<responses::Connection>> {
-        let response = self.http_get("stream/connections", None, None).await?;
-        let response = response.json().await?;
-        Ok(response)
+        self.get_api_request("stream/connections").await
     }
 
     /// Lists RabbitMQ Stream Protocol client connections in the given virtual host.
@@ -372,27 +341,19 @@ where
         &self,
         virtual_host: &str,
     ) -> Result<Vec<responses::Connection>> {
-        let response = self
-            .http_get(path!("stream", "connections", virtual_host), None, None)
-            .await?;
-        let response = response.json().await?;
-        Ok(response)
+        self.get_api_request(path!("stream", "connections", virtual_host))
+            .await
     }
 
     /// Lists all channels across the cluster.
     pub async fn list_channels(&self) -> Result<Vec<responses::Channel>> {
-        let response = self.http_get("channels", None, None).await?;
-        let response = response.json().await?;
-        Ok(response)
+        self.get_api_request("channels").await
     }
 
     /// Lists all channels in the given virtual host.
     pub async fn list_channels_in(&self, virtual_host: &str) -> Result<Vec<responses::Channel>> {
-        let response = self
-            .http_get(path!("vhosts", virtual_host, "channels"), None, None)
-            .await?;
-        let response = response.json().await?;
-        Ok(response)
+        self.get_api_request(path!("vhosts", virtual_host, "channels"))
+            .await
     }
 
     /// Lists all stream publishers across the cluster.
@@ -680,33 +641,21 @@ where
     ///
     /// See [`VirtualHostParams`]
     pub async fn update_vhost(&self, params: &VirtualHostParams<'_>) -> Result<()> {
-        let _response = self
-            .http_put(path!("vhosts", params.name), params, None, None)
-            .await?;
-        Ok(())
+        self.put_api_request(path!("vhosts", params.name), params)
+            .await
     }
 
     /// Adds a user to the internal database.
     ///
     /// See [`UserParams`] and [`crate::password_hashing`].
     pub async fn create_user(&self, params: &UserParams<'_>) -> Result<()> {
-        let _response = self
-            .http_put(path!("users", params.name), params, None, None)
-            .await?;
-        Ok(())
+        self.put_api_request(path!("users", params.name), params)
+            .await
     }
 
     pub async fn declare_permissions(&self, params: &Permissions<'_>) -> Result<()> {
-        let _response = self
-            .http_put(
-                // /api/permissions/vhost/user
-                path!("permissions", params.vhost, params.user),
-                params,
-                None,
-                None,
-            )
-            .await?;
-        Ok(())
+        self.put_api_request(path!("permissions", params.vhost, params.user), params)
+            .await
     }
 
     pub async fn grant_permissions(&self, vhost: &str, user: &str) -> Result<()> {
@@ -717,10 +666,8 @@ where
     }
 
     pub async fn declare_queue(&self, vhost: &str, params: &QueueParams<'_>) -> Result<()> {
-        let _response = self
-            .http_put(path!("queues", vhost, params.name), params, None, None)
-            .await?;
-        Ok(())
+        self.put_api_request(path!("queues", vhost, params.name), params)
+            .await
     }
 
     pub async fn declare_stream(&self, vhost: &str, params: &StreamParams<'_>) -> Result<()> {
@@ -745,10 +692,8 @@ where
     }
 
     pub async fn declare_exchange(&self, vhost: &str, params: &ExchangeParams<'_>) -> Result<()> {
-        let _response = self
-            .http_put(path!("exchanges", vhost, params.name), params, None, None)
-            .await?;
-        Ok(())
+        self.put_api_request(path!("exchanges", vhost, params.name), params)
+            .await
     }
 
     pub async fn bind_queue(
@@ -806,27 +751,13 @@ where
     }
 
     pub async fn delete_vhost(&self, vhost: &str, idempotently: bool) -> Result<()> {
-        let excludes = if idempotently {
-            Some(StatusCode::NOT_FOUND)
-        } else {
-            None
-        };
-        let _response = self
-            .http_delete(path!("vhosts", vhost), excludes, None)
-            .await?;
-        Ok(())
+        self.delete_api_request_with_optional_not_found(path!("vhosts", vhost), idempotently)
+            .await
     }
 
     pub async fn delete_user(&self, username: &str, idempotently: bool) -> Result<()> {
-        let excludes = if idempotently {
-            Some(StatusCode::NOT_FOUND)
-        } else {
-            None
-        };
-        let _response = self
-            .http_delete(path!("users", username), excludes, None)
-            .await?;
-        Ok(())
+        self.delete_api_request_with_optional_not_found(path!("users", username), idempotently)
+            .await
     }
 
     pub async fn delete_users(&self, usernames: Vec<&str>) -> Result<()> {
@@ -855,15 +786,8 @@ where
     }
 
     pub async fn delete_queue(&self, vhost: &str, name: &str, idempotently: bool) -> Result<()> {
-        let excludes = if idempotently {
-            Some(StatusCode::NOT_FOUND)
-        } else {
-            None
-        };
-        let _response = self
-            .http_delete(path!("queues", vhost, name), excludes, None)
-            .await?;
-        Ok(())
+        self.delete_api_request_with_optional_not_found(path!("queues", vhost, name), idempotently)
+            .await
     }
 
     pub async fn delete_stream(&self, vhost: &str, name: &str, idempotently: bool) -> Result<()> {
@@ -871,15 +795,11 @@ where
     }
 
     pub async fn delete_exchange(&self, vhost: &str, name: &str, idempotently: bool) -> Result<()> {
-        let excludes = if idempotently {
-            Some(StatusCode::NOT_FOUND)
-        } else {
-            None
-        };
-        let _response = self
-            .http_delete(path!("exchanges", vhost, name), excludes, None)
-            .await?;
-        Ok(())
+        self.delete_api_request_with_optional_not_found(
+            path!("exchanges", vhost, name),
+            idempotently,
+        )
+        .await
     }
 
     pub async fn delete_binding(
@@ -1224,9 +1144,7 @@ where
     /// as many HTTP API requests as there are policies to declare.
     pub async fn declare_policies(&self, params: Vec<&PolicyParams<'_>>) -> Result<()> {
         for p in params {
-            let _response = self
-                .http_put(path!("policies", p.vhost, p.name), p, None, None)
-                .await?;
+            self.declare_policy(p).await?;
         }
         Ok(())
     }
@@ -1246,13 +1164,7 @@ where
     /// as many HTTP API requests as there are policies to delete.
     pub async fn delete_policies_in(&self, vhost: &str, names: Vec<&str>) -> Result<()> {
         for name in names {
-            let _response = self
-                .http_delete(
-                    path!("policies", vhost, name),
-                    Some(StatusCode::NOT_FOUND),
-                    None,
-                )
-                .await?;
+            self.delete_policy(vhost, name).await?;
         }
         Ok(())
     }
@@ -1293,9 +1205,7 @@ where
 
     pub async fn declare_operator_policies(&self, params: Vec<&PolicyParams<'_>>) -> Result<()> {
         for p in params {
-            let _response = self
-                .http_put(path!("operator-policies", p.vhost, p.name), p, None, None)
-                .await?;
+            self.declare_operator_policy(p).await?;
         }
         Ok(())
     }
@@ -1313,21 +1223,50 @@ where
 
     pub async fn delete_operator_policies_in(&self, vhost: &str, names: Vec<&str>) -> Result<()> {
         for name in names {
-            let _response = self
-                .http_delete(
-                    path!("operator-policies", vhost, name),
-                    Some(StatusCode::NOT_FOUND),
-                    None,
-                )
-                .await?;
+            self.delete_operator_policy(vhost, name).await?;
         }
         Ok(())
     }
 
     pub async fn list_permissions(&self) -> Result<Vec<responses::Permissions>> {
-        let response = self.http_get("permissions", None, None).await?;
+        self.get_api_request("permissions").await
+    }
+
+    // Helper methods for common patterns
+    async fn get_api_request<T, S>(&self, path: S) -> Result<T>
+    where
+        T: serde::de::DeserializeOwned,
+        S: AsRef<str>,
+    {
+        let response = self.http_get(path, None, None).await?;
         let response = response.json().await?;
         Ok(response)
+    }
+
+    async fn delete_api_request_with_optional_not_found<S>(
+        &self,
+        path: S,
+        idempotent: bool,
+    ) -> Result<()>
+    where
+        S: AsRef<str>,
+    {
+        let excludes = if idempotent {
+            Some(StatusCode::NOT_FOUND)
+        } else {
+            None
+        };
+        self.http_delete(path, excludes, None).await?;
+        Ok(())
+    }
+
+    async fn put_api_request<S, T>(&self, path: S, payload: &T) -> Result<()>
+    where
+        S: AsRef<str>,
+        T: Serialize,
+    {
+        self.http_put(path, payload, None, None).await?;
+        Ok(())
     }
 
     pub async fn list_permissions_in(&self, vhost: &str) -> Result<Vec<responses::Permissions>> {

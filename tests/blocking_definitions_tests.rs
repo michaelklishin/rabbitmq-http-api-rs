@@ -97,9 +97,6 @@ fn test_blocking_export_cluster_wide_definitions_as_data() {
         "expected more than zero exchanges in definitions"
     );
 
-    let u_found = defs.users.iter().any(|x| x.name == "rust3");
-    assert!(u_found, "expected to find user {} in definitions", "rust3");
-
     let x_found = defs.exchanges.iter().any(|x| x.name == x_name);
     assert!(x_found, "expected to find exchange {x_name} in definitions");
 

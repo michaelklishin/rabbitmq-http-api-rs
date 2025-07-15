@@ -230,44 +230,32 @@ where
 
     /// Lists cluster nodes.
     pub fn list_nodes(&self) -> Result<Vec<responses::ClusterNode>> {
-        let response = self.http_get("nodes", None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request("nodes")
     }
 
     /// Lists virtual hosts in the cluster.
     pub fn list_vhosts(&self) -> Result<Vec<responses::VirtualHost>> {
-        let response = self.http_get("vhosts", None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request("vhosts")
     }
 
     /// Lists users in the internal database.
     pub fn list_users(&self) -> Result<Vec<responses::User>> {
-        let response = self.http_get("users", None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request("users")
     }
 
     /// Lists users in the internal database that do not have access
     /// to any virtual hosts.
     pub fn list_users_without_permissions(&self) -> Result<Vec<responses::User>> {
-        let response = self.http_get("users/without-permissions", None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request("users/without-permissions")
     }
 
     /// Lists all AMQP 1.0 and 0-9-1 client connections across the cluster.
     pub fn list_connections(&self) -> Result<Vec<responses::Connection>> {
-        let response = self.http_get("connections", None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request("connections")
     }
 
     pub fn get_connection_info(&self, name: &str) -> Result<responses::Connection> {
-        let response = self.http_get(path!("connections", name), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("connections", name))
     }
 
     pub fn get_stream_connection_info(
@@ -275,13 +263,7 @@ where
         virtual_host: &str,
         name: &str,
     ) -> Result<responses::Connection> {
-        let response = self.http_get(
-            path!("stream", "connections", virtual_host, name),
-            None,
-            None,
-        )?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("stream", "connections", virtual_host, name))
     }
 
     pub fn close_connection(&self, name: &str, reason: Option<&str>) -> Result<()> {
@@ -325,23 +307,17 @@ where
 
     /// Lists all connections in the given virtual host.
     pub fn list_connections_in(&self, virtual_host: &str) -> Result<Vec<responses::Connection>> {
-        let response = self.http_get(path!("vhosts", virtual_host, "connections"), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("vhosts", virtual_host, "connections"))
     }
 
     /// Lists all connections of a specific user.
     pub fn list_user_connections(&self, username: &str) -> Result<Vec<responses::UserConnection>> {
-        let response = self.http_get(path!("connections", "username", username), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("connections", "username", username))
     }
 
     /// Lists all RabbitMQ Stream Protocol client connections across the cluster.
     pub fn list_stream_connections(&self) -> Result<Vec<responses::Connection>> {
-        let response = self.http_get("stream/connections", None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request("stream/connections")
     }
 
     /// Lists RabbitMQ Stream Protocol client connections in the given virtual host.
@@ -349,32 +325,22 @@ where
         &self,
         virtual_host: &str,
     ) -> Result<Vec<responses::Connection>> {
-        let response = self.http_get(path!("stream", "connections", virtual_host), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("stream", "connections", virtual_host))
     }
 
     /// Lists all channels across the cluster.
     pub fn list_channels(&self) -> Result<Vec<responses::Channel>> {
-        let response = self.http_get("channels", None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request("channels")
     }
 
     /// Lists all channels in the given virtual host.
     pub fn list_channels_in(&self, virtual_host: &str) -> Result<Vec<responses::Channel>> {
-        let response = self.http_get(path!("vhosts", virtual_host, "channels"), None, None)?;
-
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("vhosts", virtual_host, "channels"))
     }
 
     /// Lists all stream publishers across the cluster.
     pub fn list_stream_publishers(&self) -> Result<Vec<responses::StreamPublisher>> {
-        let response = self.http_get(path!("stream", "publishers"), None, None)?;
-
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("stream", "publishers"))
     }
 
     /// Lists stream publishers publishing to the given stream.
@@ -382,10 +348,7 @@ where
         &self,
         virtual_host: &str,
     ) -> Result<Vec<responses::StreamPublisher>> {
-        let response = self.http_get(path!("stream", "publishers", virtual_host), None, None)?;
-
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("stream", "publishers", virtual_host))
     }
 
     /// Lists stream publishers of the given stream.
@@ -394,14 +357,7 @@ where
         virtual_host: &str,
         name: &str,
     ) -> Result<Vec<responses::StreamPublisher>> {
-        let response = self.http_get(
-            path!("stream", "publishers", virtual_host, name),
-            None,
-            None,
-        )?;
-
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("stream", "publishers", virtual_host, name))
     }
 
     /// Lists stream publishers on the given stream connection.
@@ -410,22 +366,18 @@ where
         virtual_host: &str,
         name: &str,
     ) -> Result<Vec<responses::StreamPublisher>> {
-        let response = self.http_get(
-            path!("stream", "connections", virtual_host, name, "publishers"),
-            None,
-            None,
-        )?;
-
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!(
+            "stream",
+            "connections",
+            virtual_host,
+            name,
+            "publishers"
+        ))
     }
 
     /// Lists all stream consumers across the cluster.
     pub fn list_stream_consumers(&self) -> Result<Vec<responses::StreamConsumer>> {
-        let response = self.http_get(path!("stream", "consumers"), None, None)?;
-
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("stream", "consumers"))
     }
 
     /// Lists stream consumers on connections in the given virtual host.
@@ -433,10 +385,7 @@ where
         &self,
         virtual_host: &str,
     ) -> Result<Vec<responses::StreamConsumer>> {
-        let response = self.http_get(path!("stream", "consumers", virtual_host), None, None)?;
-
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("stream", "consumers", virtual_host))
     }
 
     /// Lists stream consumers on the given stream connection.
@@ -445,56 +394,43 @@ where
         virtual_host: &str,
         name: &str,
     ) -> Result<Vec<responses::StreamConsumer>> {
-        let response = self.http_get(
-            path!("stream", "connections", virtual_host, name, "consumers"),
-            None,
-            None,
-        )?;
-
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!(
+            "stream",
+            "connections",
+            virtual_host,
+            name,
+            "consumers"
+        ))
     }
 
     /// Lists all queues and streams across the cluster.
     pub fn list_queues(&self) -> Result<Vec<responses::QueueInfo>> {
-        let response = self.http_get("queues", None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request("queues")
     }
 
     /// Lists all queues and streams in the given virtual host.
     pub fn list_queues_in(&self, virtual_host: &str) -> Result<Vec<responses::QueueInfo>> {
-        let response = self.http_get(path!("queues", virtual_host), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("queues", virtual_host))
     }
 
     /// Lists all exchanges across the cluster.
     pub fn list_exchanges(&self) -> Result<Vec<responses::ExchangeInfo>> {
-        let response = self.http_get("exchanges", None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request("exchanges")
     }
 
     /// Lists all exchanges in the given virtual host.
     pub fn list_exchanges_in(&self, virtual_host: &str) -> Result<Vec<responses::ExchangeInfo>> {
-        let response = self.http_get(path!("exchanges", virtual_host), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("exchanges", virtual_host))
     }
 
     /// Lists all bindings (both queue-to-exchange and exchange-to-exchange ones) across the cluster.
     pub fn list_bindings(&self) -> Result<Vec<responses::BindingInfo>> {
-        let response = self.http_get("bindings", None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request("bindings")
     }
 
     /// Lists all bindings (both queue-to-exchange and exchange-to-exchange ones)  in the given virtual host.
     pub fn list_bindings_in(&self, virtual_host: &str) -> Result<Vec<responses::BindingInfo>> {
-        let response = self.http_get(path!("bindings", virtual_host), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("bindings", virtual_host))
     }
 
     /// Lists all bindings of a specific queue.
@@ -503,10 +439,7 @@ where
         virtual_host: &str,
         queue: &str,
     ) -> Result<Vec<responses::BindingInfo>> {
-        let response =
-            self.http_get(path!("queues", virtual_host, queue, "bindings"), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("queues", virtual_host, queue, "bindings"))
     }
 
     /// Lists all bindings of a specific exchange where it is the source.
@@ -537,51 +470,37 @@ where
 
     /// Lists all consumers across the cluster.
     pub fn list_consumers(&self) -> Result<Vec<responses::Consumer>> {
-        let response = self.http_get("consumers", None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request("consumers")
     }
 
     /// Lists all consumers in the given virtual host.
     pub fn list_consumers_in(&self, virtual_host: &str) -> Result<Vec<responses::Consumer>> {
-        let response = self.http_get(path!("consumers", virtual_host), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("consumers", virtual_host))
     }
 
     /// Returns information about a cluster node.
     pub fn get_node_info(&self, name: &str) -> Result<responses::ClusterNode> {
-        let response = self.http_get(path!("nodes", name), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("nodes", name))
     }
 
     /// Returns information about a cluster node.
     pub fn get_node_memory_footprint(&self, name: &str) -> Result<responses::NodeMemoryFootprint> {
-        let response = self.http_get(path!("nodes", name, "memory"), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("nodes", name, "memory"))
     }
 
     /// Returns information about a virtual host.
     pub fn get_vhost(&self, name: &str) -> Result<responses::VirtualHost> {
-        let response = self.http_get(path!("vhosts", name), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("vhosts", name))
     }
 
     /// Returns information about a user in the internal database.
     pub fn get_user(&self, name: &str) -> Result<responses::User> {
-        let response = self.http_get(path!("users", name), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("users", name))
     }
 
     /// Returns information about a queue or stream.
     pub fn get_queue_info(&self, virtual_host: &str, name: &str) -> Result<responses::QueueInfo> {
-        let response = self.http_get(path!("queues", virtual_host, name), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("queues", virtual_host, name))
     }
 
     /// Returns information about a stream.
@@ -595,9 +514,7 @@ where
         virtual_host: &str,
         name: &str,
     ) -> Result<responses::ExchangeInfo> {
-        let response = self.http_get(path!("exchanges", virtual_host, name), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("exchanges", virtual_host, name))
     }
 
     /// Creates a virtual host.
@@ -611,36 +528,59 @@ where
     ///
     /// See [`VirtualHostParams`]
     pub fn update_vhost(&self, params: &VirtualHostParams) -> Result<()> {
-        let _response = self.http_put(path!("vhosts", params.name), params, None, None)?;
-        Ok(())
+        self.put_api_request(path!("vhosts", params.name), params)
     }
 
     /// Adds a user to the internal database.
     ///
     /// See [`UserParams`] and [`crate::password_hashing`].
     pub fn create_user(&self, params: &UserParams) -> Result<()> {
-        let _response = self.http_put(path!("users", params.name), params, None, None)?;
-        Ok(())
+        self.put_api_request(path!("users", params.name), params)
     }
 
     pub fn declare_permissions(&self, params: &Permissions) -> Result<()> {
-        let _response = self.http_put(
-            // /api/permissions/vhost/user
-            path!("permissions", params.vhost, params.user),
-            params,
-            None,
-            None,
-        )?;
-        Ok(())
+        self.put_api_request(path!("permissions", params.vhost, params.user), params)
     }
 
     pub fn grant_permissions(&self, vhost: &str, user: &str) -> Result<()> {
-        let _response = self.http_delete(path!("permissions", vhost, user), None, None)?;
+        self.http_delete(path!("permissions", vhost, user), None, None)?;
         Ok(())
     }
 
     pub fn declare_queue(&self, vhost: &str, params: &QueueParams) -> Result<()> {
-        let _response = self.http_put(path!("queues", vhost, params.name), params, None, None)?;
+        self.put_api_request(path!("queues", vhost, params.name), params)
+    }
+
+    // Helper methods for common patterns
+    fn get_api_request<T, S>(&self, path: S) -> Result<T>
+    where
+        T: serde::de::DeserializeOwned,
+        S: AsRef<str>,
+    {
+        let response = self.http_get(path, None, None)?;
+        let response = response.json()?;
+        Ok(response)
+    }
+
+    fn delete_api_request_with_optional_not_found<S>(&self, path: S, idempotent: bool) -> Result<()>
+    where
+        S: AsRef<str>,
+    {
+        let excludes = if idempotent {
+            Some(StatusCode::NOT_FOUND)
+        } else {
+            None
+        };
+        self.http_delete(path, excludes, None)?;
+        Ok(())
+    }
+
+    fn put_api_request<S, T>(&self, path: S, payload: &T) -> Result<()>
+    where
+        S: AsRef<str>,
+        T: Serialize,
+    {
+        self.http_put(path, payload, None, None)?;
         Ok(())
     }
 
@@ -665,9 +605,7 @@ where
     }
 
     pub fn declare_exchange(&self, vhost: &str, params: &ExchangeParams) -> Result<()> {
-        let _response =
-            self.http_put(path!("exchanges", vhost, params.name), params, None, None)?;
-        Ok(())
+        self.put_api_request(path!("exchanges", vhost, params.name), params)
     }
 
     pub fn bind_queue(
@@ -721,23 +659,11 @@ where
     }
 
     pub fn delete_vhost(&self, vhost: &str, idempotently: bool) -> Result<()> {
-        let excludes = if idempotently {
-            Some(StatusCode::NOT_FOUND)
-        } else {
-            None
-        };
-        let _response = self.http_delete(path!("vhosts", vhost), excludes, None)?;
-        Ok(())
+        self.delete_api_request_with_optional_not_found(path!("vhosts", vhost), idempotently)
     }
 
     pub fn delete_user(&self, username: &str, idempotently: bool) -> Result<()> {
-        let excludes = if idempotently {
-            Some(StatusCode::NOT_FOUND)
-        } else {
-            None
-        };
-        let _response = self.http_delete(path!("users", username), excludes, None)?;
-        Ok(())
+        self.delete_api_request_with_optional_not_found(path!("users", username), idempotently)
     }
 
     pub fn delete_users(&self, usernames: Vec<&str>) -> Result<()> {
@@ -747,23 +673,14 @@ where
     }
 
     pub fn clear_permissions(&self, vhost: &str, username: &str, idempotently: bool) -> Result<()> {
-        let excludes = if idempotently {
-            Some(StatusCode::NOT_FOUND)
-        } else {
-            None
-        };
-        let _response = self.http_delete(path!("permissions", vhost, username), excludes, None)?;
-        Ok(())
+        self.delete_api_request_with_optional_not_found(
+            path!("permissions", vhost, username),
+            idempotently,
+        )
     }
 
     pub fn delete_queue(&self, vhost: &str, name: &str, idempotently: bool) -> Result<()> {
-        let excludes = if idempotently {
-            Some(StatusCode::NOT_FOUND)
-        } else {
-            None
-        };
-        let _response = self.http_delete(path!("queues", vhost, name), excludes, None)?;
-        Ok(())
+        self.delete_api_request_with_optional_not_found(path!("queues", vhost, name), idempotently)
     }
 
     pub fn delete_stream(&self, vhost: &str, name: &str, idempotently: bool) -> Result<()> {
@@ -771,13 +688,10 @@ where
     }
 
     pub fn delete_exchange(&self, vhost: &str, name: &str, idempotently: bool) -> Result<()> {
-        let excludes = if idempotently {
-            Some(StatusCode::NOT_FOUND)
-        } else {
-            None
-        };
-        let _response = self.http_delete(path!("exchanges", vhost, name), excludes, None)?;
-        Ok(())
+        self.delete_api_request_with_optional_not_found(
+            path!("exchanges", vhost, name),
+            idempotently,
+        )
     }
 
     pub fn delete_binding(
@@ -1077,7 +991,7 @@ where
     /// as many HTTP API requests as there are policies to declare.
     pub fn declare_policies(&self, params: Vec<&PolicyParams>) -> Result<()> {
         for p in params {
-            let _response = self.http_put(path!("policies", p.vhost, p.name), p, None, None)?;
+            self.declare_policy(p)?;
         }
         Ok(())
     }
@@ -1095,11 +1009,7 @@ where
     /// as many HTTP API requests as there are policies to delete.
     pub fn delete_policies_in(&self, vhost: &str, names: Vec<&str>) -> Result<()> {
         for name in names {
-            let _response = self.http_delete(
-                path!("policies", vhost, name),
-                Some(StatusCode::NOT_FOUND),
-                None,
-            )?;
+            self.delete_policy(vhost, name)?;
         }
         Ok(())
     }
@@ -1136,8 +1046,7 @@ where
     /// as many HTTP API requests as there are operator policies to declare.
     pub fn declare_operator_policies(&self, params: Vec<&PolicyParams>) -> Result<()> {
         for p in params {
-            let _response =
-                self.http_put(path!("operator-policies", p.vhost, p.name), p, None, None)?;
+            self.declare_operator_policy(p)?;
         }
         Ok(())
     }
@@ -1155,11 +1064,7 @@ where
     /// as many HTTP API requests as there are operator policies to delete.
     pub fn delete_operator_policies_in(&self, vhost: &str, names: Vec<&str>) -> Result<()> {
         for name in names {
-            let _response = self.http_delete(
-                path!("operator-policies", vhost, name),
-                Some(StatusCode::NOT_FOUND),
-                None,
-            )?;
+            self.delete_operator_policy(vhost, name)?;
         }
         Ok(())
     }
