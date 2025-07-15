@@ -45,14 +45,28 @@ pub fn salted_password_hash_sha512(salt: &[u8], password: &str) -> Vec<u8> {
     salted_password_hash(salt, password, &SHA512)
 }
 
+/// Produces a Base64-encoded, salted password hash using the specified algorithm.
 ///
-/// Produces a Base64-encoded, SHA-256 hashed, salted passowrd hash that can be passed
+/// See the [Credentials and Passwords guide](https://rabbitmq.com/docs/passwords/).
+pub fn base64_encoded_salted_password_hash(
+    salt: &[u8],
+    password: &str,
+    algorithm: &HashingAlgorithm,
+) -> String {
+    let salted = match algorithm {
+        HashingAlgorithm::SHA256 => salted_password_hash_sha256(salt, password),
+        HashingAlgorithm::SHA512 => salted_password_hash_sha512(salt, password),
+    };
+    rbase64::encode(salted.as_slice())
+}
+
+///
+/// Produces a Base64-encoded, SHA-256 hashed, salted password hash that can be passed
 /// as [`crate::requests::UserParams::password_hash`] when adding a user with [`crate::blocking_api::Client::create_user`].
 ///
 /// See the [Credentials and Passwords guide](https://rabbitmq.com/docs/passwords/).
 pub fn base64_encoded_salted_password_hash_sha256(salt: &[u8], password: &str) -> String {
-    let salted = salted_password_hash_sha256(salt, password);
-    rbase64::encode(salted.as_slice())
+    base64_encoded_salted_password_hash(salt, password, &HashingAlgorithm::SHA256)
 }
 
 ///
@@ -61,8 +75,7 @@ pub fn base64_encoded_salted_password_hash_sha256(salt: &[u8], password: &str) -
 ///
 /// See the [Credentials and Passwords guide](https://rabbitmq.com/docs/passwords/).
 pub fn base64_encoded_salted_password_hash_sha512(salt: &[u8], password: &str) -> String {
-    let salted = salted_password_hash_sha512(salt, password);
-    rbase64::encode(salted.as_slice())
+    base64_encoded_salted_password_hash(salt, password, &HashingAlgorithm::SHA512)
 }
 
 #[derive(Clone, Default, PartialEq, Eq, Hash, Debug)]
@@ -109,13 +122,8 @@ pub enum HashingError {
 }
 
 impl HashingAlgorithm {
-    pub fn salt_and_hash(&self, salt: &[u8], password: &str) -> Result<Vec<u8>, HashingError> {
-        let hash = match self {
-            HashingAlgorithm::SHA256 => salted_password_hash_sha256(salt, password),
-            HashingAlgorithm::SHA512 => salted_password_hash_sha512(salt, password),
-        };
-        let encoded = rbase64::encode(hash.as_slice());
-        Ok(encoded.as_bytes().to_vec())
+    pub fn salt_and_hash(&self, salt: &[u8], password: &str) -> Result<String, HashingError> {
+        Ok(base64_encoded_salted_password_hash(salt, password, self))
     }
 }
 

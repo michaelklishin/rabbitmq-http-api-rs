@@ -143,7 +143,7 @@ impl From<&str> for SupportedProtocol {
 
 impl From<String> for SupportedProtocol {
     fn from(value: String) -> Self {
-        SupportedProtocol::from(value.as_str())
+        Self::from(value.as_str())
     }
 }
 
@@ -190,49 +190,13 @@ impl From<SupportedProtocol> for String {
 
 impl From<&SupportedProtocol> for String {
     fn from(value: &SupportedProtocol) -> Self {
-        match value {
-            SupportedProtocol::Clustering => SUPPORTED_PROTOCOL_CLUSTERING.to_owned(),
-            SupportedProtocol::AMQP => SUPPORTED_PROTOCOL_AMQP.to_owned(),
-            SupportedProtocol::AMQPWithTLS => SUPPORTED_PROTOCOL_AMQP_WITH_TLS.to_owned(),
-            SupportedProtocol::Stream => SUPPORTED_PROTOCOL_STREAM.to_owned(),
-            SupportedProtocol::StreamWithTLS => SUPPORTED_PROTOCOL_STREAM_WITH_TLS.to_owned(),
-            SupportedProtocol::MQTT => SUPPORTED_PROTOCOL_MQTT.to_owned(),
-            SupportedProtocol::MQTTWithTLS => SUPPORTED_PROTOCOL_MQTT_WITH_TLS.to_owned(),
-            SupportedProtocol::STOMP => SUPPORTED_PROTOCOL_STOMP.to_owned(),
-            SupportedProtocol::STOMPWithTLS => SUPPORTED_PROTOCOL_STOMP_WITH_TLS.to_owned(),
-            SupportedProtocol::AMQPOverWebSockets => {
-                SUPPORTED_PROTOCOL_AMQP_OVER_WEBSOCKETS.to_owned()
-            }
-            SupportedProtocol::AMQPOverWebSocketsWithTLS => {
-                SUPPORTED_PROTOCOL_AMQP_OVER_WEBSOCKETS_WITH_TLS.to_owned()
-            }
-            SupportedProtocol::MQTTOverWebSockets => {
-                SUPPORTED_PROTOCOL_MQTT_OVER_WEBSOCKETS.to_owned()
-            }
-            SupportedProtocol::MQTTOverWebSocketsWithTLS => {
-                SUPPORTED_PROTOCOL_MQTT_OVER_WEBSOCKETS_WITH_TLS.to_owned()
-            }
-            SupportedProtocol::STOMPOverWebsockets => {
-                SUPPORTED_PROTOCOL_STOMP_OVER_WEBSOCKETS.to_owned()
-            }
-            SupportedProtocol::STOMPOverWebsocketsWithTLS => {
-                SUPPORTED_PROTOCOL_STOMP_OVER_WEBSOCKETS_WITH_TLS.to_owned()
-            }
-            SupportedProtocol::Prometheus => SUPPORTED_PROTOCOL_PROMETHEUS.to_owned(),
-            SupportedProtocol::PrometheusWithTLS => {
-                SUPPORTED_PROTOCOL_PROMETHEUS_WITH_TLS.to_owned()
-            }
-            SupportedProtocol::HTTP => SUPPORTED_PROTOCOL_HTTP.to_owned(),
-            SupportedProtocol::HTTPWithTLS => SUPPORTED_PROTOCOL_HTTP_WITH_TLS.to_owned(),
-            SupportedProtocol::Other(s) => (*s).clone(),
-        }
+        value.clone().into()
     }
 }
 
 impl fmt::Display for SupportedProtocol {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let proto: String = self.into();
-        write!(f, "{proto}")
+        write!(f, "{}", String::from(self))
     }
 }
 
@@ -316,7 +280,7 @@ impl From<&str> for ExchangeType {
 
 impl From<String> for ExchangeType {
     fn from(value: String) -> Self {
-        ExchangeType::from(value.as_str())
+        Self::from(value.as_str())
     }
 }
 
@@ -381,13 +345,7 @@ impl From<&str> for QueueType {
 
 impl From<String> for QueueType {
     fn from(value: String) -> Self {
-        let val = value.to_ascii_lowercase();
-        match val.as_str() {
-            "classic" => QueueType::Classic,
-            "quorum" => QueueType::Quorum,
-            "stream" => QueueType::Stream,
-            _ => QueueType::Unsupported(value),
-        }
+        Self::from(value.as_str())
     }
 }
 
@@ -444,11 +402,7 @@ impl From<&str> for BindingDestinationType {
 
 impl From<String> for BindingDestinationType {
     fn from(value: String) -> Self {
-        match value.as_str() {
-            "queue" => BindingDestinationType::Queue,
-            "exchange" => BindingDestinationType::Exchange,
-            _ => BindingDestinationType::Queue,
-        }
+        Self::from(value.as_str())
     }
 }
 
@@ -568,20 +522,7 @@ impl From<&str> for PolicyTarget {
 
 impl From<String> for PolicyTarget {
     fn from(value: String) -> Self {
-        match value.as_str() {
-            "queues" => PolicyTarget::Queues,
-            "queue" => PolicyTarget::Queues,
-            "classic_queues" => PolicyTarget::ClassicQueues,
-            "classic_queue" => PolicyTarget::ClassicQueues,
-            "quorum_queues" => PolicyTarget::QuorumQueues,
-            "quorum_queue" => PolicyTarget::QuorumQueues,
-            "streams" => PolicyTarget::Streams,
-            "stream" => PolicyTarget::Streams,
-            "exchanges" => PolicyTarget::Exchanges,
-            "exchange" => PolicyTarget::Exchanges,
-            "all" => PolicyTarget::All,
-            _ => PolicyTarget::Queues,
-        }
+        Self::from(value.as_str())
     }
 }
 
@@ -626,11 +567,7 @@ impl From<&str> for VirtualHostLimitTarget {
 
 impl From<String> for VirtualHostLimitTarget {
     fn from(value: String) -> Self {
-        match value.as_str() {
-            "max-connections" => VirtualHostLimitTarget::MaxConnections,
-            "max-queues" => VirtualHostLimitTarget::MaxQueues,
-            _ => VirtualHostLimitTarget::MaxConnections,
-        }
+        Self::from(value.as_str())
     }
 }
 
@@ -668,11 +605,7 @@ impl From<&str> for UserLimitTarget {
 
 impl From<String> for UserLimitTarget {
     fn from(value: String) -> Self {
-        match value.as_str() {
-            "max-connections" => UserLimitTarget::MaxConnections,
-            "max-channels" => UserLimitTarget::MaxChannels,
-            _ => UserLimitTarget::MaxConnections,
-        }
+        Self::from(value.as_str())
     }
 }
 
