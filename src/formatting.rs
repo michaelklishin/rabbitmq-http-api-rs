@@ -29,8 +29,7 @@ impl Display for ObjectTotals {
 
 impl Display for Rate {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "{:.2}", self.rate)?;
-        Ok(())
+        write!(f, "{:.2}", self.rate)
     }
 }
 
@@ -97,10 +96,9 @@ impl Display for TagMap {
 
 impl Display for DeprecatedFeatureList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for df in &self.0 {
-            writeln!(f, "{df}")?;
+        for name in &self.0 {
+            writeln!(f, "{name}")?;
         }
-
         Ok(())
     }
 }
@@ -141,30 +139,30 @@ impl Display for FeatureFlag {
 
 impl Display for FeatureFlagList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for ff in &self.0 {
-            writeln!(f, "{ff}")?;
+        for item in &self.0 {
+            writeln!(f, "{item}")?;
         }
-
         Ok(())
     }
 }
 
 impl Display for MessageList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for msg in &self.0 {
-            writeln!(f, "{msg}")?;
+        for item in &self.0 {
+            writeln!(f, "{item}")?;
         }
-
         Ok(())
     }
 }
 
 impl Display for MessageRouted {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self.routed {
-            true => write!(f, "Message published and routed successfully"),
-            false => write!(f, "Message published but NOT routed"),
-        }
+        let message = if self.routed {
+            "Message published and routed successfully"
+        } else {
+            "Message published but NOT routed"
+        };
+        write!(f, "{}", message)
     }
 }
 
@@ -188,28 +186,24 @@ impl Display for GetMessage {
 
 impl Display for SchemaDefinitionSyncState {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            SchemaDefinitionSyncState::Recover => writeln!(f, "recover")?,
-            SchemaDefinitionSyncState::Connected => writeln!(f, "connected")?,
-            SchemaDefinitionSyncState::PublisherInitialized => {
-                writeln!(f, "publisher initialized")?
-            }
-            SchemaDefinitionSyncState::Syncing => writeln!(f, "syncing")?,
-            SchemaDefinitionSyncState::Disconnected => writeln!(f, "disconnected")?,
-        }
-
-        Ok(())
+        let state = match self {
+            SchemaDefinitionSyncState::Recover => "recover",
+            SchemaDefinitionSyncState::Connected => "connected",
+            SchemaDefinitionSyncState::PublisherInitialized => "publisher initialized",
+            SchemaDefinitionSyncState::Syncing => "syncing",
+            SchemaDefinitionSyncState::Disconnected => "disconnected",
+        };
+        write!(f, "{}", state)
     }
 }
 
 impl Display for OperatingMode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            OperatingMode::Upstream => writeln!(f, "upstream")?,
-            OperatingMode::Downstream => writeln!(f, "downstream")?,
-        }
-
-        Ok(())
+        let mode = match self {
+            OperatingMode::Upstream => "upstream",
+            OperatingMode::Downstream => "downstream",
+        };
+        write!(f, "{}", mode)
     }
 }
 
@@ -219,75 +213,31 @@ impl Display for HostnamePortPairs {
     }
 }
 
-#[allow(dead_code)]
-pub fn fmt_list_as_json_array(f: &mut fmt::Formatter<'_>, xs: &[String]) -> fmt::Result {
-    match xs.len() {
-        0 => {
-            write!(f, "[]")
+pub fn fmt_list<T: Display>(
+    f: &mut fmt::Formatter<'_>,
+    items: &[T],
+    separator: &str,
+    prefix: &str,
+) -> fmt::Result {
+    for (i, item) in items.iter().enumerate() {
+        if i > 0 {
+            write!(f, "{}", separator)?;
         }
-        _ => {
-            write!(f, "[")?;
-            let mut xs = xs.to_owned();
-            let last_element = xs.pop().unwrap();
-            for elem in xs {
-                write!(f, "{elem}, ")?;
-            }
-            write!(f, "{last_element}")?;
-            write!(f, "]")?;
-            Ok(())
-        }
+        write!(f, "{}{}", prefix, item)?;
     }
+    Ok(())
 }
 
 pub fn fmt_comma_separated_list(f: &mut fmt::Formatter<'_>, xs: &[String]) -> fmt::Result {
-    match xs.len() {
-        0 => {
-            write!(f, "")
-        }
-        _ => {
-            let mut xs = xs.to_owned();
-            let last_element = xs.pop().unwrap();
-            for elem in xs {
-                write!(f, "{elem}, ")?;
-            }
-            write!(f, "{last_element}")?;
-            Ok(())
-        }
-    }
+    fmt_list(f, xs, ", ", "")
 }
 
 pub fn fmt_vertical_list_with_bullets(f: &mut fmt::Formatter<'_>, xs: &[String]) -> fmt::Result {
-    match xs.len() {
-        0 => {
-            write!(f, "")
-        }
-        _ => {
-            let mut xs = xs.to_owned();
-            let last_element = xs.pop().unwrap();
-            for elem in xs {
-                writeln!(f, "* {elem}")?;
-            }
-            write!(f, "* {last_element}")?;
-            Ok(())
-        }
-    }
+    fmt_list(f, xs, "\n", "* ")
 }
 
 pub fn fmt_vertical_list_without_bullets(f: &mut fmt::Formatter<'_>, xs: &[String]) -> fmt::Result {
-    match xs.len() {
-        0 => {
-            write!(f, "")
-        }
-        _ => {
-            let mut xs = xs.to_owned();
-            let last_element = xs.pop().unwrap();
-            for elem in xs {
-                writeln!(f, "{elem}")?;
-            }
-            write!(f, "{last_element}")?;
-            Ok(())
-        }
-    }
+    fmt_list(f, xs, "\n", "")
 }
 
 pub fn fmt_map_as_colon_separated_pairs(
@@ -301,61 +251,38 @@ pub fn fmt_map_as_colon_separated_pairs(
     Ok(())
 }
 
-pub fn display_option<T>(opt: &Option<T>) -> String
-where
-    T: Display,
-{
-    match opt {
-        None => "".to_owned(),
-        Some(val) => format!("{val}").to_owned(),
-    }
+pub fn display_option<T: Display>(opt: &Option<T>) -> String {
+    opt.as_ref().map_or_else(String::new, |val| val.to_string())
 }
 
 pub fn display_option_details_rate(opt: &Option<Rate>) -> String {
-    match opt {
-        None => "".to_owned(),
-        Some(val) => format!("{}", val.rate).to_owned(),
-    }
+    opt.as_ref()
+        .map_or_else(String::new, |val| val.rate.to_string())
 }
 
 pub fn display_arg_table(xs: &XArguments) -> String {
-    let mut s = String::new();
-    for (k, v) in xs.0.iter() {
-        let line = format!("{k}: {v}\n");
-        s += line.as_str()
-    }
-
-    s.clone()
+    xs.0.iter()
+        .map(|(k, v)| format!("{k}: {v}"))
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 pub fn display_tag_map_option(opt: &Option<TagMap>) -> String {
-    match opt {
-        Some(val) => {
-            let mut s = String::new();
-            let iter = val.0.clone().into_iter();
-            for (k, v) in iter {
-                let line = format!("\"{k}\": {v}\n");
-                s += line.as_str()
-            }
-
-            s.clone()
-        }
-        None => "".to_owned(),
-    }
+    opt.as_ref().map_or_else(String::new, |val| {
+        val.0
+            .iter()
+            .map(|(k, v)| format!("\"{k}\": {v}"))
+            .collect::<Vec<_>>()
+            .join("\n")
+    })
 }
 
 pub fn display_tag_list_option(opt: &Option<TagList>) -> String {
-    match opt {
-        Some(val) => {
-            let mut s = String::new();
-            let iter = val.0.clone().into_iter();
-            for t in iter {
-                let line = format!("{t}\n");
-                s += line.as_str()
-            }
-
-            s.clone()
-        }
-        None => "".to_owned(),
-    }
+    opt.as_ref().map_or_else(String::new, |val| {
+        val.0
+            .iter()
+            .map(|t| t.to_string())
+            .collect::<Vec<_>>()
+            .join("\n")
+    })
 }
