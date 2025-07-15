@@ -36,7 +36,7 @@ fn test_blocking_get_vhost() {
 
     assert!(result.is_ok());
     let vh = result.unwrap();
-    assert!(vh.name == name);
+    assert_eq!(vh.name, name);
 }
 
 #[test]
@@ -64,7 +64,7 @@ fn test_blocking_create_vhost() {
     let result3 = rc.get_vhost(name);
     assert!(result3.is_ok());
     let vh2 = result3.unwrap();
-    assert!(vh2.name == name);
+    assert_eq!(vh2.name, name);
 
     let _ = rc.delete_vhost(name, false);
 }
@@ -94,7 +94,7 @@ fn test_blocking_create_vhost_without_dqt() {
     let result3 = rc.get_vhost(name);
     assert!(result3.is_ok());
     let vh2 = result3.unwrap();
-    assert!(vh2.name == name);
+    assert_eq!(vh2.name, name);
 
     let _ = rc.delete_vhost(name, false);
 }
@@ -132,7 +132,7 @@ fn test_blocking_update_vhost() {
     let result4 = rc.get_vhost(name);
     assert!(result4.is_ok());
     let vh = result4.unwrap();
-    assert!(vh.description.unwrap() == alt_desc);
+    assert_eq!(vh.description.unwrap(), alt_desc);
 
     let _ = rc.delete_vhost(name, false);
 }

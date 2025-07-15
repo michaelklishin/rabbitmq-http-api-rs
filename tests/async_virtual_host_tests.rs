@@ -36,7 +36,7 @@ async fn test_async_get_vhost() {
 
     assert!(result.is_ok());
     let vh = result.unwrap();
-    assert!(vh.name == name);
+    assert_eq!(vh.name, name);
 }
 
 #[tokio::test]
@@ -64,7 +64,7 @@ async fn test_async_create_vhost() {
     let result3 = rc.get_vhost(name).await;
     assert!(result3.is_ok());
     let vh2 = result3.unwrap();
-    assert!(vh2.name == name);
+    assert_eq!(vh2.name, name);
 
     let _ = rc.delete_vhost(name, false).await;
 }
@@ -94,7 +94,7 @@ async fn test_async_create_vhost_without_dqt() {
     let result3 = rc.get_vhost(name).await;
     assert!(result3.is_ok());
     let vh2 = result3.unwrap();
-    assert!(vh2.name == name);
+    assert_eq!(vh2.name, name);
 
     let _ = rc.delete_vhost(name, false).await;
 }
@@ -132,7 +132,7 @@ async fn test_async_update_vhost() {
     let result4 = rc.get_vhost(name).await;
     assert!(result4.is_ok());
     let vh = result4.unwrap();
-    assert!(vh.description.unwrap() == alt_desc);
+    assert_eq!(vh.description.unwrap(), alt_desc);
 
     let _ = rc.delete_vhost(name, false).await;
 }
