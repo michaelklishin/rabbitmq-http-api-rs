@@ -1,8 +1,18 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.40.0 (in development)
+## v0.41.0 (in development)
 
 No changes yet.
+
+
+## v0.40.0 (Jul 17, 2025)
+
+### Enhancements
+
+ * Several structs in `responses` now implement `Default`, in particular for deserialization,
+   and can handle the cases with certain metrics missing at request time on a freshly booted
+   RabbitMQ node
+
 
 ## v0.39.0 (Jul 14, 2025)
 
