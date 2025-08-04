@@ -214,12 +214,13 @@ async fn test_async_export_vhost_definitions_as_data() {
 async fn test_async_import_cluster_definitions() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
-    let _ = rc.delete_queue("/", "imported_queue", false).await;
+    let queue_name = "test_async_import_cluster_definitions";
+    let _ = rc.delete_queue("/", queue_name, false).await;
     let defs = json!({  "queues": [
       {
         "auto_delete": false,
         "durable": true,
-        "name": "imported_queue",
+        "name": queue_name,
         "vhost": "/"
       }
     ]});
@@ -230,8 +231,11 @@ async fn test_async_import_cluster_definitions() {
         "import_cluster_wide_definitions returned {result:?}"
     );
 
-    let result1 = rc.get_queue_info("/", "imported_queue").await;
-    assert!(result1.is_ok(), "can't get the imported queue: {result1:?}");
+    let result1 = rc.get_queue_info("/", queue_name).await;
+    assert!(
+        result1.is_ok(),
+        "an important queue '{queue_name}' is missing: {result1:?}"
+    );
 }
 
 #[tokio::test]
@@ -245,12 +249,12 @@ async fn test_async_import_vhost_definitions() {
     let vh_params = VirtualHostParams::named(vh);
     rc.create_vhost(&vh_params).await.unwrap();
 
-    let q = "imported_queue";
+    let queue_name = "test_async_import_vhost_definitions";
     let defs = json!({  "queues": [
       {
         "auto_delete": false,
         "durable": true,
-        "name": q,
+        "name": queue_name,
       }
     ]});
 
@@ -262,7 +266,7 @@ async fn test_async_import_vhost_definitions() {
 
     await_queue_metric_emission();
 
-    let result1 = rc.get_queue_info(vh, q).await;
+    let result1 = rc.get_queue_info(vh, queue_name).await;
     assert!(result1.is_ok(), "can't get the imported queue: {result1:?}");
 
     rc.delete_vhost(vh, true).await.unwrap();
