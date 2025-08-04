@@ -201,15 +201,16 @@ fn test_blocking_export_vhost_definitions_as_data() {
 fn test_blocking_import_cluster_definitions() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
-    let queue_name = "test_blocking_import_cluster_definitions";
 
-    let _ = rc.delete_queue("/", queue_name, false);
+    let vh = "/";
+    let queue_name = "test_blocking_import_cluster_definitions";
+    let _ = rc.delete_queue(vh, queue_name, false);
     let defs = json!({  "queues": [
       {
         "auto_delete": false,
         "durable": true,
         "name": queue_name,
-        "vhost": "/"
+        "vhost": vh
       }
     ]});
 
@@ -219,13 +220,13 @@ fn test_blocking_import_cluster_definitions() {
         "import_cluster_wide_definitions returned {result:?}"
     );
 
-    let result1 = rc.get_queue_info("/", queue_name);
+    let result1 = rc.get_queue_info(vh, queue_name);
     assert!(
         result1.is_ok(),
         "can't get the imported import_cluster_wide_definitions: {result1:?}"
     );
 
-    rc.delete_queue("/", queue_name, true).unwrap();
+    rc.delete_queue(vh, queue_name, true).unwrap();
 }
 
 #[test]
