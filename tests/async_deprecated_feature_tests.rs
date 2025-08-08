@@ -15,7 +15,9 @@ use rabbitmq_http_client::responses::DeprecationPhase;
 use rabbitmq_http_client::{api::Client, commons::QueueType, requests::QueueParams};
 
 mod test_helpers;
-use crate::test_helpers::{PASSWORD, USERNAME, async_testing_against_3_13_x, endpoint};
+use crate::test_helpers::{
+    PASSWORD, USERNAME, async_testing_against_3_13_x, async_testing_against_version, endpoint,
+};
 
 #[tokio::test]
 async fn test_async_list_all_deprecated_features() {
@@ -38,6 +40,11 @@ async fn test_async_list_deprecated_features_in_use() {
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
     if async_testing_against_3_13_x().await {
+        return;
+    }
+
+    // because of https://github.com/rabbitmq/rabbitmq-server#14340
+    if async_testing_against_version("4.1.3").await {
         return;
     }
 

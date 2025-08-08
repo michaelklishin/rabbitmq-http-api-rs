@@ -63,6 +63,128 @@ fn test_blocking_declare_a_dynamic_amqp091_shovel() {
 }
 
 #[test]
+fn test_blocking_list_all_shovels() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    if testing_against_3_13_x() {
+        return;
+    }
+
+    let vh1 = "rust.http.api.blocking.test_blocking_list_all_shovels.1";
+    let vh2 = "rust.http.api.blocking.test_blocking_list_all_shovels.2";
+    let sh1 = "test_blocking_list_all_shovels.sh-1";
+    let sh2 = "test_blocking_list_all_shovels.sh-2";
+
+    let vh_params1 = VirtualHostParams::named(vh1);
+    let result1 = rc.create_vhost(&vh_params1);
+    assert!(result1.is_ok());
+
+    let vh_params2 = VirtualHostParams::named(vh2);
+    let result2 = rc.create_vhost(&vh_params2);
+    assert!(result2.is_ok());
+
+    let src_q1 = format!("{sh1}.src.q");
+    let dest_q1 = format!("{sh1}.dest.q");
+
+    let src_q2 = format!("{sh2}.src.q");
+    let dest_q2 = format!("{sh2}.dest.q");
+
+    let amqp_endpoint1 = amqp_endpoint_with_vhost(vh1);
+    let shovel_params1 = Amqp091ShovelParams {
+        vhost: vh1,
+        name: sh1,
+        acknowledgement_mode: MessageTransferAcknowledgementMode::WhenConfirmed,
+        reconnect_delay: Some(5),
+        source: Amqp091ShovelSourceParams::queue_source(&amqp_endpoint1, &src_q1),
+        destination: Amqp091ShovelDestinationParams::queue_destination(&amqp_endpoint1, &dest_q1),
+    };
+    let result3 = rc.declare_amqp091_shovel(shovel_params1);
+    assert!(result3.is_ok());
+
+    let amqp_endpoint2 = amqp_endpoint_with_vhost(vh2);
+    let shovel_params2 = Amqp091ShovelParams {
+        vhost: vh2,
+        name: sh2,
+        acknowledgement_mode: MessageTransferAcknowledgementMode::WhenConfirmed,
+        reconnect_delay: Some(5),
+        source: Amqp091ShovelSourceParams::queue_source(&amqp_endpoint2, &src_q2),
+        destination: Amqp091ShovelDestinationParams::queue_destination(&amqp_endpoint2, &dest_q2),
+    };
+    let result4 = rc.declare_amqp091_shovel(shovel_params2);
+    assert!(result4.is_ok());
+
+    await_metric_emission(400);
+    let result5 = rc.list_shovels();
+    dbg!(&result5);
+    assert!(result5.is_ok());
+
+    let shovels = result5.unwrap();
+    assert!(shovels.iter().find(|s| s.name == sh1).is_some());
+    assert!(shovels.iter().find(|s| s.name == sh2).is_some());
+    assert!(
+        shovels
+            .iter()
+            .find(|s| s.name == "a-non-existent-shovel")
+            .is_none()
+    );
+
+    let _ = rc.delete_vhost(vh_params1.name, false);
+    let _ = rc.delete_vhost(vh_params2.name, false);
+}
+
+#[test]
+fn test_blocking_list_all_shovels_in_a_virtual_host() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    if testing_against_3_13_x() {
+        return;
+    }
+
+    let vh1 = "rust.http.api.blocking.test_blocking_list_all_shovels_in_a_virtual_host.1";
+    let vh2 = "rust.http.api.blocking.test_blocking_list_all_shovels_in_a_virtual_host.2";
+    let sh1 = "test_blocking_list_all_shovels_in_a_virtual_host";
+
+    let vh_params1 = VirtualHostParams::named(vh1);
+    let result1 = rc.create_vhost(&vh_params1);
+    assert!(result1.is_ok());
+
+    let vh_params2 = VirtualHostParams::named(vh2);
+    let result2 = rc.create_vhost(&vh_params2);
+    assert!(result2.is_ok());
+
+    let src_q = format!("{sh1}.src.q");
+    let dest_q = format!("{sh1}.dest.q");
+
+    let amqp_endpoint = amqp_endpoint_with_vhost(vh1);
+    let shovel_params = Amqp091ShovelParams {
+        vhost: vh1,
+        name: sh1,
+        acknowledgement_mode: MessageTransferAcknowledgementMode::WhenConfirmed,
+        reconnect_delay: Some(5),
+        source: Amqp091ShovelSourceParams::queue_source(&amqp_endpoint, &src_q),
+        destination: Amqp091ShovelDestinationParams::queue_destination(&amqp_endpoint, &dest_q),
+    };
+    let result3 = rc.declare_amqp091_shovel(shovel_params);
+    assert!(result3.is_ok());
+
+    await_metric_emission(300);
+    let result4 = rc.list_shovels_in(vh1);
+    assert!(result4.is_ok());
+
+    let shovels = result4.unwrap();
+    assert!(shovels.iter().find(|s| s.name == sh1).is_some());
+
+    let result5 = rc.list_shovels_in(vh2);
+    assert!(result5.is_ok());
+    assert!(result5.unwrap().is_empty());
+
+    let _ = rc.delete_vhost(vh_params1.name, false);
+    let _ = rc.delete_vhost(vh_params2.name, false);
+}
+
+#[test]
 fn test_blocking_declare_a_dynamic_amqp10_shovel() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);

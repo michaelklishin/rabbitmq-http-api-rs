@@ -1459,6 +1459,12 @@ where
         Ok(response)
     }
 
+    pub async fn list_shovels_in(&self, vhost: &str) -> Result<Vec<responses::Shovel>> {
+        let response = self.http_get(path!("shovels", vhost), None, None).await?;
+        let response = response.json().await?;
+        Ok(response)
+    }
+
     pub async fn declare_amqp091_shovel(&self, params: Amqp091ShovelParams<'_>) -> Result<()> {
         let runtime_param = RuntimeParameterDefinition::from(params);
 

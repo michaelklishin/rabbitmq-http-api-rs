@@ -2483,6 +2483,7 @@ impl From<ShovelType> for String {
 pub enum ShovelState {
     Starting,
     Running,
+    Terminated,
     Unknown,
 }
 
@@ -2491,6 +2492,7 @@ impl fmt::Display for ShovelState {
         match self {
             ShovelState::Starting => write!(f, "starting"),
             ShovelState::Running => write!(f, "running"),
+            ShovelState::Terminated => write!(f, "terminated"),
             ShovelState::Unknown => write!(f, "unknown"),
         }
     }
@@ -2501,6 +2503,7 @@ impl From<String> for ShovelState {
         match value.as_str() {
             "starting" => ShovelState::Starting,
             "running" => ShovelState::Running,
+            "terminated" => ShovelState::Terminated,
             _ => ShovelState::Unknown,
         }
     }
@@ -2511,6 +2514,7 @@ impl From<ShovelState> for String {
         match value {
             ShovelState::Starting => "starting".to_owned(),
             ShovelState::Running => "running".to_owned(),
+            ShovelState::Terminated => "terminated".to_owned(),
             ShovelState::Unknown => "unknown".to_owned(),
         }
     }

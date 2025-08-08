@@ -68,12 +68,27 @@ pub fn testing_against_4_0_x() -> bool {
     testing_against_series("^4.0")
 }
 
+pub fn testing_against_4_1_x() -> bool {
+    testing_against_series("^4.1")
+}
+
+pub fn testing_against_4_2_x() -> bool {
+    testing_against_series("^4.2")
+}
+
 pub fn testing_against_series(series: &str) -> bool {
     let endpoint = endpoint();
     let rc = BlockingClient::new(&endpoint, USERNAME, PASSWORD);
 
     let regex = Regex::new(series).unwrap();
     regex.is_match(&rc.server_version().unwrap())
+}
+
+pub fn testing_against_version(series: &str) -> bool {
+    let endpoint = endpoint();
+    let rc = BlockingClient::new(&endpoint, USERNAME, PASSWORD);
+
+    &rc.server_version().unwrap() == series
 }
 
 pub fn await_metric_emission(ms: u64) {
@@ -97,12 +112,27 @@ pub async fn async_testing_against_4_0_x() -> bool {
     async_testing_against_series("^4.0").await
 }
 
+pub async fn async_testing_against_4_1_x() -> bool {
+    async_testing_against_series("^4.1").await
+}
+
+pub async fn async_testing_against_4_2_x() -> bool {
+    async_testing_against_series("^4.2").await
+}
+
 pub async fn async_testing_against_series(series: &str) -> bool {
     let endpoint = endpoint();
     let rc = AsyncClient::new(&endpoint, USERNAME, PASSWORD);
 
     let regex = Regex::new(series).unwrap();
     regex.is_match(&rc.server_version().await.unwrap())
+}
+
+pub async fn async_testing_against_version(series: &str) -> bool {
+    let endpoint = endpoint();
+    let rc = AsyncClient::new(&endpoint, USERNAME, PASSWORD);
+
+    &rc.server_version().await.unwrap() == series
 }
 
 pub async fn async_await_metric_emission(ms: u64) {
