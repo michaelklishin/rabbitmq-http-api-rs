@@ -1,8 +1,16 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.41.0 (in development)
+## v0.42.0 (in development)
 
 No changes yet.
+
+
+## v0.41.0 (Aug 11, 2025)
+
+### Enhancements
+
+ * `Client#list_shovels_in` is a new function that returns a list of shovels in a specific virtual host
+ * `ShovelState` now includes one more state, `ShovelState::Terminated`
 
 
 ## v0.40.0 (Jul 17, 2025)
