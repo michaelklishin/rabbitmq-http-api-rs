@@ -1,8 +1,14 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.42.0 (in development)
+## v0.43.0 (in development)
 
 No changes yet.
+
+
+## v0.42.0 (in development)
+
+ * `responses::Shovel.vhost` is now an option because this field will be missing for
+   static shovels.
 
 
 ## v0.41.0 (Aug 11, 2025)

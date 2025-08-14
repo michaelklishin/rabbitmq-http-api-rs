@@ -2561,10 +2561,15 @@ impl From<ShovelPublishingState> for String {
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
+/// Represents a shovel.
 pub struct Shovel {
     pub node: String,
     pub name: String,
-    pub vhost: String,
+    /// Dynamic shovels are associated with a virtual host but
+    /// static ones are not, so for them, the [`vhost`] field
+    /// will be [`None`].
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub vhost: Option<String>,
     #[serde(rename = "type")]
     #[cfg_attr(feature = "tabled", tabled(rename = "type"))]
     pub typ: ShovelType,
