@@ -5,7 +5,9 @@
 No changes yet.
 
 
-## v0.42.0 (in development)
+## v0.42.0 (Aug 14, 2025)
+
+### Bug Fixes
 
  * `responses::Shovel.vhost` is now an option because this field will be missing for
    static shovels.
