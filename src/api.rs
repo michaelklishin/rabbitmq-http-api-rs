@@ -1633,9 +1633,7 @@ where
     // Feature flags
     //
 
-    /// Enables a feature flag.
-    /// This function is idempotent: enabling an already enabled feature flag
-    /// will succeed.
+    /// Lists all feature flags.
     pub async fn list_feature_flags(&self) -> Result<FeatureFlagList> {
         let response = self.http_get("feature-flags", None, None).await?;
         let response = response.json().await?;
