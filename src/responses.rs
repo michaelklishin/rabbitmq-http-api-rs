@@ -2566,7 +2566,7 @@ pub struct Shovel {
     pub node: String,
     pub name: String,
     /// Dynamic shovels are associated with a virtual host but
-    /// static ones are not, so for them, the [`vhost`] field
+    /// static ones are not, so for them, the [`Shovel#vhost`] field
     /// will be [`None`].
     #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub vhost: Option<String>,
