@@ -78,9 +78,13 @@ impl Default for ClientBuilder {
 }
 
 impl ClientBuilder {
-    /// Constructs a new `ClientBuilder`.
+    /// Constructs a new `ClientBuilder` with default settings.
     ///
-    /// This is the same as `Client::builder()`.
+    /// The default configuration uses `http://localhost:15672/api` as the endpoint
+    /// and `guest/guest` as the credentials. This is the same as calling `Client::builder()`.
+    ///
+    /// Note that the default credentials are [limited to local connections](https://www.rabbitmq.com/docs/access-control)
+    /// for security reasons.
     pub fn new() -> Self {
         let client = HttpClient::new();
         Self {
@@ -98,6 +102,7 @@ where
     U: fmt::Display,
     P: fmt::Display,
 {
+    /// Sets the API credentials.
     pub fn with_basic_auth_credentials<NewU, NewP>(
         self,
         username: NewU,
@@ -115,6 +120,10 @@ where
         }
     }
 
+    /// Sets the HTTP API endpoint URL.
+    ///
+    /// The endpoint should include the scheme, host, port, and API endpoint path.
+    /// Some examples: `http://localhost:15672/api` or `https://rabbitmq.example.com:15672/api`.
     pub fn with_endpoint<T>(self, endpoint: T) -> ClientBuilder<T, U, P>
     where
         T: fmt::Display,
@@ -127,17 +136,22 @@ where
         }
     }
 
+    /// Sets a custom HTTP client.
+    ///
+    /// Use a custom HTTP client to configure custom timeouts, proxy settings, TLS configuration.
     pub fn with_client(self, client: HttpClient) -> Self {
         ClientBuilder { client, ..self }
     }
 
-    /// Returns a `Client` that uses this `ClientBuilder` configuration.
+    /// Builds and returns a configured `Client`.
+    ///
+    /// This consumes the `ClientBuilder`.
     pub fn build(self) -> Client<E, U, P> {
         Client::from_http_client(self.client, self.endpoint, self.username, self.password)
     }
 }
 
-/// A client for the [RabbitMQ HTTP API](https://rabbitmq.com/docs/management/#http-api).
+/// A client for the [RabbitMQ HTTP API](https://www.rabbitmq.com/docs/http-api-reference).
 ///
 /// Most functions provided by this type represent various HTTP API operations.
 /// For example,
@@ -186,6 +200,12 @@ where
     /// let password = "password";
     /// let rc = Client::new(endpoint, username, password);
     /// ```
+    /// Creates a new async RabbitMQ HTTP API client.
+    ///
+    /// This creates a client configured to connect to the specified endpoint
+    /// using the provided credentials. The client uses async/await for all
+    /// HTTP operations and is suitable for use in async runtime environments
+    /// like Tokio.
     pub fn new(endpoint: E, username: U, password: P) -> Self {
         let client = HttpClient::builder().build().unwrap();
 
@@ -253,10 +273,18 @@ where
         self.get_api_request("connections").await
     }
 
+    /// Returns information about a connection.
+    ///
+    /// Connection name is usually obtained from `crate::responses::Connection` or `crate::responses::UserConnection`,
+    /// e.g. via `Client#list_connections`, `Client#list_connections_in`, `Client#list_user_connections`.
     pub async fn get_connection_info(&self, name: &str) -> Result<responses::Connection> {
         self.get_api_request(path!("connections", name)).await
     }
 
+    /// Returns information about a stream connection.
+    ///
+    /// Connection name is usually obtained from `crate::responses::Connection` or `crate::responses::UserConnection`,
+    /// e.g. via `Client#list_stream_connections`, `Client#list_stream_connections_in`, `Client#list_user_connections`.
     pub async fn get_stream_connection_info(
         &self,
         virtual_host: &str,
@@ -266,6 +294,9 @@ where
             .await
     }
 
+    /// Closes a connection with an optional reason.
+    ///
+    /// The reason will be passed on in the connection error to the client and will be logged on the RabbitMQ end.
     pub async fn close_connection(&self, name: &str, reason: Option<&str>) -> Result<()> {
         match reason {
             None => {
@@ -287,6 +318,12 @@ where
         Ok(())
     }
 
+    /// Closes all connections for a user with an optional reason.
+    ///
+    /// The reason will be passed on in the connection error to the client and will be logged on the RabbitMQ end.
+    ///
+    /// This is en equivalent of listing all connections of a user with `Client#list_user_connections` and then
+    /// closing them one by one.
     pub async fn close_user_connections(&self, username: &str, reason: Option<&str>) -> Result<()> {
         match reason {
             None => {
@@ -653,11 +690,16 @@ where
             .await
     }
 
+    /// Sets [user permissions](https://www.rabbitmq.com/docs/access-control) in a specific virtual host.
     pub async fn declare_permissions(&self, params: &Permissions<'_>) -> Result<()> {
         self.put_api_request(path!("permissions", params.vhost, params.user), params)
             .await
     }
 
+    /// Grants full permissions for a user on a virtual host.
+    ///
+    /// "Full permissions" here means the permissions that match all objects, that is,
+    /// ".*" for every permission category.
     pub async fn grant_permissions(&self, vhost: &str, user: &str) -> Result<()> {
         let _response = self
             .http_delete(path!("permissions", vhost, user), None, None)
@@ -665,11 +707,23 @@ where
         Ok(())
     }
 
+    /// Declares a [queue](https://www.rabbitmq.com/docs/queues).
+    ///
+    /// If the queue already exists with different parameters, this operation may fail
+    /// unless the parameters are equivalent.
     pub async fn declare_queue(&self, vhost: &str, params: &QueueParams<'_>) -> Result<()> {
         self.put_api_request(path!("queues", vhost, params.name), params)
             .await
     }
 
+    /// Declares a [RabbitMQ stream](https://www.rabbitmq.com/docs/streams).
+    ///
+    /// Streams are a durable, replicated, long-lived data structure in RabbitMQ designed for
+    /// high-throughput scenarios. Unlike traditional queues, streams are append-only
+    /// logs that support multiple consumers reading from different offsets.
+    ///
+    /// If the stream already exists with different parameters, this operation may fail
+    /// unless the parameters are equivalent.
     pub async fn declare_stream(&self, vhost: &str, params: &StreamParams<'_>) -> Result<()> {
         let mut m: Map<String, Value> = Map::new();
 
@@ -691,11 +745,21 @@ where
         Ok(())
     }
 
+    /// Declares an [exchange](https://www.rabbitmq.com/docs/exchanges).
+    ///
+    /// If the exchange already exists with different parameters, this operation may fail
+    /// unless the parameters are equivalent.
     pub async fn declare_exchange(&self, vhost: &str, params: &ExchangeParams<'_>) -> Result<()> {
         self.put_api_request(path!("exchanges", vhost, params.name), params)
             .await
     }
 
+    /// Binds a queue or a stream to an exchange.
+    ///
+    /// Bindings determine how messages published to an exchange are routed to queues.
+    /// The exchange type, routing key and arguments define the routing behavior.
+    ///
+    /// Both the source (exchange) and destination (queue or stream) must exist.
     pub async fn bind_queue(
         &self,
         vhost: &str,
@@ -723,6 +787,14 @@ where
         Ok(())
     }
 
+    /// Bindgs one exchange to another (creates and [exchange-to-exchange binding](https://www.rabbitmq.com/docs/e2e)).
+    ///
+    /// This allows messages published to the source exchange to be forwarded to
+    ///
+    /// Exchange-to-exchange bindings enable complex routing topologies and
+    /// message flow patterns.
+    ///
+    /// Both source and destination exchanges must exist.
     pub async fn bind_exchange(
         &self,
         vhost: &str,
@@ -750,16 +822,25 @@ where
         Ok(())
     }
 
+    /// Deletes a virtual host.
+    ///
+    /// Unless `idempotently` is set to `true`, an attempt to delete a non-existent virtual host
+    /// will fail.
     pub async fn delete_vhost(&self, vhost: &str, idempotently: bool) -> Result<()> {
         self.delete_api_request_with_optional_not_found(path!("vhosts", vhost), idempotently)
             .await
     }
 
+    /// Deletes a user with the given username.
+    ///
+    /// Unless `idempotently` is set to `true`, an attempt to delete a non-existent user
+    /// will fail.
     pub async fn delete_user(&self, username: &str, idempotently: bool) -> Result<()> {
         self.delete_api_request_with_optional_not_found(path!("users", username), idempotently)
             .await
     }
 
+    /// Deletes a group of users with the given usernames.
     pub async fn delete_users(&self, usernames: Vec<&str>) -> Result<()> {
         let delete = BulkUserDelete { usernames };
         let _response = self
@@ -768,6 +849,7 @@ where
         Ok(())
     }
 
+    /// Revokes user permissions in a specific virtual host.
     pub async fn clear_permissions(
         &self,
         vhost: &str,
@@ -785,15 +867,27 @@ where
         Ok(())
     }
 
+    /// Deletes a queue in a specified virtual host.
+    ///
+    /// Unless `idempotently` is set to `true`, an attempt to delete a non-existent queue
+    /// will fail.
     pub async fn delete_queue(&self, vhost: &str, name: &str, idempotently: bool) -> Result<()> {
         self.delete_api_request_with_optional_not_found(path!("queues", vhost, name), idempotently)
             .await
     }
 
+    /// Deletes a stream in a specified virtual host.
+    ///
+    /// Unless `idempotently` is set to `true`, an attempt to delete a non-existent stream
+    /// will fail.
     pub async fn delete_stream(&self, vhost: &str, name: &str, idempotently: bool) -> Result<()> {
         self.delete_queue(vhost, name, idempotently).await
     }
 
+    /// Deletes an exchange in a specified virtual host.
+    ///
+    /// Unless `idempotently` is set to `true`, an attempt to delete a non-existent exchange
+    /// will fail.
     pub async fn delete_exchange(&self, vhost: &str, name: &str, idempotently: bool) -> Result<()> {
         self.delete_api_request_with_optional_not_found(
             path!("exchanges", vhost, name),
@@ -1232,43 +1326,6 @@ where
         self.get_api_request("permissions").await
     }
 
-    // Helper methods for common patterns
-    async fn get_api_request<T, S>(&self, path: S) -> Result<T>
-    where
-        T: serde::de::DeserializeOwned,
-        S: AsRef<str>,
-    {
-        let response = self.http_get(path, None, None).await?;
-        let response = response.json().await?;
-        Ok(response)
-    }
-
-    async fn delete_api_request_with_optional_not_found<S>(
-        &self,
-        path: S,
-        idempotent: bool,
-    ) -> Result<()>
-    where
-        S: AsRef<str>,
-    {
-        let excludes = if idempotent {
-            Some(StatusCode::NOT_FOUND)
-        } else {
-            None
-        };
-        self.http_delete(path, excludes, None).await?;
-        Ok(())
-    }
-
-    async fn put_api_request<S, T>(&self, path: S, payload: &T) -> Result<()>
-    where
-        S: AsRef<str>,
-        T: Serialize,
-    {
-        self.http_put(path, payload, None, None).await?;
-        Ok(())
-    }
-
     pub async fn list_permissions_in(&self, vhost: &str) -> Result<Vec<responses::Permissions>> {
         let response = self
             .http_get(path!("vhosts", vhost, "permissions"), None, None)
@@ -1414,6 +1471,7 @@ where
     // Federation
     //
 
+    /// Lists [federation](https://www.rabbitmq.com/docs/federation) upstreams defined in the cluster.
     pub async fn list_federation_upstreams(&self) -> Result<Vec<responses::FederationUpstream>> {
         let response = self
             .list_runtime_parameters_of_component(FEDERATION_UPSTREAM_COMPONENT)
@@ -1428,12 +1486,17 @@ where
         Ok(upstreams)
     }
 
+    /// Lists [federation](https://www.rabbitmq.com/docs/federation) links (connections) running in the cluster.
     pub async fn list_federation_links(&self) -> Result<Vec<responses::FederationLink>> {
         let response = self.http_get("federation-links", None, None).await?;
         let response = response.json().await?;
         Ok(response)
     }
 
+    /// Creates or updates a [federation](https://www.rabbitmq.com/docs/federation) upstream.
+    ///
+    /// Federation upstreams define connection endpoints for federation links (connections that federate
+    /// queues or exchanges).
     pub async fn declare_federation_upstream(
         &self,
         params: FederationUpstreamParams<'_>,
@@ -1453,30 +1516,40 @@ where
     // Shovels
     //
 
+    /// Lists [shovel](https://www.rabbitmq.com/docs/shovel) across all virtual hosts in the cluster.
     pub async fn list_shovels(&self) -> Result<Vec<responses::Shovel>> {
         let response = self.http_get("shovels", None, None).await?;
         let response = response.json().await?;
         Ok(response)
     }
 
+    /// Lists [dynamic shovels](https://www.rabbitmq.com/docs/shovel-dynamic) in a specific virtual host.
     pub async fn list_shovels_in(&self, vhost: &str) -> Result<Vec<responses::Shovel>> {
         let response = self.http_get(path!("shovels", vhost), None, None).await?;
         let response = response.json().await?;
         Ok(response)
     }
 
+    /// Declares [shovel](https://www.rabbitmq.com/docs/shovel) that will use the AMQP 0-9-1 protocol
+    /// for both source and destination collection.
     pub async fn declare_amqp091_shovel(&self, params: Amqp091ShovelParams<'_>) -> Result<()> {
         let runtime_param = RuntimeParameterDefinition::from(params);
 
         self.declare_shovel_parameters(&runtime_param).await
     }
 
+    /// Declares [shovel](https://www.rabbitmq.com/docs/shovel) that will use the AMQP 1.0 protocol
+    /// for both source and destination collection.
     pub async fn declare_amqp10_shovel(&self, params: Amqp10ShovelParams<'_>) -> Result<()> {
         let runtime_param = RuntimeParameterDefinition::from(params);
 
         self.declare_shovel_parameters(&runtime_param).await
     }
 
+    /// Deletes a shovel in a specified virtual host.
+    ///
+    /// Unless `idempotently` is set to `true`, an attempt to delete a non-existent shovel
+    /// will fail.
     pub async fn delete_shovel(&self, vhost: &str, name: &str, idempotently: bool) -> Result<()> {
         let excludes = if idempotently {
             Some(StatusCode::NOT_FOUND)
@@ -1540,12 +1613,15 @@ where
         Ok(response)
     }
 
+    /// Provides an overview of the most commonly used cluster metrics.
+    /// See `crate::responses::Overview`.
     pub async fn overview(&self) -> Result<responses::Overview> {
         let response = self.http_get("overview", None, None).await?;
         let response = response.json().await?;
         Ok(response)
     }
 
+    /// Returns the version of RabbitMQ used by the API endpoint.
     pub async fn server_version(&self) -> Result<String> {
         let response = self.http_get("overview", None, None).await?;
         let response: Overview = response.json().await?;
@@ -1721,6 +1797,42 @@ where
     //
     // Implementation
     //
+
+    async fn get_api_request<T, S>(&self, path: S) -> Result<T>
+    where
+        T: serde::de::DeserializeOwned,
+        S: AsRef<str>,
+    {
+        let response = self.http_get(path, None, None).await?;
+        let response = response.json().await?;
+        Ok(response)
+    }
+
+    async fn delete_api_request_with_optional_not_found<S>(
+        &self,
+        path: S,
+        idempotent: bool,
+    ) -> Result<()>
+    where
+        S: AsRef<str>,
+    {
+        let excludes = if idempotent {
+            Some(StatusCode::NOT_FOUND)
+        } else {
+            None
+        };
+        self.http_delete(path, excludes, None).await?;
+        Ok(())
+    }
+
+    async fn put_api_request<S, T>(&self, path: S, payload: &T) -> Result<()>
+    where
+        S: AsRef<str>,
+        T: Serialize,
+    {
+        self.http_put(path, payload, None, None).await?;
+        Ok(())
+    }
 
     async fn declare_shovel_parameters(
         &self,
