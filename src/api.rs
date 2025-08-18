@@ -248,27 +248,32 @@ where
     }
 
     /// Lists cluster nodes.
+    /// See [RabbitMQ Clustering Guide](https://www.rabbitmq.com/docs/clustering) to learn more.
     pub async fn list_nodes(&self) -> Result<Vec<responses::ClusterNode>> {
         self.get_api_request("nodes").await
     }
 
     /// Lists virtual hosts in the cluster.
+    /// See [Virtual Hosts Guide](https://www.rabbitmq.com/docs/vhosts) to learn more.
     pub async fn list_vhosts(&self) -> Result<Vec<responses::VirtualHost>> {
         self.get_api_request("vhosts").await
     }
 
     /// Lists users in the internal database.
+    /// See [Access Control Guide](https://www.rabbitmq.com/docs/access-control) to learn more.
     pub async fn list_users(&self) -> Result<Vec<responses::User>> {
         self.get_api_request("users").await
     }
 
-    /// Lists users in the internal database that do not have access
-    /// to any virtual hosts.
+    /// Lists users in the internal database that do not have access to any virtual hosts.
+    /// This is useful for finding users that may need permissions granted, or are not used
+    /// and should be cleaned up.
     pub async fn list_users_without_permissions(&self) -> Result<Vec<responses::User>> {
         self.get_api_request("users/without-permissions").await
     }
 
     /// Lists all AMQP 1.0 and 0-9-1 client connections across the cluster.
+    /// See [Connections Guide](https://www.rabbitmq.com/docs/connections) to learn more.
     pub async fn list_connections(&self) -> Result<Vec<responses::Connection>> {
         self.get_api_request("connections").await
     }
@@ -351,6 +356,7 @@ where
     }
 
     /// Lists all connections in the given virtual host.
+    /// See [Connections Guide](https://www.rabbitmq.com/docs/connections) to learn more.
     pub async fn list_connections_in(
         &self,
         virtual_host: &str,
@@ -360,6 +366,7 @@ where
     }
 
     /// Lists all connections of a specific user.
+    /// See [Connection Guide](https://www.rabbitmq.com/docs/connections) to learn more.
     pub async fn list_user_connections(
         &self,
         username: &str,
@@ -369,11 +376,13 @@ where
     }
 
     /// Lists all RabbitMQ Stream Protocol client connections across the cluster.
+    /// See [RabbitMQ Streams Guide](https://www.rabbitmq.com/docs/streams) to learn more.
     pub async fn list_stream_connections(&self) -> Result<Vec<responses::Connection>> {
         self.get_api_request("stream/connections").await
     }
 
     /// Lists RabbitMQ Stream Protocol client connections in the given virtual host.
+    /// See [Streams Overview](https://www.rabbitmq.com/docs/streams) to learn more.
     pub async fn list_stream_connections_in(
         &self,
         virtual_host: &str,
@@ -383,11 +392,13 @@ where
     }
 
     /// Lists all channels across the cluster.
+    /// See [Channels Guide](https://www.rabbitmq.com/docs/channels) to learn more.
     pub async fn list_channels(&self) -> Result<Vec<responses::Channel>> {
         self.get_api_request("channels").await
     }
 
     /// Lists all channels in the given virtual host.
+    /// See [Channels Guide](https://www.rabbitmq.com/docs/channels) to learn more.
     pub async fn list_channels_in(&self, virtual_host: &str) -> Result<Vec<responses::Channel>> {
         self.get_api_request(path!("vhosts", virtual_host, "channels"))
             .await
@@ -415,6 +426,7 @@ where
     }
 
     /// Lists stream publishers publishing to the given stream.
+    /// Useful for detecting publishers that are publishing to a specific stream.
     pub async fn list_stream_publishers_of(
         &self,
         virtual_host: &str,
@@ -432,6 +444,7 @@ where
     }
 
     /// Lists stream publishers on the given stream connection.
+    /// Use this function for inspecting stream publishers on a specific connection.
     pub async fn list_stream_publishers_on_connection(
         &self,
         virtual_host: &str,
@@ -471,6 +484,7 @@ where
     }
 
     /// Lists stream consumers on the given stream connection.
+    /// Use this function for inspecting stream consumers on a specific connection.
     pub async fn list_stream_consumers_on_connection(
         &self,
         virtual_host: &str,
@@ -489,6 +503,7 @@ where
     }
 
     /// Lists all queues and streams across the cluster.
+    /// See [Queues Guide](https://www.rabbitmq.com/docs/queues) and [Streams Overview](https://www.rabbitmq.com/docs/streams) to learn more.
     pub async fn list_queues(&self) -> Result<Vec<responses::QueueInfo>> {
         let response = self.http_get("queues", None, None).await?;
         let response = response.json().await?;
@@ -496,6 +511,7 @@ where
     }
 
     /// Lists all queues and streams in the given virtual host.
+    /// See [Queues Guide](https://www.rabbitmq.com/docs/queues) and [Streams Overview](https://www.rabbitmq.com/docs/streams) to learn more.
     pub async fn list_queues_in(&self, virtual_host: &str) -> Result<Vec<responses::QueueInfo>> {
         let response = self
             .http_get(path!("queues", virtual_host), None, None)
@@ -505,6 +521,7 @@ where
     }
 
     /// Lists all exchanges across the cluster.
+    /// See [Exchanges Guide](https://www.rabbitmq.com/docs/exchanges) to learn more.
     pub async fn list_exchanges(&self) -> Result<Vec<responses::ExchangeInfo>> {
         let response = self.http_get("exchanges", None, None).await?;
         let response = response.json().await?;
@@ -512,6 +529,7 @@ where
     }
 
     /// Lists all exchanges in the given virtual host.
+    /// See [Exchanges Guide](https://www.rabbitmq.com/docs/exchanges) to learn more.
     pub async fn list_exchanges_in(
         &self,
         virtual_host: &str,
@@ -543,6 +561,7 @@ where
     }
 
     /// Lists all bindings of a specific queue.
+    /// Use this function for troubleshooting routing of a particular queue.
     pub async fn list_queue_bindings(
         &self,
         virtual_host: &str,
@@ -556,6 +575,7 @@ where
     }
 
     /// Lists all bindings of a specific exchange where it is the source.
+    /// Use this function for troubleshooting routing of a particular exchange.
     pub async fn list_exchange_bindings_with_source(
         &self,
         virtual_host: &str,
@@ -570,6 +590,7 @@ where
     }
 
     /// Lists all bindings of a specific exchange where it is the destination.
+    /// Use this function for troubleshooting routing of a particular exchange.
     pub async fn list_exchange_bindings_with_destination(
         &self,
         virtual_host: &str,
@@ -584,6 +605,7 @@ where
     }
 
     /// Lists all consumers across the cluster.
+    /// See [Consumers Guide](https://www.rabbitmq.com/docs/consumers) to learn more.
     pub async fn list_consumers(&self) -> Result<Vec<responses::Consumer>> {
         let response = self.http_get("consumers", None, None).await?;
         let response = response.json().await?;
@@ -591,6 +613,7 @@ where
     }
 
     /// Lists all consumers in the given virtual host.
+    /// See [Consumers Guide](https://www.rabbitmq.com/docs/consumers) to learn more.
     pub async fn list_consumers_in(&self, virtual_host: &str) -> Result<Vec<responses::Consumer>> {
         let response = self
             .http_get(path!("consumers", virtual_host), None, None)
@@ -600,13 +623,15 @@ where
     }
 
     /// Returns information about a cluster node.
+    /// See [Clustering Guide](https://www.rabbitmq.com/docs/clustering) to learn more.
     pub async fn get_node_info(&self, name: &str) -> Result<responses::ClusterNode> {
         let response = self.http_get(path!("nodes", name), None, None).await?;
         let response = response.json().await?;
         Ok(response)
     }
 
-    /// Returns information about a cluster node.
+    /// Returns memory usage information for a cluster node.
+    ///See [Reasoning About Memory Footprint](https://www.rabbitmq.com/docs/memory-use) to learn more
     pub async fn get_node_memory_footprint(
         &self,
         name: &str,
@@ -619,6 +644,7 @@ where
     }
 
     /// Returns information about a virtual host.
+    /// See [Virtual Hosts Guide](https://www.rabbitmq.com/docs/vhosts) to learn more.
     pub async fn get_vhost(&self, name: &str) -> Result<responses::VirtualHost> {
         let response = self.http_get(path!("vhosts", name), None, None).await?;
         let response = response.json().await?;
@@ -626,6 +652,7 @@ where
     }
 
     /// Returns information about a user in the internal database.
+    /// See [Access Control Guide](https://www.rabbitmq.com/docs/access-control) to learn more.
     pub async fn get_user(&self, name: &str) -> Result<responses::User> {
         let response = self.http_get(path!("users", name), None, None).await?;
         let response = response.json().await?;
@@ -633,6 +660,7 @@ where
     }
 
     /// Returns information about a queue or stream.
+    /// See [Queues Guide](https://www.rabbitmq.com/docs/queues) to learn more.
     pub async fn get_queue_info(
         &self,
         virtual_host: &str,
@@ -646,6 +674,7 @@ where
     }
 
     /// Returns information about a stream.
+    /// See [RabbitMQ Streams Guide](https://www.rabbitmq.com/docs/streams) to learn more.
     pub async fn get_stream_info(
         &self,
         virtual_host: &str,
@@ -655,6 +684,7 @@ where
     }
 
     /// Returns information about an exchange.
+    /// See [Exchanges Guide](https://www.rabbitmq.com/docs/exchanges) to learn more.
     pub async fn get_exchange_info(
         &self,
         virtual_host: &str,
@@ -787,7 +817,7 @@ where
         Ok(())
     }
 
-    /// Bindgs one exchange to another (creates and [exchange-to-exchange binding](https://www.rabbitmq.com/docs/e2e)).
+    /// Bindings one exchange to another (creates an [exchange-to-exchange binding](https://www.rabbitmq.com/docs/e2e)).
     ///
     /// This allows messages published to the source exchange to be forwarded to
     ///
@@ -1363,26 +1393,48 @@ where
     //
     // Definitions
 
+    /// Exports cluster-wide definitions as a JSON document.
+    /// This includes all virtual hosts, users, permissions, policies, queues, streams, exchanges, bindings, runtime parameters.
+    ///
+    /// See [Definition Export and Import](https://www.rabbitmq.com/docs/definitions) to learn more.
     pub async fn export_cluster_wide_definitions(&self) -> Result<String> {
         self.export_cluster_wide_definitions_as_string().await
     }
 
+    /// Exports cluster-wide definitions as a JSON document.
+    /// This includes all virtual hosts, users, permissions, policies, queues, streams, exchanges, bindings, runtime parameters.
+    ///
+    /// See [Definition Export and Import](https://www.rabbitmq.com/docs/definitions) to learn more.
     pub async fn export_cluster_wide_definitions_as_string(&self) -> Result<String> {
         let response = self.http_get("definitions", None, None).await?;
         let response = response.text().await?;
         Ok(response)
     }
 
+    /// Exports cluster-wide definitions as a data structure.
+    /// This includes all virtual hosts, users, permissions, policies, queues, streams, exchanges, bindings, runtime parameters.
+    ///
+    /// See [Definition Export and Import](https://www.rabbitmq.com/docs/definitions) to learn more.
     pub async fn export_cluster_wide_definitions_as_data(&self) -> Result<ClusterDefinitionSet> {
         let response = self.http_get("definitions", None, None).await?;
         let response = response.json().await?;
         Ok(response)
     }
 
+    /// Exports definitions of a single virtual host as a JSON document.
+    /// This includes the permissions, policies, queues, streams, exchanges, bindings, runtime parameters associated
+    /// with the given virtual host.
+    ///
+    /// See [Definition Export and Import](https://www.rabbitmq.com/docs/definitions) to learn more.
     pub async fn export_vhost_definitions(&self, vhost: &str) -> Result<String> {
         self.export_vhost_definitions_as_string(vhost).await
     }
 
+    /// Exports definitions of a single virtual host as a JSON document.
+    /// This includes the permissions, policies, queues, streams, exchanges, bindings, runtime parameters associated
+    /// with the given virtual host.
+    ///
+    /// See [Definition Export and Import](https://www.rabbitmq.com/docs/definitions) to learn more.
     pub async fn export_vhost_definitions_as_string(&self, vhost: &str) -> Result<String> {
         let response = self
             .http_get(path!("definitions", vhost), None, None)
@@ -1391,6 +1443,11 @@ where
         Ok(response)
     }
 
+    /// Exports definitions of a single virtual host as a data structure.
+    /// This includes the permissions, policies, queues, streams, exchanges, bindings, runtime parameters associated
+    /// with the given virtual host.
+    ///
+    /// See [Definition Export and Import](https://www.rabbitmq.com/docs/definitions) to learn more.
     pub async fn export_vhost_definitions_as_data(
         &self,
         vhost: &str,
@@ -1402,16 +1459,25 @@ where
         Ok(response)
     }
 
+    /// Imports cluster-wide definitions from a JSON document value.
+    ///
+    /// See [Definition Export and Import](https://www.rabbitmq.com/docs/definitions) to learn more.
     pub async fn import_definitions(&self, definitions: Value) -> Result<()> {
         self.import_cluster_wide_definitions(definitions).await
     }
 
+    /// Imports cluster-wide definitions from a JSON document value.
+    ///
+    /// See [Definition Export and Import](https://www.rabbitmq.com/docs/definitions) to learn more.
     pub async fn import_cluster_wide_definitions(&self, definitions: Value) -> Result<()> {
         self.http_post("definitions", &definitions, None, None)
             .await?;
         Ok(())
     }
 
+    /// Imports definitions of a single virtual host from a JSON document value.
+    ///
+    /// See [Definition Export and Import](https://www.rabbitmq.com/docs/definitions) to learn more.
     pub async fn import_vhost_definitions(&self, vhost: &str, definitions: Value) -> Result<()> {
         self.http_post(path!("definitions", vhost), &definitions, None, None)
             .await?;
@@ -1422,25 +1488,37 @@ where
     // Health Checks
     //
 
+    /// Performs a cluster-wide health check for any active resource alarms in the cluster.
+    /// See [Monitoring and Health Checks Guide](https://www.rabbitmq.com/docs/monitoring#health-checks) to learn more.
     pub async fn health_check_cluster_wide_alarms(&self) -> Result<()> {
         self.health_check_alarms("health/checks/alarms").await
     }
 
+    /// Performs a health check for alarms on the target node only.
+    /// See [Monitoring and Health Checks Guide](https://www.rabbitmq.com/docs/monitoring#health-checks) to learn more.
     pub async fn health_check_local_alarms(&self) -> Result<()> {
         self.health_check_alarms("health/checks/local-alarms").await
     }
 
+    /// Will fail if target node is critical to the quorum of some quorum queues, streams or the Khepri metadata store.
+    /// See [Upgrades Guide](https://www.rabbitmq.com/docs/upgrade#maintaining-quorum) to learn more.
     pub async fn health_check_if_node_is_quorum_critical(&self) -> Result<()> {
         let path = "health/checks/node-is-quorum-critical";
         self.boolean_health_check(path).await
     }
 
+    /// Checks if a specific port has an active listener.
+    /// See [Monitoring and Health Checks Guide](https://www.rabbitmq.com/docs/monitoring#health-checks)
+    /// and [Networking Guide](https://www.rabbitmq.com/docs/networking) to learn more.
     pub async fn health_check_port_listener(&self, port: u16) -> Result<()> {
         let port_s = port.to_string();
         let path = path!("health", "checks", "port-listener", port_s);
         self.boolean_health_check(&path).await
     }
 
+    /// Checks if a specific protocol listener is active.
+    /// See [Monitoring and Health Checks Guide](https://www.rabbitmq.com/docs/monitoring#health-checks)
+    /// and [Networking Guide](https://www.rabbitmq.com/docs/networking) to learn more.
     pub async fn health_check_protocol_listener(&self, protocol: SupportedProtocol) -> Result<()> {
         let proto: String = String::from(protocol);
         let path = path!("health", "checks", "protocol-listener", proto);
@@ -1507,6 +1585,8 @@ where
             .await
     }
 
+    /// Deletes a [federation](https://www.rabbitmq.com/docs/federation) upstream.
+    /// Deleting an upstream will stop any links connected to it.
     pub async fn delete_federation_upstream(&self, vhost: &str, name: &str) -> Result<()> {
         self.clear_runtime_parameter(FEDERATION_UPSTREAM_COMPONENT, vhost, name)
             .await
@@ -1566,6 +1646,8 @@ where
     // Publish and consume messages
     //
 
+    /// Only use this function in tests and experiments.
+    /// Always use a messaging or streaming protocol client for publishing in production.
     pub async fn publish_message(
         &self,
         vhost: &str,
@@ -1593,6 +1675,8 @@ where
         Ok(response)
     }
 
+    /// Only use this function in tests and experiments.
+    /// Always use a messaging or streaming protocol client for consuming in production.
     pub async fn get_messages(
         &self,
         vhost: &str,
@@ -1633,16 +1717,18 @@ where
     // Feature flags
     //
 
-    /// Lists all feature flags.
+    /// Lists all feature flags and their current states.
+    /// See [Feature Flags Guide](https://www.rabbitmq.com/docs/feature-flags) to learn more.
     pub async fn list_feature_flags(&self) -> Result<FeatureFlagList> {
         let response = self.http_get("feature-flags", None, None).await?;
         let response = response.json().await?;
         Ok(response)
     }
 
-    /// Enables all stable feature flags.
+    /// Enables a specific feature flag by name.
     /// This function is idempotent: enabling an already enabled feature flag
     /// will succeed.
+    /// See [Feature Flags Guide](https://www.rabbitmq.com/docs/feature-flags) to learn more.
     pub async fn enable_feature_flag(&self, name: &str) -> Result<()> {
         let body = serde_json::json!({
             "name": name
@@ -1653,9 +1739,10 @@ where
         Ok(())
     }
 
-    /// Enables all stable feature flags.
+    /// Enables all stable feature flags in the cluster.
     /// This function is idempotent: enabling an already enabled feature flag
     /// will succeed.
+    /// See [Feature Flags Guide](https://www.rabbitmq.com/docs/feature-flags) to learn more.
     pub async fn enable_all_stable_feature_flags(&self) -> Result<()> {
         // PUT /api/feature-flags/{name}/enable does not support the special 'all' value like 'rabbitmqctl enable_feature_flag' does.
         // Thus we do what management UI does: discover the stable disabled flags and enable
@@ -1681,12 +1768,18 @@ where
     // Deprecated Features
     //
 
+    /// Lists all deprecated features and their usage status.
+    /// Deprecated features may be removed in future RabbitMQ versions.
+    /// See [Deprecated Features Guide](https://www.rabbitmq.com/docs/deprecated-features) to learn more.
     pub async fn list_all_deprecated_features(&self) -> Result<DeprecatedFeatureList> {
         let response = self.http_get("deprecated-features", None, None).await?;
         let response = response.json().await?;
         Ok(response)
     }
 
+    /// Lists deprecated features that are currently being used in the cluster.
+    /// These features should be migrated away from as soon as possible.
+    /// See [Deprecated Features Guide](https://www.rabbitmq.com/docs/deprecated-features) to learn more.
     pub async fn list_deprecated_features_in_use(&self) -> Result<DeprecatedFeatureList> {
         let response = self
             .http_get("deprecated-features/used", None, None)
@@ -1699,6 +1792,8 @@ where
     // OAuth 2 Configuration
     //
 
+    /// Returns the current OAuth 2.0 configuration for authentication.
+    /// See [OAuth 2 Guide](https://www.rabbitmq.com/docs/oauth2) to learn more.
     pub async fn oauth_configuration(&self) -> Result<OAuthConfiguration> {
         let response = self.http_get("auth", None, None).await?;
         let response = response.json().await?;
@@ -1710,6 +1805,8 @@ where
     // Schema Definition Sync (Tanzu RabbitMQ)
     //
 
+    /// Returns the status of schema definition synchronization.
+    /// Schema definition sync is a Tanzu RabbitMQ-specific feature.
     pub async fn schema_definition_sync_status(
         &self,
         node: Option<&str>,
@@ -1726,6 +1823,8 @@ where
         Ok(response)
     }
 
+    /// Enables schema definition synchronization on a single node or cluster-wide.
+    /// Schema definition sync is a Tanzu RabbitMQ-specific feature.
     pub async fn enable_schema_definition_sync_one_node(&self, node: Option<&str>) -> Result<()> {
         let payload = EmptyPayload::new();
         let _ = match node {
@@ -1747,6 +1846,8 @@ where
         Ok(())
     }
 
+    /// Disables schema definition synchronization on a specific node.
+    /// Schema definition sync is a Tanzu RabbitMQ-specific feature.
     pub async fn disable_schema_definition_sync_on_node(&self, node: Option<&str>) -> Result<()> {
         let _ = match node {
             Some(val) => {
@@ -1762,6 +1863,8 @@ where
         Ok(())
     }
 
+    /// Enables schema definition synchronization cluster-wide.
+    /// Schema definition sync is a Tanzu RabbitMQ-specific feature.
     pub async fn enable_schema_definition_sync(&self) -> Result<()> {
         let payload = EmptyPayload::new();
         let _ = self
@@ -1771,6 +1874,8 @@ where
         Ok(())
     }
 
+    /// Disables schema definition synchronization cluster-wide.
+    /// Schema definition sync is a Tanzu RabbitMQ-specific feature.
     pub async fn disable_schema_definition_sync(&self) -> Result<()> {
         let _ = self
             .http_delete("tanzu/osr/schema/disable-cluster-wide", None, None)
@@ -1783,6 +1888,8 @@ where
     // Warm Standby Replication (Tanzu RabbitMQ)
     //
 
+    /// Returns the status of warm standby replication.
+    /// Warm Standby Replication is a Tanzu RabbitMQ-specific feature.
     pub async fn warm_standby_replication_status(&self) -> Result<WarmStandbyReplicationStatus> {
         let response = self
             .http_get("tanzu/osr/standby/status", None, None)
