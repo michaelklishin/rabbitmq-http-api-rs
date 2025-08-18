@@ -382,7 +382,7 @@ where
     }
 
     /// Lists RabbitMQ Stream Protocol client connections in the given virtual host.
-    /// See [Streams Overview](https://www.rabbitmq.com/docs/streams) to learn more.
+    /// See [RabbitMQ Streams Guide](https://www.rabbitmq.com/docs/streams) to learn more.
     pub async fn list_stream_connections_in(
         &self,
         virtual_host: &str,
@@ -503,7 +503,7 @@ where
     }
 
     /// Lists all queues and streams across the cluster.
-    /// See [Queues Guide](https://www.rabbitmq.com/docs/queues) and [Streams Overview](https://www.rabbitmq.com/docs/streams) to learn more.
+    /// See [Queues Guide](https://www.rabbitmq.com/docs/queues) and [RabbitMQ Streams Guide](https://www.rabbitmq.com/docs/streams) to learn more.
     pub async fn list_queues(&self) -> Result<Vec<responses::QueueInfo>> {
         let response = self.http_get("queues", None, None).await?;
         let response = response.json().await?;
@@ -511,7 +511,7 @@ where
     }
 
     /// Lists all queues and streams in the given virtual host.
-    /// See [Queues Guide](https://www.rabbitmq.com/docs/queues) and [Streams Overview](https://www.rabbitmq.com/docs/streams) to learn more.
+    /// See [Queues Guide](https://www.rabbitmq.com/docs/queues) and [RabbitMQ Streams Guide](https://www.rabbitmq.com/docs/streams) to learn more.
     pub async fn list_queues_in(&self, virtual_host: &str) -> Result<Vec<responses::QueueInfo>> {
         let response = self
             .http_get(path!("queues", virtual_host), None, None)
