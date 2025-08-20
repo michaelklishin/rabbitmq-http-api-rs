@@ -482,7 +482,7 @@ pub struct VirtualHost {
     pub default_queue_type: Option<String>,
     /// All virtual host metadata combined
     #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub metadata: VirtualHostMetadata,
+    pub metadata: Option<VirtualHostMetadata>,
 }
 
 #[derive(Debug, Deserialize, Clone)]

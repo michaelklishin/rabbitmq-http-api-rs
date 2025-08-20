@@ -1,8 +1,19 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.43.0 (in development)
+## v0.44.0 (in development)
 
 No changes yet.
+
+
+## v0.43.0 (Aug 19, 2025)
+
+### Enhancements
+
+ * `responses::VirtualHost#metadata` is now optional. It was introduced in RabbitMQ `3.8.0` in 2019
+   but for various reasons can be missing in versions up to `3.11.0` or so.
+
+   This can be considered a RabbitMQ `3.10.x` (that reached EOL in late 2023) compatibility fix.
+   Responsible adults don't run EOL versions of RabbitMQ, of course. 
 
 
 ## v0.42.0 (Aug 14, 2025)
