@@ -8,6 +8,11 @@ This is not an AMQP 0-9-1 client (see [amqprs](https://github.com/gftea/amqprs))
 
 This library is relatively young, breaking API changes are possible.
 
+## Supported RabbitMQ Series
+
+This library targets RabbitMQ 4.x and 3.13.x.
+
+All older series have [reached End of Life](https://www.rabbitmq.com/release-information).
 
 ## Dependency
 
