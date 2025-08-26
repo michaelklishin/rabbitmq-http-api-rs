@@ -1,6 +1,11 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.44.0 (in development)
+## v0.45.0 (in development)
+
+No changes yet.
+
+
+## v0.44.0 (Aug 25, 2025)
 
 ### Enhancements
 
