@@ -2,7 +2,10 @@
 
 ## v0.44.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * `responses::MessagingProtocol` was updated to include a new variant, `MessagingProtocol::Local`,
+    that represents a "protocol" used by local shovels in RabbitMQ 4.2.0 and later.
 
 
 ## v0.43.0 (Aug 19, 2025)

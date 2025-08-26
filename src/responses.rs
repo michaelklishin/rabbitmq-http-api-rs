@@ -2254,6 +2254,8 @@ pub enum MessagingProtocol {
     Amqp091,
     #[serde(rename = "amqp10")]
     Amqp10,
+    #[serde(rename = "local")]
+    Local,
 }
 
 impl fmt::Display for MessagingProtocol {
@@ -2261,6 +2263,7 @@ impl fmt::Display for MessagingProtocol {
         match self {
             MessagingProtocol::Amqp091 => write!(f, "AMQP 0-9-1"),
             MessagingProtocol::Amqp10 => write!(f, "AMQP 1.0"),
+            MessagingProtocol::Local => write!(f, "Local"),
         }
     }
 }
@@ -2270,6 +2273,7 @@ impl From<String> for MessagingProtocol {
         match value.as_str() {
             "amqp091" => Self::Amqp091,
             "amqp10" => Self::Amqp10,
+            "local" => Self::Local,
             _ => Self::Amqp10,
         }
     }
@@ -2280,6 +2284,7 @@ impl From<MessagingProtocol> for String {
         match value {
             MessagingProtocol::Amqp091 => "amqp091".to_owned(),
             MessagingProtocol::Amqp10 => "amqp10".to_owned(),
+            MessagingProtocol::Local => "local".to_owned(),
         }
     }
 }
