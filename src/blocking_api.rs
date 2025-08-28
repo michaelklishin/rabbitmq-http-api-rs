@@ -667,8 +667,9 @@ where
     /// Declares a [RabbitMQ stream](https://www.rabbitmq.com/docs/streams).
     ///
     /// Streams are a durable, replicated, long-lived data structure in RabbitMQ designed for
-    /// high-throughput scenarios. Unlike traditional queues, streams are append-only
-    /// logs that support multiple consumers reading from different offsets.
+    /// high-throughput scenarios. Unlike traditional queues, consuming from a stream is
+    /// a non-destructive operation. Stream data is deleted according to an effective
+    /// stream retention policy.
     ///
     /// If the stream already exists with different parameters, this operation may fail
     /// unless the parameters are equivalent.
@@ -786,7 +787,7 @@ where
 
     /// Deletes multiple users from the internal database in a single operation.
     ///
-    /// This is more efficient than calling `delete_user` multiple times when you
+    /// This is more efficient than calling [`Client::delete_user`] multiple times when you
     /// need to remove several user accounts. All specified users will be deleted
     /// along with their permissions, and any active connections will be closed.
     /// Non-existent users in the list are silently ignored.
@@ -910,35 +911,25 @@ where
         }
     }
 
-    /// Removes all messages from a queue without deleting the queue itself.
+    /// Removes all messages in "ready for delivery" state from a queue without deleting the queue itself.
     ///
-    /// This operation immediately deletes all messages currently in the queue,
-    /// but leaves the queue structure, bindings, and consumers intact. This is
-    /// useful for clearing out accumulated messages during development or
-    /// troubleshooting. The purged messages are permanently lost.
+    /// Messages that were delivered but are pending acknowledgement will not be deleted
+    /// by purging.
     pub fn purge_queue(&self, virtual_host: &str, name: &str) -> Result<()> {
         let _response =
             self.http_delete(path!("queues", virtual_host, name, "contents"), None, None)?;
         Ok(())
     }
 
-    /// Lists all runtime parameters configured across the cluster.
-    ///
-    /// Runtime parameters are configuration values that can be set dynamically
-    /// without restarting RabbitMQ. They are used by plugins like Federation
-    /// and Shovel to store their configuration. This returns parameters from
-    /// all components and virtual hosts.
+    /// Lists all [runtime parameters](https://www.rabbitmq.com/docs/parameters) defined in the cluster.
     pub fn list_runtime_parameters(&self) -> Result<Vec<responses::RuntimeParameter>> {
         let response = self.http_get("parameters", None, None)?;
         let response = response.json()?;
         Ok(response)
     }
 
-    /// Lists all runtime parameters for a specific RabbitMQ component.
-    ///
-    /// Components like "federation-upstream", "shovel", and others use runtime
-    /// parameters to store their configuration. This function returns only the
-    /// parameters belonging to the specified component across all virtual hosts.
+    /// Lists all [runtime parameters](https://www.rabbitmq.com/docs/parameters) with a given
+    /// component type (like "federation-upstream" or "shovel") defined in the cluster.
     pub fn list_runtime_parameters_of_component(
         &self,
         component: &str,
@@ -948,12 +939,8 @@ where
         Ok(response)
     }
 
-    /// Lists runtime parameters for a component within a specific virtual host.
-    ///
-    /// This narrows down the results to only parameters belonging to both the
-    /// specified component (like "federation-upstream" or "shovel") and the
-    /// specific virtual host. This is useful when managing component configurations
-    /// that are scoped to individual virtual hosts.
+    /// Lists all [runtime parameters](https://www.rabbitmq.com/docs/parameters) defined in
+    /// a specific virtual host.
     pub fn list_runtime_parameters_of_component_in(
         &self,
         component: &str,
@@ -1103,7 +1090,7 @@ where
         Ok(response)
     }
 
-    /// Sets a limit for a virtual host.
+    /// Sets a [virtual host limit](https://www.rabbitmq.com/docs/vhosts#limits).
     pub fn set_vhost_limit(
         &self,
         vhost: &str,
@@ -1115,7 +1102,7 @@ where
         Ok(())
     }
 
-    /// Clears a virtual host limit.
+    /// Clears (removes) a [virtual host limit](https://www.rabbitmq.com/docs/vhosts#limits).
     pub fn clear_vhost_limit(&self, vhost: &str, kind: VirtualHostLimitTarget) -> Result<()> {
         let _response = self.http_delete(
             path!("vhost-limits", vhost, kind),
@@ -1125,14 +1112,14 @@ where
         Ok(())
     }
 
-    /// Lists all virtual host limits.
+    /// Lists all [virtual host limits](https://www.rabbitmq.com/docs/vhosts#limits) set in the cluster.
     pub fn list_all_vhost_limits(&self) -> Result<Vec<responses::VirtualHostLimits>> {
         let response = self.http_get("vhost-limits", None, None)?;
         let response = response.json()?;
         Ok(response)
     }
 
-    /// Lists limits for a specific virtual host.
+    /// Lists the [limits of a given virtual host](https://www.rabbitmq.com/docs/vhosts#limits).
     pub fn list_vhost_limits(&self, vhost: &str) -> Result<Vec<responses::VirtualHostLimits>> {
         let response = self.http_get(path!("vhost-limits", vhost), None, None)?;
         let response = response.json()?;
@@ -1175,14 +1162,14 @@ where
         Ok(())
     }
 
-    /// Gets a policy.
+    /// Fetches a [policy](https://www.rabbitmq.com/docs/policies).
     pub fn get_policy(&self, vhost: &str, name: &str) -> Result<responses::Policy> {
         let response = self.http_get(path!("policies", vhost, name), None, None)?;
         let response = response.json()?;
         Ok(response)
     }
 
-    /// Lists all policies in the cluster (across all virtual hosts), taking the user's
+    /// Lists all [policies](https://www.rabbitmq.com/docs/policies) in the cluster (across all virtual hosts), taking the user's
     /// permissions into account.
     pub fn list_policies(&self) -> Result<Vec<responses::Policy>> {
         let response = self.http_get("policies", None, None)?;
@@ -1197,7 +1184,8 @@ where
         Ok(response)
     }
 
-    /// Declares a policy.
+    /// Declares a [policy](https://www.rabbitmq.com/docs/policies).
+    /// See [`PolicyParams`] and See [`requests::PolicyDefinition`]
     pub fn declare_policy(&self, params: &PolicyParams) -> Result<()> {
         let _response = self.http_put(
             path!("policies", params.vhost, params.name),
@@ -1208,8 +1196,12 @@ where
         Ok(())
     }
 
-    /// Declares multiple policies. Note that this function will still issue
+    /// Declares multiple [policies](https://www.rabbitmq.com/docs/policies).
+    ///
+    /// Note that this function will still issue
     /// as many HTTP API requests as there are policies to declare.
+    ///
+    /// See [`PolicyParams`] and See [`requests::PolicyDefinition`]
     pub fn declare_policies(&self, params: Vec<&PolicyParams>) -> Result<()> {
         for p in params {
             self.declare_policy(p)?;
@@ -1217,7 +1209,8 @@ where
         Ok(())
     }
 
-    /// Deletes a policy.
+    /// Deletes a [policy](https://www.rabbitmq.com/docs/policies).
+    /// This function is idempotent: deleting a non-existent policy is considered a success.
     pub fn delete_policy(&self, vhost: &str, name: &str) -> Result<()> {
         let _response = self.http_delete(
             path!("policies", vhost, name),
@@ -1227,8 +1220,12 @@ where
         Ok(())
     }
 
-    /// Deletes multiple policies. Note that this function will still issue
+    /// Deletes multiple [policies](https://www.rabbitmq.com/docs/policies).
+    ///
+    /// Note that this function will still issue
     /// as many HTTP API requests as there are policies to delete.
+    ///
+    /// This function is idempotent: deleting a non-existent policy is considered a success.
     pub fn delete_policies_in(&self, vhost: &str, names: Vec<&str>) -> Result<()> {
         for name in names {
             self.delete_policy(vhost, name)?;

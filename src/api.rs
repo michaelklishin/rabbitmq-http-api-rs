@@ -749,8 +749,9 @@ where
     /// Declares a [RabbitMQ stream](https://www.rabbitmq.com/docs/streams).
     ///
     /// Streams are a durable, replicated, long-lived data structure in RabbitMQ designed for
-    /// high-throughput scenarios. Unlike traditional queues, streams are append-only
-    /// logs that support multiple consumers reading from different offsets.
+    /// high-throughput scenarios. Unlike traditional queues, consuming from a stream is
+    /// a non-destructive operation. Stream data is deleted according to an effective
+    /// stream retention policy.
     ///
     /// If the stream already exists with different parameters, this operation may fail
     /// unless the parameters are equivalent.
@@ -852,25 +853,34 @@ where
         Ok(())
     }
 
-    /// Deletes a virtual host.
+    /// Deletes a virtual host and all its contents.
     ///
-    /// Unless `idempotently` is set to `true`, an attempt to delete a non-existent virtual host
-    /// will fail.
+    /// This is a destructive operation that will permanently remove the virtual host
+    /// along with all queues, exchanges, bindings, and messages it contains. All
+    /// connections to this virtual host will be closed. If `idempotently` is true,
+    /// the operation will succeed even if the virtual host doesn't exist.
     pub async fn delete_vhost(&self, vhost: &str, idempotently: bool) -> Result<()> {
         self.delete_api_request_with_optional_not_found(path!("vhosts", vhost), idempotently)
             .await
     }
 
-    /// Deletes a user with the given username.
+    /// Deletes a user from the internal RabbitMQ user database.
     ///
-    /// Unless `idempotently` is set to `true`, an attempt to delete a non-existent user
-    /// will fail.
+    /// This removes the user account entirely, including all associated permissions
+    /// across all virtual hosts. Active connections belonging to this user will be
+    /// closed. If `idempotently` is true, the operation will succeed even if the
+    /// user doesn't exist.
     pub async fn delete_user(&self, username: &str, idempotently: bool) -> Result<()> {
         self.delete_api_request_with_optional_not_found(path!("users", username), idempotently)
             .await
     }
 
-    /// Deletes a group of users with the given usernames.
+    /// Deletes multiple users from the internal database in a single operation.
+    ///
+    /// This is more efficient than calling [`Client::delete_user`] multiple times when you
+    /// need to remove several user accounts. All specified users will be deleted
+    /// along with their permissions, and any active connections will be closed.
+    /// Non-existent users in the list are silently ignored.
     pub async fn delete_users(&self, usernames: Vec<&str>) -> Result<()> {
         let delete = BulkUserDelete { usernames };
         let _response = self
@@ -990,6 +1000,10 @@ where
         }
     }
 
+    /// Removes all messages in "ready for delivery" state from a queue without deleting the queue itself.
+    ///
+    /// Messages that were delivered but are pending acknowledgement will not be deleted
+    /// by purging.
     pub async fn purge_queue(&self, virtual_host: &str, name: &str) -> Result<()> {
         let _response = self
             .http_delete(path!("queues", virtual_host, name, "contents"), None, None)
@@ -997,12 +1011,15 @@ where
         Ok(())
     }
 
+    /// Lists all [runtime parameters](https://www.rabbitmq.com/docs/parameters) defined in the cluster.
     pub async fn list_runtime_parameters(&self) -> Result<Vec<responses::RuntimeParameter>> {
         let response = self.http_get("parameters", None, None).await?;
         let response = response.json().await?;
         Ok(response)
     }
 
+    /// Lists all [runtime parameters](https://www.rabbitmq.com/docs/parameters) with a given
+    /// component type (like "federation-upstream" or "shovel") defined in the cluster.
     pub async fn list_runtime_parameters_of_component(
         &self,
         component: &str,
@@ -1014,6 +1031,8 @@ where
         Ok(response)
     }
 
+    /// Lists all [runtime parameters](https://www.rabbitmq.com/docs/parameters) defined in
+    /// a specific virtual host.
     pub async fn list_runtime_parameters_of_component_in(
         &self,
         component: &str,
@@ -1158,6 +1177,7 @@ where
         Ok(response)
     }
 
+    /// Sets a [virtual host limit](https://www.rabbitmq.com/docs/vhosts#limits).
     pub async fn set_vhost_limit(
         &self,
         vhost: &str,
@@ -1170,6 +1190,7 @@ where
         Ok(())
     }
 
+    /// Clears (removes) a [virtual host limit](https://www.rabbitmq.com/docs/vhosts#limits).
     pub async fn clear_vhost_limit(&self, vhost: &str, kind: VirtualHostLimitTarget) -> Result<()> {
         let _response = self
             .http_delete(
@@ -1181,12 +1202,14 @@ where
         Ok(())
     }
 
+    /// Lists all [virtual host limits](https://www.rabbitmq.com/docs/vhosts#limits) set in the cluster.
     pub async fn list_all_vhost_limits(&self) -> Result<Vec<responses::VirtualHostLimits>> {
         let response = self.http_get("vhost-limits", None, None).await?;
         let response = response.json().await?;
         Ok(response)
     }
 
+    /// Lists the [limits of a given virtual host](https://www.rabbitmq.com/docs/vhosts#limits).
     pub async fn list_vhost_limits(
         &self,
         vhost: &str,
@@ -1229,6 +1252,7 @@ where
         Ok(())
     }
 
+    /// Fetches a [policy](https://www.rabbitmq.com/docs/policies).
     pub async fn get_policy(&self, vhost: &str, name: &str) -> Result<responses::Policy> {
         let response = self
             .http_get(path!("policies", vhost, name), None, None)
@@ -1237,7 +1261,7 @@ where
         Ok(response)
     }
 
-    /// Lists all policies in the cluster (across all virtual hosts), taking the user's
+    /// Lists all [policies](https://www.rabbitmq.com/docs/policies) in the cluster (across all virtual hosts), taking the user's
     /// permissions into account.
     pub async fn list_policies(&self) -> Result<Vec<responses::Policy>> {
         let response = self.http_get("policies", None, None).await?;
@@ -1252,6 +1276,8 @@ where
         Ok(response)
     }
 
+    /// Declares a [policy](https://www.rabbitmq.com/docs/policies).
+    /// See [`crate::requests::PolicyParams`] and See [`crate::requests::PolicyDefinition`]
     pub async fn declare_policy(&self, params: &PolicyParams<'_>) -> Result<()> {
         let _response = self
             .http_put(
@@ -1264,8 +1290,12 @@ where
         Ok(())
     }
 
-    /// Declares multiple policies. Note that this function will still issue
+    /// Declares multiple [policies](https://www.rabbitmq.com/docs/policies).
+    ///
+    /// Note that this function will still issue
     /// as many HTTP API requests as there are policies to declare.
+    ///
+    /// See [`crate::requests::PolicyParams`] and See [`crate::requests::PolicyDefinition`]
     pub async fn declare_policies(&self, params: Vec<&PolicyParams<'_>>) -> Result<()> {
         for p in params {
             self.declare_policy(p).await?;
@@ -1273,6 +1303,8 @@ where
         Ok(())
     }
 
+    /// Deletes a [policy](https://www.rabbitmq.com/docs/policies).
+    /// This function is idempotent: deleting a non-existent policy is considered a success.
     pub async fn delete_policy(&self, vhost: &str, name: &str) -> Result<()> {
         let _response = self
             .http_delete(
@@ -1284,8 +1316,12 @@ where
         Ok(())
     }
 
-    /// Deletes multiple policies. Note that this function will still issue
+    /// Deletes multiple [policies](https://www.rabbitmq.com/docs/policies).
+    ///
+    /// Note that this function will still issue
     /// as many HTTP API requests as there are policies to delete.
+    ///
+    /// This function is idempotent: deleting a non-existent policy is considered a success.
     pub async fn delete_policies_in(&self, vhost: &str, names: Vec<&str>) -> Result<()> {
         for name in names {
             self.delete_policy(vhost, name).await?;

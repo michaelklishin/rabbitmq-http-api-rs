@@ -11,6 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+//! Types in this module are used to represent API responses, such as [`QueueDefinition`], [`PolicyDefinition`],
+//! [`User`], [`VirtualHost`], [`Shovel`] or [`FederationLink`].
+
 use std::{fmt, ops};
 
 use crate::commons::{

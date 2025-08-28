@@ -19,34 +19,33 @@
 //! It can be used for [monitoring](https://www.rabbitmq.com/docs/monitoring) and automation of provisioning or maintenance of RabbitMQ clusters
 //! and topologies used by applications.
 //!
-//! There are two varions of this client:
-//! 1. `blocking_api` is the blocking version of the client
-//! 2. `api` is the non-blocking (async) version
+//! There are two variants of this client:
+//! 1. [`blocking_api::Client`] is the synchronous (blocking) version of the client
+//! 2. [`api::Client`] is the async version
 //!
 //! ## License
 //!
 //! This library is double licensed under the Apache 2.0 and MIT licenses.
 //! This means that the user can choose either of the licenses.
 
-/// The primary API: a async HTTP API client
+/// The primary API: an async HTTP API client
 #[cfg(feature = "async")]
 pub mod api;
 /// The primary API: a blocking HTTP API client
 #[cfg(feature = "blocking")]
 pub mod blocking_api;
-/// Types commonly used by API requests and responses
+/// Types common between both API [`requests`] and [`responses`]
 pub mod commons;
 /// Formatting helpers
 pub mod formatting;
-/// Providers password hashing utilities for user pre-seeding.
+/// Providers password hashing utilities for [user pre-seeding](https://www.rabbitmq.com/docs/access-control#seeding)
 pub mod password_hashing;
-/// Types used to issues API requests (such as `PUT`, `POST`, `DELETE`)
 pub mod requests;
-/// API response types
 pub mod responses;
 
-/// Error
+/// Error types
 #[cfg(any(feature = "async", feature = "blocking"))]
 pub mod error;
+/// Transformers are functions that mutate (transform) [definition sets](https://www.rabbitmq.com/docs/definitions)
 pub mod transformers;
 mod utils;
