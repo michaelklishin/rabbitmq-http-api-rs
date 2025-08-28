@@ -1110,7 +1110,7 @@ pub struct Amqp10ShovelSourceParams<'a> {
 }
 
 impl<'a> Amqp10ShovelSourceParams<'a> {
-    /// The address parameter specifies what to consume from on the source broker.
+    /// AMQP 1.0 [address](https://www.rabbitmq.com/docs/amqp#addresses) to consume from (a queue name or topic pattern)
     /// This could be a queue name, topic pattern, or other address format supported by the broker.
     pub fn new(uri: &'a str, address: &'a str) -> Self {
         Self {
@@ -1164,7 +1164,7 @@ impl<'a> From<Amqp10ShovelParams<'a>> for RuntimeParameterDefinition<'a> {
 pub struct Amqp10ShovelDestinationParams<'a> {
     /// AMQP 1.0 URI of the destination broker
     pub destination_uri: &'a str,
-    /// AMQP 1.0 [address](https://www.rabbitmq.com/docs/amqp#addresses) to publish to (queue name or topic pattern)
+    /// AMQP 1.0 [address](https://www.rabbitmq.com/docs/amqp#addresses) to publish to (a queue name or topic pattern)
     pub destination_address: &'a str,
 }
 
