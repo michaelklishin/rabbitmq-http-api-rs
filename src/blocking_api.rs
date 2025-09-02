@@ -614,13 +614,9 @@ where
         self.put_api_request(path!("permissions", params.vhost, params.user), params)
     }
 
-    /// Grants full permissions for a user on a virtual host.
-    ///
-    /// "Full permissions" here means the permissions that match all objects, that is,
-    /// ".*" for every permission category.
-    pub fn grant_permissions(&self, vhost: &str, user: &str) -> Result<()> {
-        self.http_delete(path!("permissions", vhost, user), None, None)?;
-        Ok(())
+    /// An easier to remember alias for [`declare_permissions`].
+    pub fn grant_permissions(&self, params: &requests::Permissions) -> Result<()> {
+        self.declare_permissions(params)
     }
 
     /// Declares a [queue](https://www.rabbitmq.com/docs/queues).
@@ -1310,6 +1306,15 @@ where
     /// Lists permissions for a specific user.
     pub fn list_permissions_of(&self, user: &str) -> Result<Vec<responses::Permissions>> {
         let response = self.http_get(path!("users", user, "permissions"), None, None)?;
+        let response = response.json()?;
+        Ok(response)
+    }
+
+    /// Lists all topic permissions of a user.
+    /// See [Topic Authorisation](https://www.rabbitmq.com/docs/access-control#topic-authorisation) to learn more.
+    pub fn list_topic_permissions_of(&self, user: &str) -> Result<Vec<responses::TopicPermission>> {
+        let response = self
+            .http_get(path!("users", user, "topic-permissions"), None, None)?;
         let response = response.json()?;
         Ok(response)
     }

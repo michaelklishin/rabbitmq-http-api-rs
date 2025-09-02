@@ -726,15 +726,9 @@ where
             .await
     }
 
-    /// Grants full permissions for a user on a virtual host.
-    ///
-    /// "Full permissions" here means the permissions that match all objects, that is,
-    /// ".*" for every permission category.
-    pub async fn grant_permissions(&self, vhost: &str, user: &str) -> Result<()> {
-        let _response = self
-            .http_delete(path!("permissions", vhost, user), None, None)
-            .await?;
-        Ok(())
+    /// An easier to remember alias for [`declare_permissions`].
+    pub async fn grant_permissions(&self, params: &Permissions<'_>) -> Result<()> {
+        self.declare_permissions(params).await
     }
 
     /// Declares a [queue](https://www.rabbitmq.com/docs/queues).
@@ -1403,6 +1397,16 @@ where
     pub async fn list_permissions_of(&self, user: &str) -> Result<Vec<responses::Permissions>> {
         let response = self
             .http_get(path!("users", user, "permissions"), None, None)
+            .await?;
+        let response = response.json().await?;
+        Ok(response)
+    }
+
+    /// Lists all topic permissions of a user.
+    /// See [Topic Authorisation](https://www.rabbitmq.com/docs/access-control#topic-authorisation) to learn more.
+    pub async fn list_topic_permissions_of(&self, user: &str) -> Result<Vec<responses::TopicPermission>> {
+        let response = self
+            .http_get(path!("users", user, "topic-permissions"), None, None)
             .await?;
         let response = response.json().await?;
         Ok(response)

@@ -13,7 +13,8 @@
 // limitations under the License.
 use rabbitmq_http_client::requests::VirtualHostParams;
 use rabbitmq_http_client::responses;
-use rabbitmq_http_client::{api::Client, requests::Permissions};
+use rabbitmq_http_client::api::Client;
+use rabbitmq_http_client::requests::Permissions;
 
 mod test_helpers;
 use crate::test_helpers::{PASSWORD, USERNAME, endpoint};
@@ -134,15 +135,15 @@ async fn test_async_grant_permissions() {
     let result1 = rc.create_vhost(&vh_params).await;
     assert!(result1.is_ok());
 
-    let params = Permissions {
+    let permissions_to_grant = Permissions {
         user: "guest",
         vhost: vh_params.name,
-        configure: "configure",
-        read: "read",
-        write: "write",
+        configure: ".*",
+        read: ".*",
+        write: ".*",
     };
-    let result = rc.declare_permissions(&params).await;
-    assert!(result.is_ok(), "declare_permissions returned {result:?}");
+    let result = rc.grant_permissions(&permissions_to_grant).await;
+    assert!(result.is_ok(), "grant_permissions returned {result:?}");
 
     let result2 = rc.get_permissions(vh_params.name, "guest").await;
     assert!(result2.is_ok(), "get_permissions_of returned {result2:?}");
@@ -153,17 +154,33 @@ async fn test_async_grant_permissions() {
         responses::Permissions {
             user: "guest".to_owned(),
             vhost: vh_params.name.to_owned(),
-            configure: "configure".to_owned(),
-            read: "read".to_owned(),
-            write: "write".to_owned(),
+            configure: ".*".to_owned(),
+            read: ".*".to_owned(),
+            write: ".*".to_owned(),
         }
     );
 
-    let result4 = rc.grant_permissions(vh_params.name, "guest").await;
-    assert!(result4.is_ok(), "delete_permissions returned {result4:?}");
+    let result4 = rc.clear_permissions(vh_params.name, "guest", false).await;
+    assert!(result4.is_ok(), "clear_permissions returned {result4:?}");
 
     let result5 = rc.get_permissions(vh_params.name, "guest").await;
     assert!(result5.is_err(), "permissions found after deletion");
+
+    rc.delete_vhost(vh_params.name, false).await.unwrap();
+}
+
+#[tokio::test]
+async fn test_async_list_topic_permissions_of() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let vh_params = VirtualHostParams::named("test_list_topic_permissions_of");
+    let _ = rc.delete_vhost(vh_params.name, false).await;
+    let result1 = rc.create_vhost(&vh_params).await;
+    assert!(result1.is_ok());
+
+    let result = rc.list_topic_permissions_of("guest").await;
+    assert!(result.is_ok(), "list_topic_permissions_of returned {result:?}");
 
     rc.delete_vhost(vh_params.name, false).await.unwrap();
 }

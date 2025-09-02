@@ -1579,6 +1579,18 @@ pub struct Permissions {
     pub write: String,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+#[allow(dead_code)]
+pub struct TopicPermission {
+    pub user: String,
+    pub vhost: String,
+    pub exchange: String,
+    pub read: String,
+    pub write: String,
+}
+
+
 impl Permissions {
     pub fn with_username(&self, username: &str) -> Self {
         Permissions {

@@ -13,7 +13,8 @@
 // limitations under the License.
 use rabbitmq_http_client::requests::VirtualHostParams;
 use rabbitmq_http_client::responses;
-use rabbitmq_http_client::{blocking_api::Client, requests::Permissions};
+use rabbitmq_http_client::blocking_api::Client;
+use rabbitmq_http_client::requests::Permissions;
 
 mod test_helpers;
 use crate::test_helpers::{PASSWORD, USERNAME, endpoint};
@@ -125,6 +126,22 @@ fn test_blocking_get_permissions() {
 }
 
 #[test]
+fn test_blocking_list_topic_permissions_of() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let vh_params = VirtualHostParams::named("test_list_topic_permissions_of");
+    let _ = rc.delete_vhost(vh_params.name, false);
+    let result1 = rc.create_vhost(&vh_params);
+    assert!(result1.is_ok());
+
+    let result = rc.list_topic_permissions_of("guest");
+    assert!(result.is_ok(), "list_topic_permissions_of returned {result:?}");
+
+    rc.delete_vhost(vh_params.name, false).unwrap();
+}
+
+#[test]
 fn test_blocking_grant_permissions() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
@@ -134,15 +151,15 @@ fn test_blocking_grant_permissions() {
     let result1 = rc.create_vhost(&vh_params);
     assert!(result1.is_ok());
 
-    let params = Permissions {
+    let permissions_to_grant = Permissions {
         user: "guest",
         vhost: vh_params.name,
-        configure: "configure",
-        read: "read",
-        write: "write",
+        configure: ".*",
+        read: ".*",
+        write: ".*",
     };
-    let result = rc.declare_permissions(&params);
-    assert!(result.is_ok(), "declare_permissions returned {result:?}");
+    let result = rc.grant_permissions(&permissions_to_grant);
+    assert!(result.is_ok(), "grant_permissions returned {result:?}");
 
     let result2 = rc.get_permissions(vh_params.name, "guest");
     assert!(result2.is_ok(), "get_permissions_of returned {result2:?}");
@@ -153,14 +170,14 @@ fn test_blocking_grant_permissions() {
         responses::Permissions {
             user: "guest".to_owned(),
             vhost: vh_params.name.to_owned(),
-            configure: "configure".to_owned(),
-            read: "read".to_owned(),
-            write: "write".to_owned(),
+            configure: ".*".to_owned(),
+            read: ".*".to_owned(),
+            write: ".*".to_owned(),
         }
     );
 
-    let result4 = rc.grant_permissions(vh_params.name, "guest");
-    assert!(result4.is_ok(), "delete_permissions returned {result4:?}");
+    let result4 = rc.clear_permissions(vh_params.name, "guest", false);
+    assert!(result4.is_ok(), "clear_permissions returned {result4:?}");
 
     let result5 = rc.get_permissions(vh_params.name, "guest");
     assert!(result5.is_err(), "permissions found after deletion");
