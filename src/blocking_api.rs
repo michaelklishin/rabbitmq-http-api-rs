@@ -1313,8 +1313,7 @@ where
     /// Lists all topic permissions of a user.
     /// See [Topic Authorisation](https://www.rabbitmq.com/docs/access-control#topic-authorisation) to learn more.
     pub fn list_topic_permissions_of(&self, user: &str) -> Result<Vec<responses::TopicPermission>> {
-        let response = self
-            .http_get(path!("users", user, "topic-permissions"), None, None)?;
+        let response = self.http_get(path!("users", user, "topic-permissions"), None, None)?;
         let response = response.json()?;
         Ok(response)
     }
@@ -1324,6 +1323,31 @@ where
         let response = self.http_get(path!("permissions", vhost, user), None, None)?;
         let response = response.json()?;
         Ok(response)
+    }
+
+    /// Sets [topic permissions](https://www.rabbitmq.com/docs/access-control#topic-authorisation) in a specific virtual host.
+    pub fn declare_topic_permissions(&self, params: &requests::TopicPermissions<'_>) -> Result<()> {
+        self.put_api_request(
+            path!("topic-permissions", params.vhost, params.user),
+            params,
+        )
+    }
+
+    /// Clears [topic permissions](https://www.rabbitmq.com/docs/access-control#topic-authorisation) for a user in a specific virtual host.
+    pub fn clear_topic_permissions(
+        &self,
+        vhost: &str,
+        user: &str,
+        idempotently: bool,
+    ) -> Result<()> {
+        let excludes = if idempotently {
+            Some(StatusCode::NOT_FOUND)
+        } else {
+            None
+        };
+        let _response =
+            self.http_delete(path!("topic-permissions", vhost, user), excludes, None)?;
+        Ok(())
     }
 
     //

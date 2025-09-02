@@ -568,7 +568,7 @@ impl From<PolDef> for PolicyDefinition {
 ///
 /// # Pattern Examples
 /// * `"^amq\\."` - Matches resources starting with "amq."
-/// * `".*"` - Matches all resources  
+/// * `".*"` - Matches all resources
 /// * `"orders\\.(urgent|normal)"` - Matches "orders.urgent" or "orders.normal"
 /// * `"temp_.*"` - Matches resources starting with "temp_"
 ///
@@ -614,8 +614,23 @@ pub struct Permissions<'a> {
     pub configure: &'a str,
     /// Regex pattern for resources user can read from
     pub read: &'a str,
-    /// Regex pattern for resources user can write to  
+    /// Regex pattern for resources user can write to
     pub write: &'a str,
+}
+
+/// Represents a user's [topic permission in a particular virtual host](https://www.rabbitmq.com/docs/access-control#topic-authorisation).
+///
+/// Topic permissions are defined using regular expression patterns that match exchange names.
+#[derive(Serialize, Debug)]
+pub struct TopicPermissions<'a> {
+    pub user: &'a str,
+    pub vhost: &'a str,
+    /// Regex pattern for the topics the user can publish to
+    pub write: &'a str,
+    /// Regex pattern for the topics the user can consume from (subscribe to)
+    pub read: &'a str,
+    /// The topic exchange these permissions apply to
+    pub exchange: &'a str,
 }
 
 /// Controls when federation resources (temporary queues/exchanges) are cleaned up.

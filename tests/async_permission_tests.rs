@@ -11,10 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+use rabbitmq_http_client::api::Client;
+use rabbitmq_http_client::requests;
+use rabbitmq_http_client::requests::Permissions;
 use rabbitmq_http_client::requests::VirtualHostParams;
 use rabbitmq_http_client::responses;
-use rabbitmq_http_client::api::Client;
-use rabbitmq_http_client::requests::Permissions;
 
 mod test_helpers;
 use crate::test_helpers::{PASSWORD, USERNAME, endpoint};
@@ -180,7 +181,95 @@ async fn test_async_list_topic_permissions_of() {
     assert!(result1.is_ok());
 
     let result = rc.list_topic_permissions_of("guest").await;
-    assert!(result.is_ok(), "list_topic_permissions_of returned {result:?}");
+    assert!(
+        result.is_ok(),
+        "list_topic_permissions_of returned {result:?}"
+    );
+
+    rc.delete_vhost(vh_params.name, false).await.unwrap();
+}
+
+#[tokio::test]
+async fn test_async_declare_topic_permissions() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let vh_params = VirtualHostParams::named("test_declare_topic_permissions");
+    let _ = rc.delete_vhost(vh_params.name, false).await;
+    let result1 = rc.create_vhost(&vh_params).await;
+    assert!(result1.is_ok());
+
+    let params = requests::TopicPermissions {
+        user: "guest",
+        vhost: vh_params.name,
+        exchange: "amq.topic",
+        read: ".*",
+        write: ".*",
+    };
+    let result = rc.declare_topic_permissions(&params).await;
+    assert!(
+        result.is_ok(),
+        "declare_topic_permissions returned {result:?}"
+    );
+
+    // Verify that the topic permissions are set
+    let topic_permissions = rc.list_topic_permissions_of("guest").await.unwrap();
+    assert!(topic_permissions.iter().any(|p| p.vhost == vh_params.name
+        && p.exchange == "amq.topic"
+        && p.read == ".*"
+        && p.write == ".*"));
+
+    rc.delete_vhost(vh_params.name, false).await.unwrap();
+}
+
+#[tokio::test]
+async fn test_async_clear_topic_permissions() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let vh_params = VirtualHostParams::named("test_clear_topic_permissions");
+    let _ = rc.delete_vhost(vh_params.name, false).await;
+    let result1 = rc.create_vhost(&vh_params).await;
+    assert!(result1.is_ok());
+
+    let params = requests::TopicPermissions {
+        user: "guest",
+        vhost: vh_params.name,
+        exchange: "amq.topic",
+        read: ".*",
+        write: ".*",
+    };
+    let result = rc.declare_topic_permissions(&params).await;
+    assert!(
+        result.is_ok(),
+        "declare_topic_permissions returned {result:?}"
+    );
+
+    // Verify that the topic permissions are set
+    let topic_permissions = rc.list_topic_permissions_of("guest").await.unwrap();
+    assert!(topic_permissions.iter().any(|p| p.vhost == vh_params.name
+        && p.exchange == "amq.topic"
+        && p.read == ".*"
+        && p.write == ".*"));
+
+    let result2 = rc
+        .clear_topic_permissions(vh_params.name, "guest", false)
+        .await;
+    assert!(
+        result2.is_ok(),
+        "clear_topic_permissions returned {result2:?}"
+    );
+
+    // Verify that the topic permissions are cleared
+    let topic_permissions_after_clear = rc.list_topic_permissions_of("guest").await.unwrap();
+    assert!(
+        !topic_permissions_after_clear
+            .iter()
+            .any(|p| p.vhost == vh_params.name
+                && p.exchange == "amq.topic"
+                && p.read == ".*"
+                && p.write == ".*")
+    );
 
     rc.delete_vhost(vh_params.name, false).await.unwrap();
 }

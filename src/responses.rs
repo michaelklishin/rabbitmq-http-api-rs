@@ -1590,7 +1590,6 @@ pub struct TopicPermission {
     pub write: String,
 }
 
-
 impl Permissions {
     pub fn with_username(&self, username: &str) -> Self {
         Permissions {
