@@ -2,7 +2,14 @@
 
 ## v0.45.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * New struct, `requests::TopicPermissions`, for declaring topic permissions.
+ * New struct, `responses::TopicPermission` for representing topic permissions.
+ * `Client#list_topic_permissions_of` is a new function that lists topic permissions of a user.
+ * `Client#grant_permissions` is now an alias for `Client#declare_permissions`, providing an easier to remember alias.
+ * `Client#declare_topic_permissions` is a new function that sets topic permissions for a user
+ * `Client#clear_topic_permissions` is a new function to clear topic permissions for a user.
 
 
 ## v0.44.0 (Aug 25, 2025)
@@ -21,7 +28,7 @@ No changes yet.
    but for various reasons can be missing in versions up to `3.11.0` or so.
 
    This can be considered a RabbitMQ `3.10.x` (that reached EOL in late 2023) compatibility fix.
-   Responsible adults don't run EOL versions of RabbitMQ, of course. 
+   Responsible adults don't run EOL versions of RabbitMQ, of course.
 
 
 ## v0.42.0 (Aug 14, 2025)
