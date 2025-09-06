@@ -69,6 +69,8 @@ impl XArguments {
         "x-queue-mode",
         "x-max-priority",
     ];
+    pub const X_EXPIRES_KEY: &'static str = "x-expires";
+    pub const X_MESSAGE_TTL_KEY: &'static str = "x-message-ttl";
 
     pub fn get(&self, key: &str) -> Option<&serde_json::Value> {
         self.0.get(key)
@@ -767,9 +769,27 @@ impl fmt::Display for NameAndVirtualHost {
 }
 
 pub trait QueueOps {
+    /// Returns the [`QueueType`] applicable to the implementation.
     fn queue_type(&self) -> QueueType;
 
+    /// Returns the [`PolicyTarget`] applicable to the implementation.
     fn policy_target_type(&self) -> PolicyTarget;
+
+    /// Returns the [`XArguments`] of the implementation
+    fn x_arguments(&self) -> &XArguments;
+
+    /// Returns true if one of the optional arguments
+    /// of the implementation is [`XArguments::X_EXPIRES_KEY`] ("x-expires")
+    fn has_queue_ttl_arg(&self) -> bool {
+        self.x_arguments().contains_key(XArguments::X_EXPIRES_KEY)
+    }
+
+    /// Returns true if one of the optional arguments
+    /// of the implementation is [`XArguments::X_MESSAGE_TTL_KEY`] ("x-message-ttl")
+    fn has_message_ttl_arg(&self) -> bool {
+        self.x_arguments()
+            .contains_key(XArguments::X_MESSAGE_TTL_KEY)
+    }
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -850,6 +870,10 @@ impl QueueOps for QueueInfo {
     fn policy_target_type(&self) -> PolicyTarget {
         PolicyTarget::from(self.queue_type())
     }
+
+    fn x_arguments(&self) -> &XArguments {
+        &self.arguments
+    }
 }
 
 impl NamedPolicyTargetObject for QueueInfo {
@@ -913,6 +937,10 @@ impl QueueOps for QueueDefinition {
 
     fn policy_target_type(&self) -> PolicyTarget {
         PolicyTarget::from(self.queue_type())
+    }
+
+    fn x_arguments(&self) -> &XArguments {
+        &self.arguments
     }
 }
 
@@ -1020,6 +1048,10 @@ impl QueueOps for QueueDefinitionWithoutVirtualHost {
 
     fn policy_target_type(&self) -> PolicyTarget {
         PolicyTarget::from(self.queue_type())
+    }
+
+    fn x_arguments(&self) -> &XArguments {
+        &self.arguments
     }
 }
 
