@@ -1244,6 +1244,26 @@ pub struct ClusterIdentity {
     pub name: String,
 }
 
+impl fmt::Display for ClusterIdentity {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.name)
+    }
+}
+
+impl From<String> for ClusterIdentity {
+    fn from(name: String) -> Self {
+        Self { name }
+    }
+}
+
+impl<'a> From<&'a str> for ClusterIdentity {
+    fn from(name: &'a str) -> Self {
+        Self {
+            name: name.to_string(),
+        }
+    }
+}
+
 #[derive(Debug, Deserialize)]
 #[allow(dead_code)]
 pub struct ClusterTags(pub Map<String, serde_json::Value>);

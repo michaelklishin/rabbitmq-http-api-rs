@@ -2,7 +2,9 @@
 
 ## v0.47.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * `responses::ClusterIdentity` now implements `ToString`, `From<String>`, and `From<&str>`.
 
 
 ## v0.46.0 (Sep 06, 2025)
