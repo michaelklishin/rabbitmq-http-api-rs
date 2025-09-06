@@ -4,11 +4,12 @@
 
 ### Enhancements
 
- * `QueueOps#x_arguments` is a new method that returns the optional arguments of an object (`XArguments`)
- * `QueueOps#has_queue_ttl_arg` is a new method that returns true if optional arguments of an object include a queue TTL argument (`"x-expires"`)
+ * `QueueOps#x_arguments`: returns the optional arguments of an object (`XArguments`)
+ * `QueueOps#has_queue_ttl_arg`: returns true if optional arguments of an object include a queue TTL argument (`"x-expires"`)
  * `QueueOps#has_message_ttl_arg`: returns true if optional arguments of an object include a message TTL argument (`"x-message-ttl"`)
  * `QueueOps#has_length_limit_in_messages`: returns true if optional arguments of an object include a queue length limit in messages (`"x-max-length"`)
  * `QueueOps#has_length_limit_in_bytes`: returns true if optional arguments of an object include a queue length limit in bytes (`"x-max-length-bytes"`)
+ * `QueueOps#is_server_named`: returns true if an object's name suggests it is a server-named (system) entity.
 
 
 

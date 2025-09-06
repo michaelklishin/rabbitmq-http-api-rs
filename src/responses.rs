@@ -771,6 +771,9 @@ impl fmt::Display for NameAndVirtualHost {
 }
 
 pub trait QueueOps {
+    /// Returns the name of the object.
+    fn name(&self) -> &str;
+
     /// Returns the [`QueueType`] applicable to the implementation.
     fn queue_type(&self) -> QueueType;
 
@@ -793,14 +796,24 @@ pub trait QueueOps {
             .contains_key(XArguments::X_MESSAGE_TTL_KEY)
     }
 
+    /// Returns true if one of the optional arguments
+    /// of the implementation is [`XArguments::X_MAX_LENGTH_KEY`] ("x-max-length")
     fn has_length_limit_in_messages(&self) -> bool {
         self.x_arguments()
             .contains_key(XArguments::X_MAX_LENGTH_KEY)
     }
 
+    /// Returns true if one of the optional arguments
+    /// of the implementation is [`XArguments::X_MAX_LENGTH_BYTES_KEY`] ("x-max-length-bytes")
     fn has_length_limit_in_bytes(&self) -> bool {
         self.x_arguments()
             .contains_key(XArguments::X_MAX_LENGTH_BYTES_KEY)
+    }
+
+    /// Returns true if the name of the queue starts with `amq.`,
+    /// that is, the queue is server-named.
+    fn is_server_named(&self) -> bool {
+        self.name().starts_with("amq.")
     }
 }
 
@@ -875,6 +888,10 @@ pub struct QueueInfo {
 }
 
 impl QueueOps for QueueInfo {
+    fn name(&self) -> &str {
+        &self.name
+    }
+
     fn queue_type(&self) -> QueueType {
         QueueType::from(self.queue_type.as_str())
     }
@@ -937,6 +954,10 @@ impl NamedPolicyTargetObject for QueueDefinition {
 }
 
 impl QueueOps for QueueDefinition {
+    fn name(&self) -> &str {
+        &self.name
+    }
+
     fn queue_type(&self) -> QueueType {
         if let Some((_, val)) = self.arguments.0.get_key_value(X_ARGUMENT_KEY_X_QUEUE_TYPE) {
             val.as_str()
@@ -1048,6 +1069,10 @@ pub struct QueueDefinitionWithoutVirtualHost {
 }
 
 impl QueueOps for QueueDefinitionWithoutVirtualHost {
+    fn name(&self) -> &str {
+        &self.name
+    }
+
     fn queue_type(&self) -> QueueType {
         if let Some((_, val)) = self.arguments.0.get_key_value(X_ARGUMENT_KEY_X_QUEUE_TYPE) {
             val.as_str()
