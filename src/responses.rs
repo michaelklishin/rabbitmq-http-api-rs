@@ -71,6 +71,8 @@ impl XArguments {
     ];
     pub const X_EXPIRES_KEY: &'static str = "x-expires";
     pub const X_MESSAGE_TTL_KEY: &'static str = "x-message-ttl";
+    pub const X_MAX_LENGTH_KEY: &'static str = "x-max-length";
+    pub const X_MAX_LENGTH_BYTES_KEY: &'static str = "x-max-length-bytes";
 
     pub fn get(&self, key: &str) -> Option<&serde_json::Value> {
         self.0.get(key)
@@ -789,6 +791,14 @@ pub trait QueueOps {
     fn has_message_ttl_arg(&self) -> bool {
         self.x_arguments()
             .contains_key(XArguments::X_MESSAGE_TTL_KEY)
+    }
+
+    fn has_length_limit_in_messages(&self) -> bool {
+        self.x_arguments().contains_key(XArguments::X_MAX_LENGTH_KEY)
+    }
+
+    fn has_length_limit_in_bytes(&self) -> bool {
+        self.x_arguments().contains_key(XArguments::X_MAX_LENGTH_BYTES_KEY)
     }
 }
 
