@@ -2,7 +2,12 @@
 
 ## v0.46.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * `QueueOps#x_arguments` is a new method that returns the optional arguments of an object (`XArguments`)
+ * `QueueOps#has_queue_ttl_arg` is a new method that returns true if optional arguments of an object include a queue TTL argument (`"x-expires"`)
+ * `QueueOps#has_message_ttl_arg` is a new method that returns true if optional arguments of an object include a message TTL argument (`"x-message-ttl"`)
+
 
 
 ## v0.45.0 (Sep 01, 2025)
