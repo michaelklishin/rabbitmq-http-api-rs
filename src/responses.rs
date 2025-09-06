@@ -794,11 +794,13 @@ pub trait QueueOps {
     }
 
     fn has_length_limit_in_messages(&self) -> bool {
-        self.x_arguments().contains_key(XArguments::X_MAX_LENGTH_KEY)
+        self.x_arguments()
+            .contains_key(XArguments::X_MAX_LENGTH_KEY)
     }
 
     fn has_length_limit_in_bytes(&self) -> bool {
-        self.x_arguments().contains_key(XArguments::X_MAX_LENGTH_BYTES_KEY)
+        self.x_arguments()
+            .contains_key(XArguments::X_MAX_LENGTH_BYTES_KEY)
     }
 }
 
