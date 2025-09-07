@@ -1,8 +1,13 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.48.0 (in development)
+## v0.49.0 (in development)
 
 No changes yet.
+
+
+## v0.48.0 (Sep 07, 2025)
+
+* `responses::NodeList#len` is now properly accompanied by `responses::NodeList#is_empty`.
 
 
 ## v0.47.0 (Sep 07, 2025)
