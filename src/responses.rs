@@ -44,8 +44,28 @@ use tabled::Tabled;
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TagList(pub Vec<String>);
 
+impl TagList {
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PluginList(pub Vec<String>);
+
+impl PluginList {
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct XArguments(pub Map<String, serde_json::Value>);
@@ -1957,6 +1977,16 @@ pub struct GetMessage {
 #[serde(transparent)]
 pub struct MessageList(pub Vec<GetMessage>);
 
+impl MessageList {
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+}
+
 #[allow(clippy::partialeq_ne_impl)]
 impl PartialEq for MessageList {
     fn eq(&self, other: &Self) -> bool {
@@ -2223,6 +2253,16 @@ pub struct FeatureFlag {
 #[serde(transparent)]
 pub struct FeatureFlagList(pub Vec<FeatureFlag>);
 
+impl FeatureFlagList {
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum DeprecationPhase {
@@ -2300,6 +2340,16 @@ pub struct DeprecatedFeature {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(transparent)]
 pub struct DeprecatedFeatureList(pub Vec<DeprecatedFeature>);
+
+impl DeprecatedFeatureList {
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+}
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 #[serde(rename_all = "snake_case")]

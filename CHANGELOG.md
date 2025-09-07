@@ -2,8 +2,10 @@
 
 ## v0.49.0 (in development)
 
-No changes yet.
+### Enhancements
 
+ * `responses::TagList`, `responses::PluginList`, `responses::FeatureFlagList`, `responses::DeprecatedFeatureList`,
+   `responses::MessageList` now all have `len` and `is_empty` methods.
 
 ## v0.48.0 (Sep 07, 2025)
 
