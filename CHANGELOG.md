@@ -1,10 +1,16 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.47.0 (in development)
+## v0.48.0 (in development)
+
+No changes yet.
+
+
+## v0.47.0 (Sep 07, 2025)
 
 ### Enhancements
 
  * `responses::ClusterIdentity` now implements `ToString`, `From<String>`, and `From<&str>`.
+ * `responses::NodeList#len` is a new function that returns the length of the list.
 
 
 ## v0.46.0 (Sep 06, 2025)

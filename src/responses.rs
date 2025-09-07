@@ -179,6 +179,12 @@ impl fmt::Display for NodeList {
     }
 }
 
+impl NodeList {
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+}
+
 #[derive(Debug, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
