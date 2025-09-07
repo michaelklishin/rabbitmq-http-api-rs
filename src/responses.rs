@@ -54,6 +54,15 @@ impl TagList {
     }
 }
 
+impl IntoIterator for TagList {
+    type Item = String;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PluginList(pub Vec<String>);
 
@@ -64,6 +73,15 @@ impl PluginList {
 
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
+    }
+}
+
+impl IntoIterator for PluginList {
+    type Item = String;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
     }
 }
 
@@ -206,6 +224,15 @@ impl NodeList {
 
     pub fn is_empty(&self) -> bool {
         self.len() == 0
+    }
+}
+
+impl IntoIterator for NodeList {
+    type Item = String;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
     }
 }
 
@@ -1987,6 +2014,15 @@ impl MessageList {
     }
 }
 
+impl IntoIterator for MessageList {
+    type Item = GetMessage;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
+
 #[allow(clippy::partialeq_ne_impl)]
 impl PartialEq for MessageList {
     fn eq(&self, other: &Self) -> bool {
@@ -2263,6 +2299,15 @@ impl FeatureFlagList {
     }
 }
 
+impl IntoIterator for FeatureFlagList {
+    type Item = FeatureFlag;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum DeprecationPhase {
@@ -2348,6 +2393,15 @@ impl DeprecatedFeatureList {
 
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
+    }
+}
+
+impl IntoIterator for DeprecatedFeatureList {
+    type Item = DeprecatedFeature;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
     }
 }
 
