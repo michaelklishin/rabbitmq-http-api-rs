@@ -2,7 +2,10 @@
 
 ## v0.50.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * `responses::TagList`, `responses::PluginList`, `responses::NodeList`, `responses::FeatureFlagList`, `responses::DeprecatedFeatureList`
+   now implement `contains`.
 
 
 ## v0.49.0 (Sep 07, 2025)

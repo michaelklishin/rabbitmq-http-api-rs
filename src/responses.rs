@@ -52,6 +52,10 @@ impl TagList {
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
     }
+
+    pub fn contains(&self, key: &str) -> bool {
+        self.0.iter().any(|s| s == key)
+    }
 }
 
 impl IntoIterator for TagList {
@@ -73,6 +77,10 @@ impl PluginList {
 
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
+    }
+
+    pub fn contains(&self, key: &str) -> bool {
+        self.0.iter().any(|s| s == key)
     }
 }
 
@@ -224,6 +232,10 @@ impl NodeList {
 
     pub fn is_empty(&self) -> bool {
         self.len() == 0
+    }
+
+    pub fn contains(&self, key: &str) -> bool {
+        self.0.iter().any(|s| s == key)
     }
 }
 
@@ -2297,6 +2309,10 @@ impl FeatureFlagList {
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
+
+    pub fn contains(&self, key: &str) -> bool {
+        self.0.iter().any(|ff| ff.name == key)
+    }
 }
 
 impl IntoIterator for FeatureFlagList {
@@ -2393,6 +2409,10 @@ impl DeprecatedFeatureList {
 
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
+    }
+
+    pub fn contains(&self, key: &str) -> bool {
+        self.0.iter().any(|df| df.name == key)
     }
 }
 
