@@ -1333,7 +1333,7 @@ impl<'a> From<&'a str> for ClusterIdentity {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct ClusterTags(pub Map<String, serde_json::Value>);
 
