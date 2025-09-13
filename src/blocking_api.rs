@@ -1765,51 +1765,41 @@ where
 
     /// Enables schema definition synchronization on a single node or cluster-wide.
     /// Schema definition sync is a Tanzu RabbitMQ-specific feature.
-    pub fn enable_schema_definition_sync_on_node(&self, node: &str) -> Result<()> {
+    pub fn enable_schema_definition_sync_on_node(&self, node: Option<&str>) -> Result<()> {
         let payload = EmptyPayload::new();
-        self.http_put(
-            path!("tanzu", "osr", "schema", "enable", node),
-            &payload,
-            None,
-            None,
-        )?;
+        match node {
+            Some(val) => {
+                self.http_put(
+                    path!("tanzu", "osr", "schema", "enable", val),
+                    &payload,
+                    None,
+                    None,
+                )?;
+            }
+            None => {
+                self.http_put("tanzu/osr/schema/enable", &payload, None, None)?;
+            }
+        };
 
         Ok(())
     }
 
     /// Disables schema definition synchronization on a specific node.
     /// Schema definition sync is a Tanzu RabbitMQ-specific feature.
-    pub fn disable_schema_definition_sync_on_node(&self, node: &str) -> Result<()> {
-        self.http_delete(path!("tanzu", "osr", "schema", "disable", node), None, None)?;
+    pub fn disable_schema_definition_sync_on_node(&self, node: Option<&str>) -> Result<()> {
+        match node {
+            Some(val) => {
+                self.http_delete(path!("tanzu", "osr", "schema", "disable", val), None, None)?;
+            }
+            None => {
+                self.http_delete("tanzu/osr/schema/disable", None, None)?;
+            }
+        };
 
         Ok(())
     }
 
-    /// Enables schema definition synchronization cluster-wide.
-    /// Schema definition sync is a Tanzu RabbitMQ-specific feature.
-    pub fn enable_schema_definition_sync(&self) -> Result<()> {
-        let payload = EmptyPayload::new();
-        self.http_put(
-            path!("tanzu", "osr", "schema", "enable-cluster-wide"),
-            &payload,
-            None,
-            None,
-        )?;
-
-        Ok(())
-    }
-
-    /// Disables schema definition synchronization cluster-wide.
-    /// Schema definition sync is a Tanzu RabbitMQ-specific feature.
-    pub fn disable_schema_definition_sync(&self) -> Result<()> {
-        self.http_delete(
-            path!("tanzu", "osr", "schema", "disable-cluster-wide"),
-            None,
-            None,
-        )?;
-
-        Ok(())
-    }
+    
 
     //
     // Warm Standby Replication (Tanzu RabbitMQ)

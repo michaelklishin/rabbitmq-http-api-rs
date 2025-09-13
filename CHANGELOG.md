@@ -2,8 +2,15 @@
 
 ## v0.50.0 (in development)
 
+### Breaking Changes
+
+ * `blocking_api::Client#enable_schema_definition_sync`, `blocking_api::Client#disable_schema_definition_sync` were
+   removed in favor of `blocking_api::Client#enable_schema_definition_sync_on_node` and `blocking_api::Client#disable_schema_definition_sync_on_node`
+   that accept an `Option<&str>` for name, like in `api::Client`. `None` means "on all cluster nodes".
+
 ### Enhancements
 
+ * Adopted a few type aliases: `common::Username`, `common::VirtualHostName`, `common::PermissionPattern`, `common::ChannelId`.
  * `responses::TagList`, `responses::PluginList`, `responses::NodeList`, `responses::FeatureFlagList`, `responses::DeprecatedFeatureList`
    now implement `contains`.
 
