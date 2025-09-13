@@ -18,8 +18,9 @@
 use std::{fmt, ops};
 
 use crate::commons::{
-    BindingDestinationType, MessageTransferAcknowledgementMode, OverflowBehavior, PolicyTarget,
-    QueueType, X_ARGUMENT_KEY_X_OVERFLOW, X_ARGUMENT_KEY_X_QUEUE_TYPE,
+    BindingDestinationType, ChannelId, MessageTransferAcknowledgementMode, OverflowBehavior,
+    PolicyTarget, QueueType, Username, VirtualHostName, X_ARGUMENT_KEY_X_OVERFLOW,
+    X_ARGUMENT_KEY_X_QUEUE_TYPE,
 };
 use crate::error::ConversionError;
 use crate::formatting::*;
@@ -546,7 +547,7 @@ pub struct VirtualHostMetadata {
 #[allow(dead_code)]
 pub struct VirtualHost {
     /// Virtual host name
-    pub name: String,
+    pub name: VirtualHostName,
     /// Optional tags
     #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub tags: Option<TagList>,
@@ -583,7 +584,7 @@ impl fmt::Display for EnforcedLimits {
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct VirtualHostLimits {
-    pub vhost: String,
+    pub vhost: VirtualHostName,
     #[serde(rename(deserialize = "value"))]
     pub limits: EnforcedLimits,
 }
@@ -593,7 +594,7 @@ pub struct VirtualHostLimits {
 #[allow(dead_code)]
 pub struct UserLimits {
     #[serde(rename(deserialize = "user"))]
-    pub username: String,
+    pub username: Username,
     #[serde(rename(deserialize = "value"))]
     pub limits: EnforcedLimits,
 }
@@ -602,7 +603,7 @@ pub struct UserLimits {
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct User {
-    pub name: String,
+    pub name: Username,
     pub tags: TagList,
     pub password_hash: String,
 }
@@ -651,7 +652,7 @@ pub struct Connection {
     pub protocol: String,
     /// The name of the authenticated user
     #[serde(rename(deserialize = "user"))]
-    pub username: String,
+    pub username: Username,
     /// When was this connection opened (a timestamp).
     pub connected_at: u64,
     /// The hostname used to connect.
@@ -717,11 +718,11 @@ pub struct ClientCapabilities {
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct UserConnection {
-    pub name: String,
+    pub name: Username,
     pub node: String,
     #[serde(rename(deserialize = "user"))]
-    pub username: String,
-    pub vhost: String,
+    pub username: Username,
+    pub vhost: VirtualHostName,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -729,11 +730,11 @@ pub struct UserConnection {
 #[allow(dead_code)]
 pub struct Channel {
     #[serde(rename(deserialize = "number"))]
-    pub id: u32,
+    pub id: ChannelId,
     pub name: String,
     #[cfg_attr(feature = "tabled", tabled(skip))]
     pub connection_details: ConnectionDetails,
-    pub vhost: String,
+    pub vhost: VirtualHostName,
     pub state: String,
     pub consumer_count: u32,
     #[serde(rename(deserialize = "confirm"))]
@@ -758,7 +759,7 @@ pub struct ConnectionDetails {
 #[allow(dead_code)]
 pub struct ChannelDetails {
     #[serde(rename(deserialize = "number"))]
-    pub id: u32,
+    pub id: ChannelId,
     pub name: String,
     pub connection_name: String,
     pub node: String,
@@ -830,7 +831,7 @@ impl Tabled for Consumer {
 pub struct NameAndVirtualHost {
     pub name: String,
     #[serde(rename(deserialize = "vhost"))]
-    pub vhost: String,
+    pub vhost: VirtualHostName,
 }
 
 impl fmt::Display for NameAndVirtualHost {
@@ -891,7 +892,7 @@ pub trait QueueOps {
 #[allow(dead_code)]
 pub struct QueueInfo {
     pub name: String,
-    pub vhost: String,
+    pub vhost: VirtualHostName,
     #[serde(rename(deserialize = "type"))]
     pub queue_type: String,
     pub durable: bool,
@@ -997,7 +998,7 @@ impl NamedPolicyTargetObject for QueueInfo {
 #[allow(dead_code)]
 pub struct QueueDefinition {
     pub name: String,
-    pub vhost: String,
+    pub vhost: VirtualHostName,
     pub durable: bool,
     pub auto_delete: bool,
     #[cfg_attr(feature = "tabled", tabled(skip))]
@@ -1166,7 +1167,7 @@ impl QueueOps for QueueDefinitionWithoutVirtualHost {
 #[allow(dead_code)]
 pub struct ExchangeInfo {
     pub name: String,
-    pub vhost: String,
+    pub vhost: VirtualHostName,
     #[serde(rename = "type")]
     pub exchange_type: String,
     pub durable: bool,
@@ -1217,7 +1218,7 @@ pub type ExchangeDefinitionWithoutVirtualHost = ExchangeInfoWithoutVirtualHost;
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct BindingInfo {
-    pub vhost: String,
+    pub vhost: VirtualHostName,
     pub source: String,
     pub destination: String,
     pub destination_type: BindingDestinationType,
@@ -1280,7 +1281,7 @@ pub struct ClusterNode {
 #[allow(dead_code)]
 pub struct RuntimeParameter {
     pub name: String,
-    pub vhost: String,
+    pub vhost: VirtualHostName,
     pub component: String,
     #[serde(deserialize_with = "deserialize_runtime_parameter_value")]
     pub value: RuntimeParameterValue,
@@ -1528,7 +1529,7 @@ impl fmt::Display for PolicyDefinition {
 #[allow(dead_code)]
 pub struct Policy {
     pub name: String,
-    pub vhost: String,
+    pub vhost: VirtualHostName,
     pub pattern: String,
     #[serde(rename(deserialize = "apply-to"))]
     pub apply_to: PolicyTarget,
@@ -1730,8 +1731,8 @@ pub trait NamedPolicyTargetObject {
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct Permissions {
-    pub user: String,
-    pub vhost: String,
+    pub user: Username,
+    pub vhost: VirtualHostName,
     pub configure: String,
     pub read: String,
     pub write: String,
@@ -1741,8 +1742,8 @@ pub struct Permissions {
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct TopicPermission {
-    pub user: String,
-    pub vhost: String,
+    pub user: Username,
+    pub vhost: VirtualHostName,
     pub exchange: String,
     pub read: String,
     pub write: String,
@@ -1992,7 +1993,7 @@ pub struct QuorumEndangeredQueue {
     pub name: String,
     pub readable_name: String,
     #[serde(rename(deserialize = "virtual_host"))]
-    pub vhost: String,
+    pub vhost: VirtualHostName,
     #[serde(rename(deserialize = "type"))]
     pub queue_type: String,
 }
@@ -2537,7 +2538,7 @@ impl From<MessagingProtocol> for String {
 #[allow(dead_code)]
 pub struct FederationUpstream {
     pub name: String,
-    pub vhost: String,
+    pub vhost: VirtualHostName,
     pub uri: String,
     pub ack_mode: MessageTransferAcknowledgementMode,
     #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
@@ -2670,7 +2671,7 @@ impl From<String> for FederationType {
 #[allow(dead_code)]
 pub struct FederationLink {
     pub node: String,
-    pub vhost: String,
+    pub vhost: VirtualHostName,
     pub id: String,
     pub uri: String,
     pub status: String,
@@ -2854,7 +2855,7 @@ pub struct SchemaDefinitionSyncStatus {
     pub node: String,
     pub operating_mode: OperatingMode,
     pub state: SchemaDefinitionSyncState,
-    pub upstream_username: String,
+    pub upstream_username: Username,
     pub upstream_endpoints: HostnamePortPairs,
     #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     #[serde(default)]

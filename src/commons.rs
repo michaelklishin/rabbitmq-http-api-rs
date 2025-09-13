@@ -16,6 +16,12 @@ use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
 
+pub type Username = String;
+pub type VirtualHostName = String;
+pub type PermissionPattern = String;
+
+pub type ChannelId = u32;
+
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 #[serde(rename_all(serialize = "lowercase", deserialize = "PascalCase"))]
 pub enum SupportedProtocol {
