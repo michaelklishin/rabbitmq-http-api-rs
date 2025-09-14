@@ -34,6 +34,13 @@ They have very similar APIs except that all functions of the async client are, w
  * Error types: @src/error.rs
  * Definition transformations: @src/transformers.rs
 
+## Test Suite Layout
+
+ * `tests/async*.rs` test modules test the async client
+ * `tests/blocking*.rs` test modules test the blocking client
+ * `tests/unit*.rs` modules are for unit tests
+ * `tests/test_helpers.rs` contains helper functions shared by multiple test modules
+
 ## Source of Domain Knowledge
 
  * [RabbitMQ HTTP API](https://www.rabbitmq.com/docs/http-api-reference)
