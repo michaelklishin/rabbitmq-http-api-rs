@@ -1799,8 +1799,6 @@ where
         Ok(())
     }
 
-    
-
     //
     // Warm Standby Replication (Tanzu RabbitMQ)
     //
