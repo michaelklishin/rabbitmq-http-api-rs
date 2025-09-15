@@ -1432,6 +1432,39 @@ where
         Ok(response)
     }
 
+    /// Lists all topic permissions in the cluster.
+    /// See [Topic Authorisation](https://www.rabbitmq.com/docs/access-control#topic-authorisation) to learn more.
+    pub async fn list_topic_permissions(&self) -> Result<Vec<responses::TopicPermission>> {
+        self.get_api_request("topic-permissions").await
+    }
+
+    /// Lists all topic permissions in a virtual host.
+    /// See [Topic Authorisation](https://www.rabbitmq.com/docs/access-control#topic-authorisation) to learn more.
+    pub async fn list_topic_permissions_in(
+        &self,
+        vhost: &str,
+    ) -> Result<Vec<responses::TopicPermission>> {
+        self.get_api_request(path!("vhosts", vhost, "topic-permissions"))
+            .await
+    }
+
+    /// Gets topic permissions for a user in a specific virtual host.
+    /// See [Topic Authorisation](https://www.rabbitmq.com/docs/access-control#topic-authorisation) to learn more.
+    pub async fn get_topic_permissions_of(
+        &self,
+        vhost: &str,
+        user: &str,
+    ) -> Result<responses::TopicPermission> {
+        // For some reason this endpoint returns a list instead of a single object
+        let response: Vec<responses::TopicPermission> = self
+            .get_api_request(path!("topic-permissions", vhost, user))
+            .await?;
+        match response.first() {
+            Some(p) => Ok(p.clone()),
+            None => Err(Error::NotFound),
+        }
+    }
+
     pub async fn get_permissions(&self, vhost: &str, user: &str) -> Result<responses::Permissions> {
         let response = self
             .http_get(path!("permissions", vhost, user), None, None)

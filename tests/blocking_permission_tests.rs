@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 use rabbitmq_http_client::blocking_api::Client;
+use rabbitmq_http_client::commons::ExchangeType;
 use rabbitmq_http_client::requests;
+use rabbitmq_http_client::requests::ExchangeParams;
 use rabbitmq_http_client::requests::Permissions;
 use rabbitmq_http_client::requests::VirtualHostParams;
 use rabbitmq_http_client::responses;
@@ -141,6 +143,136 @@ fn test_blocking_list_topic_permissions_of() {
         result.is_ok(),
         "list_topic_permissions_of returned {result:?}"
     );
+
+    rc.delete_vhost(vh_params.name, false).unwrap();
+}
+
+#[test]
+fn test_blocking_list_topic_permissions() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let vh_params = VirtualHostParams::named("test_list_topic_permissions");
+    let _ = rc.delete_vhost(vh_params.name, false);
+    let result1 = rc.create_vhost(&vh_params);
+    assert!(result1.is_ok());
+
+    let x_name = "test_blocking_list_topic_permissions.alt.topic";
+    let tx_params = ExchangeParams {
+        name: x_name,
+        exchange_type: ExchangeType::Topic,
+        durable: false,
+        auto_delete: false,
+        arguments: None,
+    };
+    let result2 = rc.declare_exchange(&vh_params.name, &tx_params);
+    assert!(result2.is_ok());
+
+    let params = requests::TopicPermissions {
+        user: "guest",
+        vhost: vh_params.name,
+        exchange: x_name,
+        read: ".*",
+        write: ".*",
+    };
+    let result3 = rc.declare_topic_permissions(&params);
+    assert!(
+        result3.is_ok(),
+        "declare_topic_permissions returned {result3:?}"
+    );
+
+    let result4 = rc.list_topic_permissions();
+    assert!(result4.is_ok());
+    let permissions = result4.unwrap();
+    assert!(permissions.iter().any(|p| p.vhost == vh_params.name));
+
+    rc.delete_vhost(vh_params.name, false).unwrap();
+}
+
+#[test]
+fn test_blocking_list_topic_permissions_in_vhost() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let vh_params = VirtualHostParams::named("test_blocking_list_topic_permissions_in_vhost");
+    let _ = rc.delete_vhost(vh_params.name, false);
+    let result1 = rc.create_vhost(&vh_params);
+    assert!(result1.is_ok());
+
+    let x_name = "test_blocking_list_topic_permissions_in_vhost.alt.topic";
+    let tx_params = ExchangeParams {
+        name: x_name,
+        exchange_type: ExchangeType::Topic,
+        durable: false,
+        auto_delete: false,
+        arguments: None,
+    };
+    let result2 = rc.declare_exchange(&vh_params.name, &tx_params);
+    assert!(result2.is_ok());
+
+    let topic_permissions_grant_params = requests::TopicPermissions {
+        user: "guest",
+        vhost: vh_params.name,
+        exchange: x_name,
+        read: ".*",
+        write: ".*",
+    };
+    let result3 = rc.declare_topic_permissions(&topic_permissions_grant_params);
+    assert!(
+        result3.is_ok(),
+        "declare_topic_permissions returned {result3:?}"
+    );
+
+    let result4 = rc.list_topic_permissions_in(vh_params.name);
+    assert!(result4.is_ok());
+    let permissions = result4.unwrap();
+    assert!(permissions.iter().any(|p| p.vhost == vh_params.name));
+
+    rc.delete_vhost(vh_params.name, false).unwrap();
+}
+
+#[test]
+fn test_blocking_get_topic_permissions() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let vh_params = VirtualHostParams::named("test_blocking_get_topic_permissions");
+    let _ = rc.delete_vhost(vh_params.name, false);
+    let result1 = rc.create_vhost(&vh_params);
+    assert!(result1.is_ok());
+
+    let x_name = "test_blocking_get_topic_permissions.alt.topic";
+    let tx_params = ExchangeParams {
+        name: x_name,
+        exchange_type: ExchangeType::Topic,
+        durable: false,
+        auto_delete: false,
+        arguments: None,
+    };
+    let result2 = rc.declare_exchange(&vh_params.name, &tx_params);
+    assert!(result2.is_ok());
+
+    let params = requests::TopicPermissions {
+        user: "guest",
+        vhost: vh_params.name,
+        exchange: x_name,
+        read: ".*",
+        write: ".*",
+    };
+    let result = rc.declare_topic_permissions(&params);
+    assert!(
+        result.is_ok(),
+        "declare_topic_permissions returned {result:?}"
+    );
+
+    let result2 = rc.get_topic_permissions_of(vh_params.name, "guest");
+    assert!(result2.is_ok());
+    let permissions = result2.unwrap();
+    assert_eq!(permissions.vhost, vh_params.name);
+    assert_eq!(permissions.user, "guest");
+    assert_eq!(permissions.exchange, x_name);
+    assert_eq!(permissions.read, ".*");
+    assert_eq!(permissions.write, ".*");
 
     rc.delete_vhost(vh_params.name, false).unwrap();
 }
