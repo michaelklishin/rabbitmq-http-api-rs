@@ -5,6 +5,7 @@
 ### Enhancements
 
  * `Client#current_user` is a new function providing support for the `GET /api/whoami` endpoint.
+ * `Client#auth_attempts_statistics` is a new function providing support for the `GET /api/auth/attempts/{node}` endpoint.
 
 
 ## v0.50.0 (Sep 13, 2025)
