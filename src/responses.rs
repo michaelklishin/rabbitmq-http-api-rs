@@ -634,6 +634,15 @@ impl User {
     }
 }
 
+/// Represents the currently authenticated user details returned by the `GET /api/whoami` endpoint.
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+#[allow(dead_code)]
+pub struct CurrentUser {
+    pub name: Username,
+    pub tags: TagList,
+}
+
 /// Represents a client connection.
 #[derive(Debug, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]

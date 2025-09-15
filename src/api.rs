@@ -659,6 +659,14 @@ where
         Ok(response)
     }
 
+    /// Returns information about the authenticated user.
+    /// See [Access Control Guide](https://www.rabbitmq.com/docs/access-control) to learn more.
+    pub async fn current_user(&self) -> Result<responses::CurrentUser> {
+        let response = self.http_get("whoami", None, None).await?;
+        let response = response.json().await?;
+        Ok(response)
+    }
+
     /// Returns information about a queue or stream.
     /// See [Queues Guide](https://www.rabbitmq.com/docs/queues) to learn more.
     pub async fn get_queue_info(

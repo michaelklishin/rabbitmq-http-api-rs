@@ -562,6 +562,12 @@ where
         self.get_api_request(path!("users", name))
     }
 
+    /// Returns information about the authenticated user.
+    /// See [Access Control Guide](https://www.rabbitmq.com/docs/access-control) to learn more.
+    pub fn current_user(&self) -> Result<responses::CurrentUser> {
+        self.get_api_request("whoami")
+    }
+
     /// Returns information about a queue or stream.
     /// See [Queues Guide](https://www.rabbitmq.com/docs/queues) to learn more.
     pub fn get_queue_info(&self, virtual_host: &str, name: &str) -> Result<responses::QueueInfo> {
