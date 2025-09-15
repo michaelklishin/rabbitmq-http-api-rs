@@ -146,3 +146,50 @@ fn test_blocking_list_queues_in_a_virtual_host() {
 
     rc.delete_queue(vh_name, params.name, false).unwrap();
 }
+
+#[test]
+pub fn test_blocking_list_queues_with_details() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let vh_name = "/";
+
+    let params =
+        QueueParams::new_durable_classic_queue("rust.tests.cq.detailed.blocking.18273486", None);
+    let result1 = rc.declare_queue(vh_name, &params);
+    assert!(result1.is_ok(), "declare_queue returned {result1:?}");
+
+    test_helpers::await_queue_metric_emission();
+
+    let result2 = rc.list_queues_with_details();
+    assert!(
+        result2.is_ok(),
+        "list_queues_with_details returned {result2:?}"
+    );
+
+    let detailed_queues = result2.unwrap();
+    assert!(
+        !detailed_queues.is_empty(),
+        "Expected at least one queue in detailed list"
+    );
+
+    // Find our test queue in the results
+    let test_queue = detailed_queues.iter().find(|q| q.name == params.name);
+    assert!(
+        test_queue.is_some(),
+        "Expected to find our test queue in detailed results"
+    );
+
+    let queue = test_queue.unwrap();
+    // Verify basic queue properties are present
+    assert_eq!(queue.name, params.name);
+    assert_eq!(queue.vhost, vh_name);
+    assert_eq!(queue.durable, true);
+
+    // More fields
+    if let Some(gc) = &queue.garbage_collection {
+        assert!(gc.fullsweep_after > 1000);
+    }
+
+    rc.delete_queue(vh_name, params.name, false).unwrap();
+}

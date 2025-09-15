@@ -20,9 +20,9 @@ use crate::requests::{
     FederationUpstreamParams, GlobalRuntimeParameterDefinition, SHOVEL_COMPONENT, StreamParams,
 };
 use crate::responses::{
-    AuthenticationAttemptStatistics, ClusterTags, DeprecatedFeatureList, FeatureFlag, FeatureFlagList, FeatureFlagStability,
-    FeatureFlagState, FederationUpstream, GetMessage, OAuthConfiguration, VirtualHostDefinitionSet,
-    WarmStandbyReplicationStatus,
+    AuthenticationAttemptStatistics, ClusterTags, DeprecatedFeatureList, FeatureFlag,
+    FeatureFlagList, FeatureFlagStability, FeatureFlagState, FederationUpstream, GetMessage,
+    OAuthConfiguration, VirtualHostDefinitionSet, WarmStandbyReplicationStatus,
 };
 use crate::{
     commons::{BindingDestinationType, SupportedProtocol, UserLimitTarget, VirtualHostLimitTarget},
@@ -464,6 +464,12 @@ where
     /// See [Queues Guide](https://www.rabbitmq.com/docs/queues) and [Streams Overview](https://www.rabbitmq.com/docs/streams) to learn more.
     pub fn list_queues_in(&self, virtual_host: &str) -> Result<Vec<responses::QueueInfo>> {
         self.get_api_request(path!("queues", virtual_host))
+    }
+
+    /// Lists all queues and streams across the cluster. Compared to [`list_queues`], provides more queue metrics.
+    /// See [Queues Guide](https://www.rabbitmq.com/docs/queues) and [RabbitMQ Streams Guide](https://www.rabbitmq.com/docs/streams) to learn more.
+    pub fn list_queues_with_details(&self) -> Result<Vec<responses::DetailedQueueInfo>> {
+        self.get_api_request("queues/detailed")
     }
 
     /// Lists all exchanges across the cluster.
@@ -1749,7 +1755,10 @@ where
     }
 
     /// Returns authentication attempt statistics for a given node.
-    pub fn auth_attempts_statistics(&self, node: &str) -> Result<Vec<AuthenticationAttemptStatistics>> {
+    pub fn auth_attempts_statistics(
+        &self,
+        node: &str,
+    ) -> Result<Vec<AuthenticationAttemptStatistics>> {
         let response = self.http_get(path!("auth", "attempts", node), None, None)?;
         let response = response.json()?;
         Ok(response)

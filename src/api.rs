@@ -20,9 +20,10 @@ use crate::requests::{
     FederationUpstreamParams, GlobalRuntimeParameterDefinition, SHOVEL_COMPONENT, StreamParams,
 };
 use crate::responses::{
-    AuthenticationAttemptStatistics, ClusterTags, DeprecatedFeatureList, FeatureFlag, FeatureFlagList, FeatureFlagStability,
-    FeatureFlagState, FederationUpstream, GetMessage, OAuthConfiguration, Overview,
-    SchemaDefinitionSyncStatus, VirtualHostDefinitionSet, WarmStandbyReplicationStatus,
+    AuthenticationAttemptStatistics, ClusterTags, DeprecatedFeatureList, FeatureFlag,
+    FeatureFlagList, FeatureFlagStability, FeatureFlagState, FederationUpstream, GetMessage,
+    OAuthConfiguration, Overview, SchemaDefinitionSyncStatus, VirtualHostDefinitionSet,
+    WarmStandbyReplicationStatus,
 };
 use crate::{
     commons::{BindingDestinationType, SupportedProtocol, UserLimitTarget, VirtualHostLimitTarget},
@@ -516,6 +517,14 @@ where
         let response = self
             .http_get(path!("queues", virtual_host), None, None)
             .await?;
+        let response = response.json().await?;
+        Ok(response)
+    }
+
+    /// Lists all queues and streams across the cluster. Compared to [`list_queues`], provides more queue metrics.
+    /// See [Queues Guide](https://www.rabbitmq.com/docs/queues) and [RabbitMQ Streams Guide](https://www.rabbitmq.com/docs/streams) to learn more.
+    pub async fn list_queues_with_details(&self) -> Result<Vec<responses::DetailedQueueInfo>> {
+        let response = self.http_get("queues/detailed", None, None).await?;
         let response = response.json().await?;
         Ok(response)
     }
@@ -1883,8 +1892,13 @@ where
     }
 
     /// Returns authentication attempt statistics for a given node.
-    pub async fn auth_attempts_statistics(&self, node: &str) -> Result<Vec<AuthenticationAttemptStatistics>> {
-        let response = self.http_get(path!("auth", "attempts", node), None, None).await?;
+    pub async fn auth_attempts_statistics(
+        &self,
+        node: &str,
+    ) -> Result<Vec<AuthenticationAttemptStatistics>> {
+        let response = self
+            .http_get(path!("auth", "attempts", node), None, None)
+            .await?;
         let response = response.json().await?;
         Ok(response)
     }

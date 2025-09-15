@@ -39,7 +39,7 @@ pub fn test_blocking_auth_attempts_statistics() {
                 for proto in stats {
                     assert!(proto.failure_count + proto.success_count <= proto.all_attempt_count);
                 }
-            },
+            }
             Err(_) => {
                 // Assume the endpoint wasn't available in this RabbitMQ version
             }
