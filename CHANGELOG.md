@@ -9,6 +9,7 @@
  * `Client#list_topic_permissions` is a new function that provides support for the `GET /api/topic-permissions` endpoint.
  * `Client#list_topic_permissions_in` is a new function that provides support for the `GET /api/vhosts/{vhost}/topic-permissions` endpoint.
  * `Client#get_topic_permissions_of` is a new function that provides support for the `GET /api/topic-permissions/{vhost}/{user}` endpoint.
+ * `Client#list_channels_on` is a new function that provides support for the `GET /api/connections/{connection}/channels` endpoint.
 
 
 ## v0.50.0 (Sep 13, 2025)
