@@ -2,7 +2,9 @@
 
 ## v0.51.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * `Client#current_user` is a new function providing support for the `GET /api/whoami` endpoint.
 
 
 ## v0.50.0 (Sep 13, 2025)
