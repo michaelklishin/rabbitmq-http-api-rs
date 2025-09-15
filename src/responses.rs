@@ -19,7 +19,7 @@ use std::{fmt, ops};
 
 use crate::commons::{
     BindingDestinationType, ChannelId, MessageTransferAcknowledgementMode, OverflowBehavior,
-    PolicyTarget, QueueType, Username, VirtualHostName, X_ARGUMENT_KEY_X_OVERFLOW,
+    PolicyTarget, QueueType, SupportedProtocol, Username, VirtualHostName, X_ARGUMENT_KEY_X_OVERFLOW,
     X_ARGUMENT_KEY_X_QUEUE_TYPE,
 };
 use crate::error::ConversionError;
@@ -527,6 +527,19 @@ pub struct OAuthConfiguration {
     pub oauth_client_id: Option<String>,
     #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub oauth_provider_url: Option<String>,
+}
+
+/// Represents a report on the authentication attempts made to a specific node.
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+pub struct AuthenticationAttemptStatistics {
+    pub protocol: SupportedProtocol,
+    #[serde(rename = "auth_attempts")]
+    pub all_attempt_count: u64,
+    #[serde(rename = "auth_attempts_failed")]
+    pub failure_count: u64,
+    #[serde(rename = "auth_attempts_succeeded")]
+    pub success_count: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]

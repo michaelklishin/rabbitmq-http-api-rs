@@ -20,7 +20,7 @@ use crate::requests::{
     FederationUpstreamParams, GlobalRuntimeParameterDefinition, SHOVEL_COMPONENT, StreamParams,
 };
 use crate::responses::{
-    ClusterTags, DeprecatedFeatureList, FeatureFlag, FeatureFlagList, FeatureFlagStability,
+    AuthenticationAttemptStatistics, ClusterTags, DeprecatedFeatureList, FeatureFlag, FeatureFlagList, FeatureFlagStability,
     FeatureFlagState, FederationUpstream, GetMessage, OAuthConfiguration, Overview,
     SchemaDefinitionSyncStatus, VirtualHostDefinitionSet, WarmStandbyReplicationStatus,
 };
@@ -1879,6 +1879,13 @@ where
         let response = self.http_get("auth", None, None).await?;
         let response = response.json().await?;
 
+        Ok(response)
+    }
+
+    /// Returns authentication attempt statistics for a given node.
+    pub async fn auth_attempts_statistics(&self, node: &str) -> Result<Vec<AuthenticationAttemptStatistics>> {
+        let response = self.http_get(path!("auth", "attempts", node), None, None).await?;
+        let response = response.json().await?;
         Ok(response)
     }
 
