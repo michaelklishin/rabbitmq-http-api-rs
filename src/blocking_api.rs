@@ -1785,6 +1785,10 @@ where
         Ok(response)
     }
 
+    //
+    // Authentication attempt statistics
+    //
+
     /// Returns authentication attempt statistics for a given node.
     pub fn auth_attempts_statistics(
         &self,
