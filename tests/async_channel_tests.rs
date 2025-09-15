@@ -13,12 +13,13 @@
 // limitations under the License.
 use amqprs::connection::{Connection, OpenConnectionArguments};
 use rabbitmq_http_client::api::Client;
+use std::time::Duration;
 
 mod test_helpers;
 use crate::test_helpers::{PASSWORD, USERNAME, endpoint, hostname};
 
 #[tokio::test]
-async fn test_list_channels() {
+async fn test_async_list_channels() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -38,7 +39,7 @@ async fn test_list_channels() {
 }
 
 #[tokio::test]
-async fn test_list_virtual_host_channels() {
+async fn test_async_list_virtual_host_channels() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -52,6 +53,34 @@ async fn test_list_virtual_host_channels() {
     let vh_name = "/";
     let result1 = rc.list_channels_in(vh_name).await;
     assert!(result1.is_ok(), "list_channels_in returned {result1:?}");
+
+    // just to be explicit
+    ch.close().await.unwrap();
+    conn.clone().close().await.unwrap();
+}
+
+#[tokio::test]
+async fn test_async_list_channels_on_connection() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let args = OpenConnectionArguments::new(&hostname(), 5672, USERNAME, PASSWORD);
+    let conn = Connection::open(&args).await.unwrap();
+    assert!(conn.is_open());
+
+    let ch = conn.open_channel(None).await.unwrap();
+    assert!(ch.is_open());
+
+    tokio::time::sleep(Duration::from_millis(1000)).await;
+
+    let connections = rc.list_connections().await.unwrap();
+    let first = connections.first().unwrap();
+
+    let result1 = rc.list_channels_on(&first.name).await;
+    assert!(result1.is_ok(), "list_channels_on returned {result1:?}");
+
+    let channels = result1.unwrap();
+    assert_eq!(1, channels.len());
 
     // just to be explicit
     ch.close().await.unwrap();

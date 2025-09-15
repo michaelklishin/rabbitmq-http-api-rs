@@ -405,6 +405,13 @@ where
             .await
     }
 
+    /// Lists all channels on a given AMQP 0-9-1 connection.
+    /// See [Channels Guide](https://www.rabbitmq.com/docs/channels) to learn more.
+    pub async fn list_channels_on(&self, connection_name: &str) -> Result<Vec<responses::Channel>> {
+        self.get_api_request(path!("connections", connection_name, "channels"))
+            .await
+    }
+
     /// Lists all stream publishers across the cluster.
     pub async fn list_stream_publishers(&self) -> Result<Vec<responses::StreamPublisher>> {
         let response = self
