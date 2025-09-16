@@ -226,6 +226,10 @@ impl<'a> QueueParams<'a> {
         }
     }
 
+    /// Returns declaration request parameters for a transient, auto-delete [classic queue](https://rabbitmq.com/docs/queues/).
+    ///
+    /// Classic queues are the traditional RabbitMQ queue type, suitable for straightforward
+    /// messaging scenarios. Limited to single-node operation but supports all RabbitMQ features.
     pub fn new_transient_autodelete(name: &'a str, optional_args: XArguments) -> Self {
         let typ = QueueType::Classic;
         let args = Self::combined_args(optional_args, &typ);

@@ -1001,7 +1001,7 @@ where
         routing_key: &str,
         arguments: XArguments,
     ) -> Result<HttpClientResponse> {
-        let args = arguments.unwrap();
+        let args = arguments.unwrap_or_default();
 
         // to delete a binding, we need properties, that we can get from the server
         // so we search for the binding before deleting it
