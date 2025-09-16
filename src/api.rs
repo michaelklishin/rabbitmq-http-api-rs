@@ -897,6 +897,29 @@ where
             .await
     }
 
+    /// Enables deletion protection for a virtual host.
+    ///
+    /// This prevents the virtual host from being deleted unless the protection
+    /// has been explicitly lifted (disabled) using [`disable_vhost_deletion_protection`].
+    ///
+    /// See [Virtual Host Deletion Protection](https://www.rabbitmq.com/vhosts.html#deletion-protection) to learn more.
+    pub async fn enable_vhost_deletion_protection(&self, vhost: &str) -> Result<()> {
+        self.http_post_without_body(path!("vhosts", vhost, "deletion", "protection"), None, None)
+            .await?;
+        Ok(())
+    }
+
+    /// Disables deletion protection for a virtual host.
+    ///
+    /// This allows the virtual host to be deleted again.
+    ///
+    /// See [Virtual Host Deletion Protection](https://www.rabbitmq.com/vhosts.html#deletion-protection) to learn more.
+    pub async fn disable_vhost_deletion_protection(&self, vhost: &str) -> Result<()> {
+        self.http_delete(path!("vhosts", vhost, "deletion", "protection"), None, None)
+            .await?;
+        Ok(())
+    }
+
     /// Deletes a user from the internal RabbitMQ user database.
     ///
     /// This removes the user account entirely, including all associated permissions
@@ -2245,6 +2268,31 @@ where
             .client
             .post(self.rooted_path(path))
             .json(&payload)
+            .basic_auth(&self.username, Some(&self.password))
+            .send()
+            .await?;
+        let response = self
+            .ok_or_status_code_error(
+                response,
+                client_code_to_accept_or_ignore,
+                server_code_to_accept_or_ignore,
+            )
+            .await?;
+        Ok(response)
+    }
+
+    async fn http_post_without_body<S>(
+        &self,
+        path: S,
+        client_code_to_accept_or_ignore: Option<StatusCode>,
+        server_code_to_accept_or_ignore: Option<StatusCode>,
+    ) -> Result<HttpClientResponse>
+    where
+        S: AsRef<str>,
+    {
+        let response = self
+            .client
+            .post(self.rooted_path(path))
             .basic_auth(&self.username, Some(&self.password))
             .send()
             .await?;

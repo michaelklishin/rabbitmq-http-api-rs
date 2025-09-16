@@ -161,3 +161,35 @@ async fn test_async_delete_vhost() {
     let result3 = rc.get_vhost(name).await;
     assert!(result3.is_err());
 }
+
+#[tokio::test]
+async fn test_async_vhost_deletion_protection() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+    let name = "rust_test_async_vhost_deletion_protection";
+
+    let _ = rc.delete_vhost(name, true).await;
+
+    let params = VirtualHostParams {
+        name,
+        description: None,
+        tags: None,
+        default_queue_type: None,
+        tracing: false,
+    };
+    let result1 = rc.create_vhost(&params).await;
+    assert!(result1.is_ok());
+
+    let result2 = rc.enable_vhost_deletion_protection(name).await;
+    assert!(result2.is_ok());
+
+    // cannot delete a vhost with deletion protection enabled
+    let result3 = rc.delete_vhost(name, false).await;
+    assert!(result3.is_err());
+
+    let result4 = rc.disable_vhost_deletion_protection(name).await;
+    assert!(result4.is_ok());
+
+    let result5 = rc.delete_vhost(name, false).await;
+    assert!(result5.is_ok());
+}

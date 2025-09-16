@@ -161,3 +161,35 @@ fn test_blocking_delete_vhost() {
     let result3 = rc.get_vhost(name);
     assert!(result3.is_err());
 }
+
+#[test]
+fn test_blocking_vhost_deletion_protection() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+    let name = "rust_test_blocking_vhost_deletion_protection";
+
+    let _ = rc.delete_vhost(name, true);
+
+    let params = VirtualHostParams {
+        name,
+        description: None,
+        tags: None,
+        default_queue_type: None,
+        tracing: false,
+    };
+    let result2 = rc.create_vhost(&params);
+    assert!(result2.is_ok());
+
+    let result3 = rc.enable_vhost_deletion_protection(name);
+    assert!(result3.is_ok());
+
+    // cannot delete a vhost with deletion protection enabled
+    let result4 = rc.delete_vhost(name, false);
+    assert!(result4.is_err());
+
+    let result5 = rc.disable_vhost_deletion_protection(name);
+    assert!(result5.is_ok());
+
+    let result6 = rc.delete_vhost(name, false);
+    assert!(result6.is_ok());
+}
