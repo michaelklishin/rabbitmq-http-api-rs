@@ -747,6 +747,44 @@ pub struct UserConnection {
     pub vhost: VirtualHostName,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum ChannelState {
+    Starting,
+    Running,
+    Closing,
+    #[serde(untagged)]
+    Unknown(String),
+}
+
+impl From<&str> for ChannelState {
+    fn from(value: &str) -> Self {
+        match value {
+            "starting" => ChannelState::Starting,
+            "running" => ChannelState::Running,
+            "closing" => ChannelState::Closing,
+            other => ChannelState::Unknown(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for ChannelState {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl fmt::Display for ChannelState {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ChannelState::Starting => write!(f, "starting"),
+            ChannelState::Running => write!(f, "running"),
+            ChannelState::Closing => write!(f, "closing"),
+            ChannelState::Unknown(s) => write!(f, "{}", s),
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
@@ -757,7 +795,7 @@ pub struct Channel {
     #[cfg_attr(feature = "tabled", tabled(skip))]
     pub connection_details: ConnectionDetails,
     pub vhost: VirtualHostName,
-    pub state: String,
+    pub state: ChannelState,
     pub consumer_count: u32,
     #[serde(rename(deserialize = "confirm"))]
     pub has_publisher_confirms_enabled: bool,

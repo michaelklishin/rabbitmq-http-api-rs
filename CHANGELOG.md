@@ -4,6 +4,7 @@
 
 ### Enhancements
 
+ * `responses::Channel#state` now uses an enum, `responses::ChannelState`, instead of a string.
  * `Client#enable_vhost_deletion_protection` [protects](https://www.rabbitmq.com/docs/vhosts#deletion-protection) a virtual host from deletion (using the `POST /api/vhosts/{vhost}/deletion/protection` endpoint).
  * `Client#disable_vhost_deletion_protection` lifts [deletion protection](https://www.rabbitmq.com/docs/vhosts#deletion-protection) (using the `DELETE /api/vhosts/{vhost}/deletion/protection` endpoint).
  * `Client#auth_attempts_statistics` is a new function providing support for the `GET /api/auth/attempts/{node}` endpoint.
