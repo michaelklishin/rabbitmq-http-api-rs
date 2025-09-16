@@ -528,27 +528,19 @@ where
     /// Lists all queues and streams across the cluster.
     /// See [Queues Guide](https://www.rabbitmq.com/docs/queues) and [RabbitMQ Streams Guide](https://www.rabbitmq.com/docs/streams) to learn more.
     pub async fn list_queues(&self) -> Result<Vec<responses::QueueInfo>> {
-        let response = self.http_get("queues", None, None).await?;
-        let response = response.json().await?;
-        Ok(response)
+        self.get_api_request("queues").await
     }
 
     /// Lists all queues and streams in the given virtual host.
     /// See [Queues Guide](https://www.rabbitmq.com/docs/queues) and [RabbitMQ Streams Guide](https://www.rabbitmq.com/docs/streams) to learn more.
     pub async fn list_queues_in(&self, virtual_host: &str) -> Result<Vec<responses::QueueInfo>> {
-        let response = self
-            .http_get(path!("queues", virtual_host), None, None)
-            .await?;
-        let response = response.json().await?;
-        Ok(response)
+        self.get_api_request(path!("queues", virtual_host)).await
     }
 
     /// Lists all queues and streams across the cluster. Compared to [`list_queues`], provides more queue metrics.
     /// See [Queues Guide](https://www.rabbitmq.com/docs/queues) and [RabbitMQ Streams Guide](https://www.rabbitmq.com/docs/streams) to learn more.
     pub async fn list_queues_with_details(&self) -> Result<Vec<responses::DetailedQueueInfo>> {
-        let response = self.http_get("queues/detailed", None, None).await?;
-        let response = response.json().await?;
-        Ok(response)
+        self.get_api_request("queues/detailed").await
     }
 
     /// Lists all exchanges across the cluster.
