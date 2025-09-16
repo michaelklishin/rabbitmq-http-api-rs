@@ -2994,56 +2994,65 @@ impl TryFrom<RuntimeParameter> for FederationUpstream {
         let uri = param
             .value
             .get("uri")
-            .map(|v| v.as_str().unwrap().to_owned())
-            .ok_or_else(|| ConversionError::MissingProperty {
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_owned())
+            .ok_or(ConversionError::MissingProperty {
                 argument: "uri".to_owned(),
             })?;
 
         let ack_mode = param
             .value
             .get("ack-mode")
-            .map(|v| MessageTransferAcknowledgementMode::from(v.as_str().unwrap_or("on-publish")))
-            .unwrap_or_default()
-            .to_owned();
+            .and_then(|v| v.as_str())
+            .map(MessageTransferAcknowledgementMode::from)
+            .unwrap_or_default();
         let reconnect_delay = param
             .value
             .get("reconnect-delay")
-            .map(|v| v.as_i64().unwrap() as u32);
+            .and_then(|v| v.as_u64())
+            .map(|v| v as u32);
         let trust_user_id = param
             .value
             .get("trust-user-id")
-            .map(|v| v.as_bool().unwrap_or_default());
+            .and_then(|v| v.as_bool());
 
         let exchange = param
             .value
             .get("exchange")
-            .map(|v| v.as_str().unwrap().to_owned());
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_owned());
 
         let max_hops = param
             .value
             .get("max-hops")
-            .map(|v| v.as_i64().unwrap() as u32);
+            .and_then(|v| v.as_u64())
+            .map(|v| v as u32);
         let expires = param
             .value
             .get("expires")
-            .map(|v| v.as_i64().unwrap() as u32);
+            .and_then(|v| v.as_u64())
+            .map(|v| v as u32);
         let message_ttl = param
             .value
             .get("message-ttl")
-            .map(|v| v.as_i64().unwrap() as u32);
+            .and_then(|v| v.as_u64())
+            .map(|v| v as u32);
         let queue_type = param
             .value
             .get("queue-type")
-            .map(|v| QueueType::from(v.as_str().unwrap_or("classic")));
+            .and_then(|v| v.as_str())
+            .map(QueueType::from);
 
         let queue = param
             .value
             .get("queue")
-            .map(|v| v.as_str().unwrap().to_owned());
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_owned());
         let consumer_tag = param
             .value
             .get("consumer-tag")
-            .map(|v| v.as_str().unwrap().to_owned());
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_owned());
 
         let upstream = FederationUpstream {
             name: param.name.clone(),

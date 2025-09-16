@@ -1065,9 +1065,7 @@ where
 
     /// Lists all [runtime parameters](https://www.rabbitmq.com/docs/parameters) defined in the cluster.
     pub async fn list_runtime_parameters(&self) -> Result<Vec<responses::RuntimeParameter>> {
-        let response = self.http_get("parameters", None, None).await?;
-        let response = response.json().await?;
-        Ok(response)
+        self.get_api_request("parameters").await
     }
 
     /// Lists all [runtime parameters](https://www.rabbitmq.com/docs/parameters) with a given
@@ -1076,11 +1074,7 @@ where
         &self,
         component: &str,
     ) -> Result<Vec<responses::RuntimeParameter>> {
-        let response = self
-            .http_get(path!("parameters", component), None, None)
-            .await?;
-        let response = response.json().await?;
-        Ok(response)
+        self.get_api_request(path!("parameters", component)).await
     }
 
     /// Lists all [runtime parameters](https://www.rabbitmq.com/docs/parameters) defined in
@@ -1090,11 +1084,8 @@ where
         component: &str,
         vhost: &str,
     ) -> Result<Vec<responses::RuntimeParameter>> {
-        let response = self
-            .http_get(path!("parameters", component, vhost), None, None)
-            .await?;
-        let response = response.json().await?;
-        Ok(response)
+        self.get_api_request(path!("parameters", component, vhost))
+            .await
     }
 
     pub async fn get_runtime_parameter(
