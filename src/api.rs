@@ -26,10 +26,7 @@ use crate::responses::{
     WarmStandbyReplicationStatus,
 };
 use crate::{
-    commons::{
-        BindingDestinationType, SupportedProtocol, UserLimitTarget,
-        VirtualHostLimitTarget,
-    },
+    commons::{BindingDestinationType, SupportedProtocol, UserLimitTarget, VirtualHostLimitTarget},
     path,
     requests::{
         self, BulkUserDelete, EnforcedLimitParams, ExchangeParams, Permissions, PolicyParams,
@@ -422,7 +419,10 @@ where
     /// Channel name is usually obtained from `crate::responses::Channel`,
     /// e.g. via `Client#list_channels`, `Client#list_channels_in`, `Client#list_channels_on`.
     /// See [Channels Guide](https://www.rabbitmq.com/docs/channels) to learn more.
-    pub async fn get_channel_info<S: AsRef<str>>(&self, channel_name: S) -> Result<responses::Channel> {
+    pub async fn get_channel_info<S: AsRef<str>>(
+        &self,
+        channel_name: S,
+    ) -> Result<responses::Channel> {
         self.get_api_request(path!("channels", channel_name.as_ref()))
             .await
     }

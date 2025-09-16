@@ -25,10 +25,7 @@ use crate::responses::{
     OAuthConfiguration, VirtualHostDefinitionSet, WarmStandbyReplicationStatus,
 };
 use crate::{
-    commons::{
-        BindingDestinationType, SupportedProtocol, UserLimitTarget,
-        VirtualHostLimitTarget,
-    },
+    commons::{BindingDestinationType, SupportedProtocol, UserLimitTarget, VirtualHostLimitTarget},
     path,
     requests::{
         self, BulkUserDelete, EnforcedLimitParams, ExchangeParams, Permissions, PolicyParams,
