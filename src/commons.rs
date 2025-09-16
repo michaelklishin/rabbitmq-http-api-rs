@@ -153,6 +153,39 @@ impl From<String> for SupportedProtocol {
     }
 }
 
+impl AsRef<str> for SupportedProtocol {
+    fn as_ref(&self) -> &str {
+        match self {
+            SupportedProtocol::Clustering => SUPPORTED_PROTOCOL_CLUSTERING,
+            SupportedProtocol::AMQP => SUPPORTED_PROTOCOL_AMQP,
+            SupportedProtocol::AMQPWithTLS => SUPPORTED_PROTOCOL_AMQP_WITH_TLS,
+            SupportedProtocol::Stream => SUPPORTED_PROTOCOL_STREAM,
+            SupportedProtocol::StreamWithTLS => SUPPORTED_PROTOCOL_STREAM_WITH_TLS,
+            SupportedProtocol::MQTT => SUPPORTED_PROTOCOL_MQTT,
+            SupportedProtocol::MQTTWithTLS => SUPPORTED_PROTOCOL_MQTT_WITH_TLS,
+            SupportedProtocol::STOMP => SUPPORTED_PROTOCOL_STOMP,
+            SupportedProtocol::STOMPWithTLS => SUPPORTED_PROTOCOL_STOMP_WITH_TLS,
+            SupportedProtocol::AMQPOverWebSockets => SUPPORTED_PROTOCOL_AMQP_OVER_WEBSOCKETS,
+            SupportedProtocol::AMQPOverWebSocketsWithTLS => {
+                SUPPORTED_PROTOCOL_AMQP_OVER_WEBSOCKETS_WITH_TLS
+            }
+            SupportedProtocol::MQTTOverWebSockets => SUPPORTED_PROTOCOL_MQTT_OVER_WEBSOCKETS,
+            SupportedProtocol::MQTTOverWebSocketsWithTLS => {
+                SUPPORTED_PROTOCOL_MQTT_OVER_WEBSOCKETS_WITH_TLS
+            }
+            SupportedProtocol::STOMPOverWebsockets => SUPPORTED_PROTOCOL_STOMP_OVER_WEBSOCKETS,
+            SupportedProtocol::STOMPOverWebsocketsWithTLS => {
+                SUPPORTED_PROTOCOL_STOMP_OVER_WEBSOCKETS_WITH_TLS
+            }
+            SupportedProtocol::Prometheus => SUPPORTED_PROTOCOL_PROMETHEUS,
+            SupportedProtocol::PrometheusWithTLS => SUPPORTED_PROTOCOL_PROMETHEUS_WITH_TLS,
+            SupportedProtocol::HTTP => SUPPORTED_PROTOCOL_HTTP,
+            SupportedProtocol::HTTPWithTLS => SUPPORTED_PROTOCOL_HTTP_WITH_TLS,
+            SupportedProtocol::Other(s) => s.as_str(),
+        }
+    }
+}
+
 impl From<SupportedProtocol> for String {
     fn from(value: SupportedProtocol) -> String {
         match value {
@@ -290,6 +323,26 @@ impl From<String> for ExchangeType {
     }
 }
 
+impl AsRef<str> for ExchangeType {
+    fn as_ref(&self) -> &str {
+        match self {
+            ExchangeType::Fanout => EXCHANGE_TYPE_FANOUT,
+            ExchangeType::Topic => EXCHANGE_TYPE_TOPIC,
+            ExchangeType::Direct => EXCHANGE_TYPE_DIRECT,
+            ExchangeType::Headers => EXCHANGE_TYPE_HEADERS,
+            ExchangeType::ConsistentHashing => EXCHANGE_TYPE_CONSISTENT_HASHING,
+            ExchangeType::ModulusHash => EXCHANGE_TYPE_MODULUS_HASH,
+            ExchangeType::Random => EXCHANGE_TYPE_RANDOM,
+            ExchangeType::LocalRandom => EXCHANGE_TYPE_LOCAL_RANDOM,
+            ExchangeType::JmsTopic => EXCHANGE_TYPE_JMS_TOPIC,
+            ExchangeType::RecentHistory => EXCHANGE_TYPE_RECENT_HISTORY,
+            ExchangeType::DelayedMessage => EXCHANGE_TYPE_DELAYED_MESSAGE,
+            ExchangeType::MessageDeduplication => EXCHANGE_TYPE_MESSAGE_DEDUPLICATION,
+            ExchangeType::Plugin(s) => s,
+        }
+    }
+}
+
 impl From<ExchangeType> for String {
     fn from(value: ExchangeType) -> String {
         match value {
@@ -355,6 +408,18 @@ impl From<String> for QueueType {
     }
 }
 
+impl AsRef<str> for QueueType {
+    fn as_ref(&self) -> &str {
+        match self {
+            QueueType::Classic => "classic",
+            QueueType::Quorum => "quorum",
+            QueueType::Stream => "stream",
+            QueueType::Delayed => "delayed",
+            QueueType::Unsupported(s) => s.as_str(),
+        }
+    }
+}
+
 impl From<QueueType> for String {
     fn from(value: QueueType) -> Self {
         match value {
@@ -409,6 +474,15 @@ impl From<&str> for BindingDestinationType {
 impl From<String> for BindingDestinationType {
     fn from(value: String) -> Self {
         Self::from(value.as_str())
+    }
+}
+
+impl AsRef<str> for BindingDestinationType {
+    fn as_ref(&self) -> &str {
+        match self {
+            BindingDestinationType::Queue => "queue",
+            BindingDestinationType::Exchange => "exchange",
+        }
     }
 }
 
@@ -532,6 +606,19 @@ impl From<String> for PolicyTarget {
     }
 }
 
+impl AsRef<str> for PolicyTarget {
+    fn as_ref(&self) -> &str {
+        match self {
+            PolicyTarget::Queues => "queues",
+            PolicyTarget::ClassicQueues => "classic_queues",
+            PolicyTarget::QuorumQueues => "quorum_queues",
+            PolicyTarget::Streams => "streams",
+            PolicyTarget::Exchanges => "exchanges",
+            PolicyTarget::All => "all",
+        }
+    }
+}
+
 impl From<PolicyTarget> for String {
     fn from(value: PolicyTarget) -> Self {
         match value {
@@ -646,6 +733,16 @@ impl From<&str> for MessageTransferAcknowledgementMode {
 impl From<String> for MessageTransferAcknowledgementMode {
     fn from(value: String) -> Self {
         Self::from(value.as_str())
+    }
+}
+
+impl AsRef<str> for MessageTransferAcknowledgementMode {
+    fn as_ref(&self) -> &str {
+        match self {
+            MessageTransferAcknowledgementMode::Immediate => "no-ack",
+            MessageTransferAcknowledgementMode::WhenPublished => "on-publish",
+            MessageTransferAcknowledgementMode::WhenConfirmed => "on-confirm",
+        }
     }
 }
 

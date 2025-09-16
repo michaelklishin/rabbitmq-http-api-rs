@@ -774,6 +774,17 @@ impl From<String> for ChannelState {
     }
 }
 
+impl AsRef<str> for ChannelState {
+    fn as_ref(&self) -> &str {
+        match self {
+            ChannelState::Starting => "starting",
+            ChannelState::Running => "running",
+            ChannelState::Closing => "closing",
+            ChannelState::Unknown(s) => s.as_str(),
+        }
+    }
+}
+
 impl fmt::Display for ChannelState {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -1569,6 +1580,12 @@ impl<'a> From<&'a str> for ClusterIdentity {
         Self {
             name: name.to_string(),
         }
+    }
+}
+
+impl AsRef<str> for ClusterIdentity {
+    fn as_ref(&self) -> &str {
+        &self.name
     }
 }
 
@@ -2447,6 +2464,17 @@ impl From<String> for FeatureFlagState {
     }
 }
 
+impl AsRef<str> for FeatureFlagState {
+    fn as_ref(&self) -> &str {
+        match self {
+            FeatureFlagState::Enabled => "enabled",
+            FeatureFlagState::Disabled => "disabled",
+            FeatureFlagState::StateChanging => "state_changing",
+            FeatureFlagState::Unavailable => "unavailable",
+        }
+    }
+}
+
 impl From<FeatureFlagState> for String {
     fn from(value: FeatureFlagState) -> Self {
         match value {
@@ -2497,6 +2525,16 @@ impl From<String> for FeatureFlagStability {
             "stable" => FeatureFlagStability::Stable,
             "experimental" => FeatureFlagStability::Experimental,
             _ => FeatureFlagStability::Stable,
+        }
+    }
+}
+
+impl AsRef<str> for FeatureFlagStability {
+    fn as_ref(&self) -> &str {
+        match self {
+            FeatureFlagStability::Required => "required",
+            FeatureFlagStability::Stable => "stable",
+            FeatureFlagStability::Experimental => "experimental",
         }
     }
 }
@@ -2593,6 +2631,18 @@ impl From<String> for DeprecationPhase {
             "disconnected" => DeprecationPhase::Disconnected,
             "removed" => DeprecationPhase::Removed,
             _ => DeprecationPhase::Undefined,
+        }
+    }
+}
+
+impl AsRef<str> for DeprecationPhase {
+    fn as_ref(&self) -> &str {
+        match self {
+            DeprecationPhase::PermittedByDefault => "permitted_by_default",
+            DeprecationPhase::DeniedByDefault => "denied_by_default",
+            DeprecationPhase::Disconnected => "disconnected",
+            DeprecationPhase::Removed => "removed",
+            DeprecationPhase::Undefined => "undefined",
         }
     }
 }
