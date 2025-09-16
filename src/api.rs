@@ -1779,7 +1779,7 @@ where
     pub async fn declare_amqp091_shovel(&self, params: Amqp091ShovelParams<'_>) -> Result<()> {
         let runtime_param = RuntimeParameterDefinition::from(params);
 
-        self.declare_shovel_parameters(&runtime_param).await
+        self.declare_shovel_parameter(&runtime_param).await
     }
 
     /// Declares [shovel](https://www.rabbitmq.com/docs/shovel) that will use the AMQP 1.0 protocol
@@ -1787,7 +1787,7 @@ where
     pub async fn declare_amqp10_shovel(&self, params: Amqp10ShovelParams<'_>) -> Result<()> {
         let runtime_param = RuntimeParameterDefinition::from(params);
 
-        self.declare_shovel_parameters(&runtime_param).await
+        self.declare_shovel_parameter(&runtime_param).await
     }
 
     /// Deletes a shovel in a specified virtual host.
@@ -2119,7 +2119,7 @@ where
         Ok(())
     }
 
-    async fn declare_shovel_parameters(
+    async fn declare_shovel_parameter(
         &self,
         runtime_param: &RuntimeParameterDefinition<'_>,
     ) -> Result<()> {
