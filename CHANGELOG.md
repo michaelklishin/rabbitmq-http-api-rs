@@ -2,6 +2,8 @@
 
 ## v0.52.0 (in development)
 
+ * No changes yet
+
 ## v0.51.0 (Sep 16, 2025)
 
 ### Enhancements
