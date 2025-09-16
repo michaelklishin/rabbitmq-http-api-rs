@@ -25,7 +25,10 @@ use crate::responses::{
     OAuthConfiguration, VirtualHostDefinitionSet, WarmStandbyReplicationStatus,
 };
 use crate::{
-    commons::{BindingDestinationType, SupportedProtocol, UserLimitTarget, VirtualHostLimitTarget},
+    commons::{
+        BindingDestinationType, SupportedProtocol, UserLimitTarget,
+        VirtualHostLimitTarget,
+    },
     path,
     requests::{
         self, BulkUserDelete, EnforcedLimitParams, ExchangeParams, Permissions, PolicyParams,
@@ -390,6 +393,17 @@ where
     /// See [Channels Guide](https://www.rabbitmq.com/docs/channels) to learn more.
     pub fn list_channels_on(&self, connection_name: &str) -> Result<Vec<responses::Channel>> {
         self.get_api_request(path!("connections", connection_name, "channels"))
+    }
+
+    /// Returns information about a specific channel.
+    ///
+    /// Unlike AMQP 0-9-1, HTTP API identifies channels by a string identifier instead of a numeric ID.
+    ///
+    /// Channel name is usually obtained from `crate::responses::Channel`,
+    /// e.g. via `Client#list_channels`, `Client#list_channels_in`, `Client#list_channels_on`.
+    /// See [Channels Guide](https://www.rabbitmq.com/docs/channels) to learn more.
+    pub fn get_channel_info<S: AsRef<str>>(&self, channel_name: S) -> Result<responses::Channel> {
+        self.get_api_request(path!("channels", channel_name.as_ref()))
     }
 
     /// Lists all stream publishers across the cluster.

@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-use amqprs::connection::{Connection, OpenConnectionArguments};
+use amqprs::{channel::ConfirmSelectArguments, connection::{Connection, OpenConnectionArguments}};
 use rabbitmq_http_client::api::Client;
 use std::time::Duration;
 
@@ -81,6 +81,39 @@ async fn test_async_list_channels_on_connection() {
 
     let channels = result1.unwrap();
     assert_eq!(1, channels.len());
+
+    // just to be explicit
+    ch.close().await.unwrap();
+    conn.clone().close().await.unwrap();
+}
+
+#[tokio::test]
+async fn test_async_get_channel_info() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let args = OpenConnectionArguments::new(&hostname(), 5672, USERNAME, PASSWORD);
+    let conn = Connection::open(&args).await.unwrap();
+    assert!(conn.is_open());
+
+    let ch = conn.open_channel(None).await.unwrap();
+    assert!(ch.is_open());
+    let _ = ch.confirm_select(ConfirmSelectArguments::default()).await;
+
+    tokio::time::sleep(Duration::from_millis(1000)).await;
+
+    let channels = rc.list_channels().await.unwrap();
+    assert!(!channels.is_empty(), "Expected at least one channel");
+
+    let first_channel = channels.first().unwrap();
+
+    // Note: the HTTP API uses a string channel name, not the numeric ID
+    let result1 = rc.get_channel_info(&first_channel.name).await;
+    assert!(result1.is_ok(), "get_channel_info returned {result1:?}");
+
+    let ch_details = result1.unwrap();
+    assert_eq!(ch_details.vhost, "/");
+    assert_eq!(ch_details.consumer_count, 0, "Expected 0 consumers");
 
     // just to be explicit
     ch.close().await.unwrap();
