@@ -193,3 +193,26 @@ pub fn test_blocking_list_queues_with_details() {
 
     rc.delete_queue(vh_name, params.name, false).unwrap();
 }
+
+#[test]
+fn test_blocking_declare_a_transient_auto_delete_queue() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+    let vhost = "/";
+    let name = "rust.tests.cq.test_blocking_declare_a_transient_auto_delete_queue";
+
+    let _ = rc.delete_queue(vhost, name, false);
+
+    let result1 = rc.get_queue_info(vhost, name);
+    assert!(result1.is_err());
+
+    let mut map = Map::<String, Value>::new();
+    map.insert("x-max-length-bytes".to_owned(), json!(3_000_000));
+    let optional_args = Some(map);
+    let params = QueueParams::new_transient_autodelete(name, optional_args);
+
+    let result2 = rc.declare_queue(vhost, &params);
+    assert!(result2.is_ok(), "declare_queue returned {result2:?}");
+
+    let _ = rc.delete_queue(vhost, name, false);
+}

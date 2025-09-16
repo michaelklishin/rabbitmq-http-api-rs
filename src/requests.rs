@@ -19,7 +19,9 @@
 
 use crate::commons::{ExchangeType, MessageTransferAcknowledgementMode, PolicyTarget, QueueType};
 use crate::responses;
-use crate::responses::{Policy, PolicyDefinition as PolDef};
+use crate::responses::{
+    ExchangeInfo, Policy, PolicyDefinition as PolDef, QueueInfo, RuntimeParameter, VirtualHost,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value, json};
 
@@ -224,6 +226,19 @@ impl<'a> QueueParams<'a> {
         }
     }
 
+    pub fn new_transient_autodelete(name: &'a str, optional_args: XArguments) -> Self {
+        let typ = QueueType::Classic;
+        let args = Self::combined_args(optional_args, &typ);
+        Self {
+            name,
+            queue_type: QueueType::Classic,
+            durable: false,
+            auto_delete: true,
+            exclusive: false,
+            arguments: args,
+        }
+    }
+
     /// For when you want to control every queue property.
     pub fn new(
         name: &'a str,
@@ -253,6 +268,65 @@ impl<'a> QueueParams<'a> {
         }
 
         Some(result)
+    }
+
+    pub fn with_message_ttl(mut self, millis: u64) -> Self {
+        self.add_argument("x-message-ttl".to_owned(), json!(millis));
+        self
+    }
+
+    pub fn with_queue_ttl(mut self, millis: u64) -> Self {
+        self.add_argument("x-expires".to_owned(), json!(millis));
+        self
+    }
+
+    pub fn with_max_length(mut self, max_length: u64) -> Self {
+        self.add_argument("x-max-length".to_owned(), json!(max_length));
+        self
+    }
+
+    pub fn with_max_length_bytes(mut self, max_length_in_bytes: u64) -> Self {
+        self.add_argument("x-max-length-bytes".to_owned(), json!(max_length_in_bytes));
+        self
+    }
+
+    pub fn with_dead_letter_exchange(mut self, exchange: &str) -> Self {
+        self.add_argument("x-dead-letter-exchange".to_owned(), json!(exchange));
+        self
+    }
+
+    pub fn with_dead_letter_routing_key(mut self, routing_key: &str) -> Self {
+        self.add_argument("x-dead-letter-routing-key".to_owned(), json!(routing_key));
+        self
+    }
+
+    pub fn with_argument(mut self, key: String, value: Value) -> Self {
+        self.add_argument(key, value);
+        self
+    }
+
+    fn add_argument(&mut self, key: String, value: Value) {
+        self.arguments
+            .get_or_insert_with(Default::default)
+            .insert(key, value);
+    }
+}
+
+impl<'a> From<&'a QueueInfo> for QueueParams<'a> {
+    fn from(queue: &'a QueueInfo) -> Self {
+        let queue_type = QueueType::from(queue.queue_type.as_str());
+        Self {
+            name: &queue.name,
+            queue_type,
+            durable: queue.durable,
+            auto_delete: queue.auto_delete,
+            exclusive: queue.exclusive,
+            arguments: if queue.arguments.is_empty() {
+                None
+            } else {
+                Some(queue.arguments.0.clone())
+            },
+        }
     }
 }
 
@@ -310,6 +384,23 @@ impl<'a> StreamParams<'a> {
             max_segment_length_bytes: None,
             arguments: None,
         }
+    }
+
+    pub fn with_max_length_bytes(mut self, bytes: u64) -> Self {
+        self.max_length_bytes = Some(bytes);
+        self
+    }
+
+    pub fn with_max_segment_length_bytes(mut self, bytes: u64) -> Self {
+        self.max_segment_length_bytes = Some(bytes);
+        self
+    }
+
+    pub fn with_argument(mut self, key: String, value: Value) -> Self {
+        self.arguments
+            .get_or_insert_with(Default::default)
+            .insert(key, value);
+        self
     }
 }
 
@@ -494,6 +585,29 @@ impl<'a> ExchangeParams<'a> {
             arguments: optional_args,
         }
     }
+
+    pub fn with_argument(mut self, key: String, value: Value) -> Self {
+        self.arguments
+            .get_or_insert_with(Default::default)
+            .insert(key, value);
+        self
+    }
+}
+
+impl<'a> From<&'a ExchangeInfo> for ExchangeParams<'a> {
+    fn from(exchange: &'a ExchangeInfo) -> Self {
+        Self {
+            name: &exchange.name,
+            exchange_type: ExchangeType::from(exchange.exchange_type.as_str()),
+            durable: exchange.durable,
+            auto_delete: exchange.auto_delete,
+            arguments: if exchange.arguments.is_empty() {
+                None
+            } else {
+                Some(exchange.arguments.0.clone())
+            },
+        }
+    }
 }
 
 /// Represents a bulk user delete operation.
@@ -527,6 +641,17 @@ pub struct RuntimeParameterDefinition<'a> {
     pub vhost: &'a str,
     pub component: &'a str,
     pub value: RuntimeParameterValue,
+}
+
+impl<'a> From<&'a RuntimeParameter> for RuntimeParameterDefinition<'a> {
+    fn from(param: &'a RuntimeParameter) -> Self {
+        Self {
+            name: &param.name,
+            vhost: &param.vhost,
+            component: &param.component,
+            value: param.value.0.clone(),
+        }
+    }
 }
 
 /// Represents a [global runtime parameter](https://rabbitmq.com/docs/parameters/).
@@ -1209,5 +1334,24 @@ impl EmptyPayload {
     /// Returns a new empty payload instance.
     pub fn new() -> Self {
         Self
+    }
+}
+
+impl<'a> From<&'a VirtualHost> for VirtualHostParams<'a> {
+    fn from(vhost: &'a VirtualHost) -> Self {
+        Self {
+            name: &vhost.name,
+            description: vhost.description.as_deref(),
+            tags: vhost
+                .tags
+                .as_ref()
+                .map(|tags| tags.iter().map(|s| s.as_str()).collect()),
+            default_queue_type: vhost
+                .default_queue_type
+                .as_ref()
+                .map(|s| QueueType::from(s.as_str())),
+            // this is an inherently transient setting
+            tracing: false,
+        }
     }
 }

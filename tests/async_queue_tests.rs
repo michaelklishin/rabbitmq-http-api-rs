@@ -89,6 +89,29 @@ async fn test_async_declare_a_stream_with_declare_queue() {
 }
 
 #[tokio::test]
+async fn test_async_declare_a_transient_auto_delete_queue() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+    let vhost = "/";
+    let name = "rust.tests.cq.test_async_declare_a_transient_auto_delete_queue";
+
+    let _ = rc.delete_queue(vhost, name, false).await;
+
+    let result1 = rc.get_queue_info(vhost, name).await;
+    assert!(result1.is_err());
+
+    let mut map = Map::<String, Value>::new();
+    map.insert("x-max-length-bytes".to_owned(), json!(3_000_000));
+    let optional_args = Some(map);
+    let params = QueueParams::new_transient_autodelete(name, optional_args);
+
+    let result2 = rc.declare_queue(vhost, &params).await;
+    assert!(result2.is_ok(), "declare_queue returned {result2:?}");
+
+    let _ = rc.delete_queue(vhost, name, false).await;
+}
+
+#[tokio::test]
 async fn test_async_delete_queue() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
