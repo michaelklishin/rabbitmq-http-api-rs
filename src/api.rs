@@ -952,15 +952,11 @@ where
         username: &str,
         idempotently: bool,
     ) -> Result<()> {
-        let excludes = if idempotently {
-            Some(StatusCode::NOT_FOUND)
-        } else {
-            None
-        };
-        let _response = self
-            .http_delete(path!("permissions", vhost, username), excludes, None)
-            .await?;
-        Ok(())
+        self.delete_api_request_with_optional_not_found(
+            path!("permissions", vhost, username),
+            idempotently,
+        )
+        .await
     }
 
     /// Deletes a queue in a specified virtual host.
@@ -2009,7 +2005,7 @@ where
 
     /// Enables schema definition synchronization on a single node or cluster-wide.
     /// Schema definition sync is a Tanzu RabbitMQ-specific feature.
-    pub async fn enable_schema_definition_sync_one_node(&self, node: Option<&str>) -> Result<()> {
+    pub async fn enable_schema_definition_sync_on_node(&self, node: Option<&str>) -> Result<()> {
         let payload = EmptyPayload::new();
         let _ = match node {
             Some(val) => {

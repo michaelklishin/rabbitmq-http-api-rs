@@ -17,6 +17,11 @@
  * `Client#get_channel_info` returns information about a specific channel.
  * `Client#current_user` is a new function providing support for the `GET /api/whoami` endpoint.
 
+### Bug Fixes
+
+ * `Client#delete_binding` could panic if the optional `x-arguments` value was passed in as `None` 
+ * `api::Client#enable_schema_definition_sync_on_node` was unintentionally named `enable_schema_definition_sync_one_node`
+
 ## v0.50.0 (Sep 13, 2025)
 
 ### Breaking Changes
