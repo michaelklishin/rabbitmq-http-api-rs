@@ -3011,10 +3011,7 @@ impl TryFrom<RuntimeParameter> for FederationUpstream {
             .get("reconnect-delay")
             .and_then(|v| v.as_u64())
             .map(|v| v as u32);
-        let trust_user_id = param
-            .value
-            .get("trust-user-id")
-            .and_then(|v| v.as_bool());
+        let trust_user_id = param.value.get("trust-user-id").and_then(|v| v.as_bool());
 
         let exchange = param
             .value
