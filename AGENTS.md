@@ -30,7 +30,7 @@ They have very similar APIs except that all functions of the async client are, w
  * Blocking client: @src/blocking_api.rs
  * HTTP API request types: @src/requests.rs
  * HTTP API response types: @src/responses.rs
- * Types shared between requests and responses: @src/common.rs
+ * Types shared between requests and responses: @src/commons.rs
  * Error types: @src/error.rs
  * Definition transformations: @src/transformers.rs
 
@@ -46,9 +46,12 @@ They have very similar APIs except that all functions of the async client are, w
  * [RabbitMQ HTTP API](https://www.rabbitmq.com/docs/http-api-reference)
  * [RabbitMQ Documentation](https://www.rabbitmq.com/docs/)
 
+Treat this documentation as the ultimate first party source of truth.
+
 ## Change Log
 
-If asked to perform change log updates, consult and modify @CHANGELOG.md.
+If asked to perform change log updates, consult and modify @CHANGELOG.md and stick to its
+existing writing style.
 
 ## Git Commits
 
