@@ -42,7 +42,7 @@ use std::fmt::Formatter;
 #[cfg(feature = "tabled")]
 use tabled::Tabled;
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
 pub struct TagList(pub Vec<String>);
 
 impl TagList {
@@ -56,6 +56,14 @@ impl TagList {
 
     pub fn contains(&self, key: &str) -> bool {
         self.0.iter().any(|s| s == key)
+    }
+
+    pub fn iter(&self) -> std::slice::Iter<'_, String> {
+        self.0.iter()
+    }
+
+    pub fn iter_mut(&mut self) -> std::slice::IterMut<'_, String> {
+        self.0.iter_mut()
     }
 }
 
@@ -82,7 +90,7 @@ impl IntoIterator for TagList {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
 pub struct PluginList(pub Vec<String>);
 
 impl PluginList {
@@ -96,6 +104,14 @@ impl PluginList {
 
     pub fn contains(&self, key: &str) -> bool {
         self.0.iter().any(|s| s == key)
+    }
+
+    pub fn iter(&self) -> std::slice::Iter<'_, String> {
+        self.0.iter()
+    }
+
+    pub fn iter_mut(&mut self) -> std::slice::IterMut<'_, String> {
+        self.0.iter_mut()
     }
 }
 
@@ -122,7 +138,7 @@ impl IntoIterator for PluginList {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct XArguments(pub Map<String, serde_json::Value>);
 
 impl ops::Deref for XArguments {
@@ -259,7 +275,7 @@ impl fmt::Display for GlobalRuntimeParameterValue {
     }
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, PartialEq, Eq, Hash)]
 pub struct NodeList(Vec<String>);
 
 impl fmt::Display for NodeList {
@@ -279,6 +295,14 @@ impl NodeList {
 
     pub fn contains(&self, key: &str) -> bool {
         self.0.iter().any(|s| s == key)
+    }
+
+    pub fn iter(&self) -> std::slice::Iter<'_, String> {
+        self.0.iter()
+    }
+
+    pub fn iter_mut(&mut self) -> std::slice::IterMut<'_, String> {
+        self.0.iter_mut()
     }
 }
 
@@ -1014,7 +1038,7 @@ pub trait QueueOps {
     }
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct QueueInfo {
@@ -1467,7 +1491,7 @@ impl QueueOps for QueueDefinitionWithoutVirtualHost {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct ExchangeInfo {
@@ -1519,7 +1543,7 @@ pub struct ExchangeInfoWithoutVirtualHost {
 
 pub type ExchangeDefinitionWithoutVirtualHost = ExchangeInfoWithoutVirtualHost;
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct BindingInfo {
@@ -2660,6 +2684,14 @@ impl FeatureFlagList {
     pub fn contains(&self, key: &str) -> bool {
         self.0.iter().any(|ff| ff.name == key)
     }
+
+    pub fn iter(&self) -> std::slice::Iter<'_, FeatureFlag> {
+        self.0.iter()
+    }
+
+    pub fn iter_mut(&mut self) -> std::slice::IterMut<'_, FeatureFlag> {
+        self.0.iter_mut()
+    }
 }
 
 impl ops::Deref for FeatureFlagList {
@@ -2786,6 +2818,14 @@ impl DeprecatedFeatureList {
 
     pub fn contains(&self, key: &str) -> bool {
         self.0.iter().any(|df| df.name == key)
+    }
+
+    pub fn iter(&self) -> std::slice::Iter<'_, DeprecatedFeature> {
+        self.0.iter()
+    }
+
+    pub fn iter_mut(&mut self) -> std::slice::IterMut<'_, DeprecatedFeature> {
+        self.0.iter_mut()
     }
 }
 

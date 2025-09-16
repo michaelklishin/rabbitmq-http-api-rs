@@ -22,7 +22,7 @@ pub type PermissionPattern = String;
 
 pub type ChannelId = u32;
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone, Hash)]
 #[serde(rename_all(serialize = "lowercase", deserialize = "PascalCase"))]
 pub enum SupportedProtocol {
     /// Represents the inter-node and CLI tool communication protocol
@@ -241,7 +241,7 @@ impl fmt::Display for SupportedProtocol {
 
 /// Exchange types. Most variants are for exchange types included with modern RabbitMQ distributions.
 /// For custom types provided by 3rd party plugins, use the `Plugin(String)` variant.
-#[derive(Eq, PartialEq, Serialize, Deserialize, Debug, Clone)]
+#[derive(Eq, PartialEq, Serialize, Deserialize, Debug, Clone, Hash)]
 #[serde(rename_all(serialize = "lowercase", deserialize = "PascalCase"))]
 pub enum ExchangeType {
     /// Fanout exchange
@@ -363,7 +363,7 @@ impl From<ExchangeType> for String {
     }
 }
 
-#[derive(Eq, PartialEq, Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Eq, PartialEq, Debug, Serialize, Deserialize, Clone, Default, Hash)]
 #[serde(rename_all(serialize = "lowercase", deserialize = "PascalCase"))]
 pub enum QueueType {
     #[default]
@@ -434,7 +434,7 @@ impl From<QueueType> for String {
 
 /// Binding destination can be either a queue or another exchange
 /// (in the case of [exchange-to-exchange bindings](https://rabbitmq.com/docs/e2e/)).
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
 #[serde(rename_all = "lowercase")]
 pub enum BindingDestinationType {
     Queue,
