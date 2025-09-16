@@ -59,6 +59,20 @@ impl TagList {
     }
 }
 
+impl ops::Deref for TagList {
+    type Target = Vec<String>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl ops::DerefMut for TagList {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
 impl IntoIterator for TagList {
     type Item = String;
     type IntoIter = std::vec::IntoIter<Self::Item>;
@@ -85,6 +99,20 @@ impl PluginList {
     }
 }
 
+impl ops::Deref for PluginList {
+    type Target = Vec<String>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl ops::DerefMut for PluginList {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
 impl IntoIterator for PluginList {
     type Item = String;
     type IntoIter = std::vec::IntoIter<Self::Item>;
@@ -96,6 +124,20 @@ impl IntoIterator for PluginList {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct XArguments(pub Map<String, serde_json::Value>);
+
+impl ops::Deref for XArguments {
+    type Target = Map<String, serde_json::Value>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl ops::DerefMut for XArguments {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
 
 impl XArguments {
     pub const CMQ_KEYS: [&'static str; 6] = [
@@ -237,6 +279,20 @@ impl NodeList {
 
     pub fn contains(&self, key: &str) -> bool {
         self.0.iter().any(|s| s == key)
+    }
+}
+
+impl ops::Deref for NodeList {
+    type Target = Vec<String>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl ops::DerefMut for NodeList {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }
 
@@ -2282,6 +2338,20 @@ impl MessageList {
     }
 }
 
+impl ops::Deref for MessageList {
+    type Target = Vec<GetMessage>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl ops::DerefMut for MessageList {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
 impl IntoIterator for MessageList {
     type Item = GetMessage;
     type IntoIter = std::vec::IntoIter<Self::Item>;
@@ -2592,6 +2662,20 @@ impl FeatureFlagList {
     }
 }
 
+impl ops::Deref for FeatureFlagList {
+    type Target = Vec<FeatureFlag>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl ops::DerefMut for FeatureFlagList {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
 impl IntoIterator for FeatureFlagList {
     type Item = FeatureFlag;
     type IntoIter = std::vec::IntoIter<Self::Item>;
@@ -2702,6 +2786,20 @@ impl DeprecatedFeatureList {
 
     pub fn contains(&self, key: &str) -> bool {
         self.0.iter().any(|df| df.name == key)
+    }
+}
+
+impl ops::Deref for DeprecatedFeatureList {
+    type Target = Vec<DeprecatedFeature>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl ops::DerefMut for DeprecatedFeatureList {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }
 
