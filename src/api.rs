@@ -630,27 +630,19 @@ where
     /// Lists all consumers across the cluster.
     /// See [Consumers Guide](https://www.rabbitmq.com/docs/consumers) to learn more.
     pub async fn list_consumers(&self) -> Result<Vec<responses::Consumer>> {
-        let response = self.http_get("consumers", None, None).await?;
-        let response = response.json().await?;
-        Ok(response)
+        self.get_api_request("consumers").await
     }
 
     /// Lists all consumers in the given virtual host.
     /// See [Consumers Guide](https://www.rabbitmq.com/docs/consumers) to learn more.
     pub async fn list_consumers_in(&self, virtual_host: &str) -> Result<Vec<responses::Consumer>> {
-        let response = self
-            .http_get(path!("consumers", virtual_host), None, None)
-            .await?;
-        let response = response.json().await?;
-        Ok(response)
+        self.get_api_request(path!("consumers", virtual_host)).await
     }
 
     /// Returns information about a cluster node.
     /// See [Clustering Guide](https://www.rabbitmq.com/docs/clustering) to learn more.
     pub async fn get_node_info(&self, name: &str) -> Result<responses::ClusterNode> {
-        let response = self.http_get(path!("nodes", name), None, None).await?;
-        let response = response.json().await?;
-        Ok(response)
+        self.get_api_request(path!("nodes", name)).await
     }
 
     /// Returns memory usage information for a cluster node.
@@ -669,9 +661,7 @@ where
     /// Returns information about a virtual host.
     /// See [Virtual Hosts Guide](https://www.rabbitmq.com/docs/vhosts) to learn more.
     pub async fn get_vhost(&self, name: &str) -> Result<responses::VirtualHost> {
-        let response = self.http_get(path!("vhosts", name), None, None).await?;
-        let response = response.json().await?;
-        Ok(response)
+        self.get_api_request(path!("vhosts", name)).await
     }
 
     /// Returns information about a user in the internal database.

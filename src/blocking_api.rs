@@ -969,9 +969,7 @@ where
 
     /// Lists all [runtime parameters](https://www.rabbitmq.com/docs/parameters) defined in the cluster.
     pub fn list_runtime_parameters(&self) -> Result<Vec<responses::RuntimeParameter>> {
-        let response = self.http_get("parameters", None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request("parameters")
     }
 
     /// Lists all [runtime parameters](https://www.rabbitmq.com/docs/parameters) with a given
@@ -980,9 +978,7 @@ where
         &self,
         component: &str,
     ) -> Result<Vec<responses::RuntimeParameter>> {
-        let response = self.http_get(path!("parameters", component), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("parameters", component))
     }
 
     /// Lists all [runtime parameters](https://www.rabbitmq.com/docs/parameters) defined in
@@ -992,9 +988,7 @@ where
         component: &str,
         vhost: &str,
     ) -> Result<Vec<responses::RuntimeParameter>> {
-        let response = self.http_get(path!("parameters", component, vhost), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("parameters", component, vhost))
     }
 
     /// Retrieves a specific runtime parameter by component, virtual host, and name.
@@ -1008,9 +1002,7 @@ where
         vhost: &str,
         name: &str,
     ) -> Result<responses::RuntimeParameter> {
-        let response = self.http_get(path!("parameters", component, vhost, name), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("parameters", component, vhost, name))
     }
 
     /// Creates a new runtime parameter or updates an existing one.
@@ -1069,9 +1061,7 @@ where
 
     /// Lists global runtime parameters.
     pub fn list_global_runtime_parameters(&self) -> Result<Vec<responses::GlobalRuntimeParameter>> {
-        let response = self.http_get("global-parameters", None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request("global-parameters")
     }
 
     /// Gets a global runtime parameter.
@@ -1079,9 +1069,7 @@ where
         &self,
         name: &str,
     ) -> Result<responses::GlobalRuntimeParameter> {
-        let response = self.http_get(path!("global-parameters", name), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("global-parameters", name))
     }
 
     /// Creates or updates a global runtime parameter.
@@ -1210,24 +1198,18 @@ where
 
     /// Fetches a [policy](https://www.rabbitmq.com/docs/policies).
     pub fn get_policy(&self, vhost: &str, name: &str) -> Result<responses::Policy> {
-        let response = self.http_get(path!("policies", vhost, name), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("policies", vhost, name))
     }
 
     /// Lists all [policies](https://www.rabbitmq.com/docs/policies) in the cluster (across all virtual hosts), taking the user's
     /// permissions into account.
     pub fn list_policies(&self) -> Result<Vec<responses::Policy>> {
-        let response = self.http_get("policies", None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request("policies")
     }
 
     /// Lists policies in a virtual host.
     pub fn list_policies_in(&self, vhost: &str) -> Result<Vec<responses::Policy>> {
-        let response = self.http_get(path!("policies", vhost), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("policies", vhost))
     }
 
     /// Declares a [policy](https://www.rabbitmq.com/docs/policies).
@@ -1281,23 +1263,17 @@ where
 
     /// Gets an operator policy.
     pub fn get_operator_policy(&self, vhost: &str, name: &str) -> Result<responses::Policy> {
-        let response = self.http_get(path!("operator-policies", vhost, name), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("operator-policies", vhost, name))
     }
 
     /// Lists all operator policies.
     pub fn list_operator_policies(&self) -> Result<Vec<responses::Policy>> {
-        let response = self.http_get("operator-policies", None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request("operator-policies")
     }
 
     /// Lists operator policies in a virtual host.
     pub fn list_operator_policies_in(&self, vhost: &str) -> Result<Vec<responses::Policy>> {
-        let response = self.http_get(path!("operator-policies", vhost), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("operator-policies", vhost))
     }
 
     /// Declares an operator policy.
@@ -1341,31 +1317,23 @@ where
 
     /// Lists all permissions.
     pub fn list_permissions(&self) -> Result<Vec<responses::Permissions>> {
-        let response = self.http_get("permissions", None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request("permissions")
     }
 
     /// Lists permissions in a virtual host.
     pub fn list_permissions_in(&self, vhost: &str) -> Result<Vec<responses::Permissions>> {
-        let response = self.http_get(path!("vhosts", vhost, "permissions"), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("vhosts", vhost, "permissions"))
     }
 
     /// Lists permissions for a specific user.
     pub fn list_permissions_of(&self, user: &str) -> Result<Vec<responses::Permissions>> {
-        let response = self.http_get(path!("users", user, "permissions"), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("users", user, "permissions"))
     }
 
     /// Lists all topic permissions of a user.
     /// See [Topic Authorisation](https://www.rabbitmq.com/docs/access-control#topic-authorisation) to learn more.
     pub fn list_topic_permissions_of(&self, user: &str) -> Result<Vec<responses::TopicPermission>> {
-        let response = self.http_get(path!("users", user, "topic-permissions"), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("users", user, "topic-permissions"))
     }
 
     /// Lists all topic permissions in the cluster.
@@ -1401,9 +1369,7 @@ where
 
     /// Gets permissions for a user in a virtual host.
     pub fn get_permissions(&self, vhost: &str, user: &str) -> Result<responses::Permissions> {
-        let response = self.http_get(path!("permissions", vhost, user), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("permissions", vhost, user))
     }
 
     /// Sets [topic permissions](https://www.rabbitmq.com/docs/access-control#topic-authorisation) in a specific virtual host.
