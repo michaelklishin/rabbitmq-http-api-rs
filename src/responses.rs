@@ -1467,6 +1467,16 @@ pub struct QueueDefinitionWithoutVirtualHost {
     pub arguments: XArguments,
 }
 
+impl QueueDefinitionWithoutVirtualHost {
+    pub fn update_queue_type(&mut self, typ: QueueType) -> &mut Self {
+        self.arguments.remove(X_ARGUMENT_KEY_X_QUEUE_TYPE);
+        self.arguments
+            .insert(X_ARGUMENT_KEY_X_QUEUE_TYPE.to_owned(), json!(typ));
+
+        self
+    }
+}
+
 impl QueueOps for QueueDefinitionWithoutVirtualHost {
     fn name(&self) -> &str {
         &self.name
