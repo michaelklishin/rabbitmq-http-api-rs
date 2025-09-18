@@ -19,6 +19,7 @@ use crate::commons::{
 use crate::responses::{
     ClusterDefinitionSet, OptionalArgumentSourceOps, Policy, PolicyWithoutVirtualHost,
     QueueDefinition, QueueDefinitionWithoutVirtualHost, QueueOps, VirtualHostDefinitionSet,
+    XArguments,
 };
 use serde_json::json;
 use std::collections::HashMap;
@@ -107,6 +108,15 @@ impl DefinitionSetTransformer for PrepareForQuorumQueueMigration {
         });
         defs.update_policies(f4);
 
+        // remove CMQ-related x-arguments
+        let f5 = Box::new(|mut qd: QueueDefinition| {
+            for key in XArguments::CMQ_KEYS {
+                qd.arguments.remove(key);
+            }
+            qd
+        });
+        defs.queues = defs.queues.iter().map(|q| f5(q.clone())).collect();
+
         defs
     }
 }
@@ -167,6 +177,15 @@ impl VirtualHostDefinitionSetTransformer for PrepareForQuorumQueueMigrationVhost
             p
         });
         defs.policies = defs.policies.iter().map(|p| f4(p.clone())).collect();
+
+        // remove CMQ-related x-arguments
+        let f5 = Box::new(|mut qd: QueueDefinitionWithoutVirtualHost| {
+            for key in XArguments::CMQ_KEYS {
+                qd.arguments.remove(key);
+            }
+            qd
+        });
+        defs.queues = defs.queues.iter().map(|q| f5(q.clone())).collect();
 
         defs
     }
