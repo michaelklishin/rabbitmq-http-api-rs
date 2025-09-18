@@ -68,7 +68,7 @@ impl TagList {
     }
 }
 
-impl ops::Deref for TagList {
+impl Deref for TagList {
     type Target = Vec<String>;
 
     fn deref(&self) -> &Self::Target {
@@ -76,7 +76,7 @@ impl ops::Deref for TagList {
     }
 }
 
-impl ops::DerefMut for TagList {
+impl DerefMut for TagList {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
