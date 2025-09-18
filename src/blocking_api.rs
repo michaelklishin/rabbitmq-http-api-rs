@@ -22,7 +22,7 @@ use crate::requests::{
 use crate::responses::{
     AuthenticationAttemptStatistics, ClusterTags, DeprecatedFeatureList, FeatureFlag,
     FeatureFlagList, FeatureFlagStability, FeatureFlagState, FederationUpstream, GetMessage,
-    OAuthConfiguration, VirtualHostDefinitionSet, WarmStandbyReplicationStatus,
+    OAuthConfiguration, WarmStandbyReplicationStatus,
 };
 use crate::{
     commons::{BindingDestinationType, SupportedProtocol, UserLimitTarget, VirtualHostLimitTarget},
@@ -31,7 +31,10 @@ use crate::{
         self, BulkUserDelete, EnforcedLimitParams, ExchangeParams, Permissions, PolicyParams,
         QueueParams, RuntimeParameterDefinition, UserParams, VirtualHostParams, XArguments,
     },
-    responses::{self, BindingInfo, ClusterDefinitionSet, SchemaDefinitionSyncStatus},
+    responses::{
+        self, BindingInfo, ClusterDefinitionSet, SchemaDefinitionSyncStatus,
+        VirtualHostDefinitionSet,
+    },
 };
 use backtrace::Backtrace;
 use reqwest::{

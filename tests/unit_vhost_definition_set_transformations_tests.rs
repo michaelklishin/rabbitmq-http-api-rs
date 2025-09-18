@@ -21,18 +21,10 @@ use rabbitmq_http_client::transformers::{
 use serde_json::json;
 
 #[test]
-fn test_unit_vhost_strip_cmq_policies_case1() {
+fn test_unit_strip_cmq_policies_case1() {
     let json = r#"
         {
-          "rabbit_version": "3.13.6",
           "rabbitmq_version": "3.13.6",
-          "product_name": "RabbitMQ",
-          "product_version": "3.13.6",
-          "metadata": {
-            "description": "",
-            "tags": [],
-            "default_queue_type": "classic"
-          },
           "parameters": [],
           "policies": [
             {
@@ -154,7 +146,8 @@ fn test_unit_vhost_strip_cmq_policies_case1() {
           ],
           "exchanges": [],
           "bindings": []
-        }"#;
+        }
+    "#;
 
     let g1 = "cmq_group1";
     let cq1 = "group1.cq.1";
@@ -174,17 +167,15 @@ fn test_unit_vhost_strip_cmq_policies_case1() {
     assert_eq!(1, p1.definition.len());
     assert!(!p1.definition.has_cmq_keys());
     assert_eq!(
-        String::from("queue-version"),
-        String::from(
-            p1.definition
-                .0
-                .as_ref()
-                .unwrap()
-                .keys()
-                .next()
-                .unwrap()
-                .as_str()
-        )
+        "queue-version".to_owned(),
+        p1.definition
+            .0
+            .as_ref()
+            .unwrap()
+            .keys()
+            .next()
+            .unwrap()
+            .to_owned()
     );
 
     let q1 = defs1.queues.iter().find(|&q| q.name == cq1).unwrap();

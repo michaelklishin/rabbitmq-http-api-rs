@@ -15,6 +15,7 @@
 //! Types in this module are used to represent API responses, such as [`QueueDefinition`], [`PolicyDefinition`],
 //! [`User`], [`VirtualHost`], [`Shovel`] or [`FederationLink`].
 
+use std::ops::{Deref, DerefMut};
 use std::{fmt, ops};
 
 use crate::commons::{
@@ -1707,6 +1708,20 @@ pub trait OptionalArgumentSourceOps {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PolicyDefinition(pub Option<Map<String, serde_json::Value>>);
+
+impl Deref for PolicyDefinition {
+    type Target = Option<Map<String, serde_json::Value>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for PolicyDefinition {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
 
 impl PolicyDefinition {
     pub const CMQ_KEYS: [&'static str; 6] = [
