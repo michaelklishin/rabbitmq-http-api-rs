@@ -2,7 +2,11 @@
 
 ## v0.53.0 (in development)
 
- * No changes yet
+### Enhancements
+
+ * `commons::TlsPeerVerificationMode` is a new enum representing [TLS peer verification modes](https://www.rabbitmq.com/docs/ssl#peer-verification)
+ * `commons::TLS_PEER_VERIFICATION_KEY` is a new constant for the `verify` key used by federation
+   and shovel URIs, and more
 
 ## v0.52.0 (Sep 17, 2025)
 
@@ -41,7 +45,7 @@
 
  * `blocking_api::Client#enable_schema_definition_sync`, `blocking_api::Client#disable_schema_definition_sync` were
    removed in favor of `blocking_api::Client#enable_schema_definition_sync_on_node` and `blocking_api::Client#disable_schema_definition_sync_on_node`
-   that accept an `Option<&str>` for name, like in `api::Client`. `None` means "on all cluster nodes".
+   that accept an `Option<&str>` for name, like in `api::Client`. `None` means "on all cluster nodes."
 
 ### Enhancements
 
@@ -255,7 +259,7 @@
 
  * `PolicyDefinition` and specifically `requests::PolicyParams.definition` is now a `Map<String, Value>`
    and not an `Option<Map<String, Value>>`. When creating a policy, the definition cannot be missing or blank,
-   otherwise it would not pass server validation.
+   or else it would not pass server validation.
 
 
 ## v0.28.0 (Mar 23, 2025)
@@ -276,7 +280,7 @@
  * `ClusterDefinitionSet` transformations are maturing.
 
    There are two `transformations::DefinitionSetTransformer`s
-   available: one that removes classic queue mirroring-related (from the 3.13.x era) policy keys, and another
+   available: one that removes the 3.13.x era policy queues related to classic queue mirroring, and another
    that removes policies with empty definitions.
 
    The two are supposed to be used together.
@@ -305,7 +309,7 @@
 
 ### Enhancements
 
- * `PolicyTarget#does_apply_to` is a new function that allow for `PolicyTarget`
+ * `PolicyTarget#does_apply_to` is a new function that allows for `PolicyTarget`
    equivalence comparison. For example, `PolicyTarget::QuorumQueues` is a subset of `PolicyTarget::Queues` but `PolicyTarget::QuorumQueues` is not
 
 
@@ -409,7 +413,7 @@
 ### Bug Fixes
 
  * `responses::Connection#channel_max` is now an `Option<u16>` because
-   this metric wont' be available for, say, RabbitMQ Stream Protocol
+   this metric won't be available for, say, RabbitMQ Stream Protocol
    connections
 
 ### Enhancements
@@ -451,7 +455,7 @@
 
 ### Bug Fixes
 
- * `api::Client` now computes API endpoint path correctly (a slash was missing)
+ * `api::Client` now computes API endpoint paths correctly (a slash was missing)
 
 
 ## v0.15.0  (Jan 5, 2025)
@@ -514,7 +518,7 @@
 ### Breaking Changes
 
  * To propagate more request context to the caller,
-   `crate::error::Error` was updated to provide a requset URL, a header map,
+   `crate::error::Error` was updated to provide a request URL, a header map,
    and a request body (if available).
 
    This reason for doing this comes down to how `reqwest`'s `Response` functions
