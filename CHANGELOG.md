@@ -4,6 +4,38 @@
 
 ### Enhancements
 
+ * `uris::UriBuilder` is a convenient way of modifying URIs used by [federation upstreams](https://www.rabbitmq.com/docs/federation#what-does-it-do) and [shovels](https://www.rabbitmq.com/docs/shovel)
+
+   ```rust
+   use rabbitmq_http_client::uris::UriBuilder;
+   use rabbitmq_http_client::commons::TlsPeerVerificationMode;
+
+   let uri = UriBuilder::new("amqps://user:pass@localhost:5671/vhost")
+       .unwrap()
+       .with_tls_peer_verification(TlsPeerVerificationMode::Enabled)
+       .with_ca_cert_file("/path/to/ca_bundle.pem")
+       .build()
+       .unwrap();
+   ```
+
+ * `uris::TlsClientSettings` makes it possible to group TLS settings and apply them
+   to a `uris::UriBuilder` in one go.
+
+   ```rust
+   use rabbitmq_http_client::uris::{TlsClientSettings, UriBuilder};
+   use rabbitmq_http_client::commons::TlsPeerVerificationMode;
+
+   let settings = TlsClientSettings::new()
+        .peer_verification(TlsPeerVerificationMode::Enabled)
+        .ca_cert_file("/path/to/ca_bundle.pem");
+   
+   let uri = UriBuilder::new("amqps://user:pass@localhost:5671/vhost?verify=verify_none")
+       .unwrap()
+       .replace(settings)
+       .build()
+       .unwrap();
+   ```
+
  * `commons::TlsPeerVerificationMode` is a new enum representing [TLS peer verification modes](https://www.rabbitmq.com/docs/ssl#peer-verification)
  * `commons::TLS_PEER_VERIFICATION_KEY` is a new constant for the `verify` key used by federation
    and shovel URIs, and more

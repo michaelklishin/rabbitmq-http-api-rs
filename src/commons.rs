@@ -710,14 +710,14 @@ impl From<UserLimitTarget> for String {
 
 /// TLS peer verification modes used by RabbitMQ.
 /// See [TLS Support Guide](https://www.rabbitmq.com/docs/ssl#peer-verification) to learn more.
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Default)]
 #[serde(rename_all = "snake_case")]
 pub enum TlsPeerVerificationMode {
     #[default]
     /// Enables peer certificate chain verification
-    VerifyPeer,
+    Enabled,
     /// Disables peer verification: no certificate chain validation is performed
-    VerifyNone,
+    Disabled,
 }
 
 pub const TLS_PEER_VERIFICATION_KEY: &str = "verify";
@@ -728,9 +728,9 @@ pub const TLS_PEER_VERIFICATION_VERIFY_NONE: &str = "verify_none";
 impl From<&str> for TlsPeerVerificationMode {
     fn from(value: &str) -> Self {
         match value {
-            TLS_PEER_VERIFICATION_VERIFY_PEER => TlsPeerVerificationMode::VerifyPeer,
-            TLS_PEER_VERIFICATION_VERIFY_NONE => TlsPeerVerificationMode::VerifyNone,
-            _ => TlsPeerVerificationMode::VerifyPeer, // default to more secure option
+            TLS_PEER_VERIFICATION_VERIFY_PEER => TlsPeerVerificationMode::Enabled,
+            TLS_PEER_VERIFICATION_VERIFY_NONE => TlsPeerVerificationMode::Disabled,
+            _ => TlsPeerVerificationMode::Enabled,
         }
     }
 }
@@ -744,8 +744,8 @@ impl From<String> for TlsPeerVerificationMode {
 impl AsRef<str> for TlsPeerVerificationMode {
     fn as_ref(&self) -> &str {
         match self {
-            TlsPeerVerificationMode::VerifyPeer => TLS_PEER_VERIFICATION_VERIFY_PEER,
-            TlsPeerVerificationMode::VerifyNone => TLS_PEER_VERIFICATION_VERIFY_NONE,
+            TlsPeerVerificationMode::Enabled => TLS_PEER_VERIFICATION_VERIFY_PEER,
+            TlsPeerVerificationMode::Disabled => TLS_PEER_VERIFICATION_VERIFY_NONE,
         }
     }
 }
@@ -753,8 +753,8 @@ impl AsRef<str> for TlsPeerVerificationMode {
 impl From<TlsPeerVerificationMode> for String {
     fn from(value: TlsPeerVerificationMode) -> Self {
         match value {
-            TlsPeerVerificationMode::VerifyPeer => TLS_PEER_VERIFICATION_VERIFY_PEER.to_owned(),
-            TlsPeerVerificationMode::VerifyNone => TLS_PEER_VERIFICATION_VERIFY_NONE.to_owned(),
+            TlsPeerVerificationMode::Enabled => TLS_PEER_VERIFICATION_VERIFY_PEER.to_owned(),
+            TlsPeerVerificationMode::Disabled => TLS_PEER_VERIFICATION_VERIFY_NONE.to_owned(),
         }
     }
 }

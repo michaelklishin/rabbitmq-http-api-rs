@@ -48,4 +48,6 @@ pub mod responses;
 pub mod error;
 /// Transformers are functions that mutate (transform) [definition sets](https://www.rabbitmq.com/docs/definitions)
 pub mod transformers;
+/// URI builders for RabbitMQ connections with TLS support
+pub mod uris;
 mod utils;
