@@ -2,7 +2,10 @@
 
 ## v0.52.0 (in development)
 
- * No changes yet
+### Enhancements
+
+ * `VirtualHostDefinitionSetTransformer` trait and `VirtualHostTransformationChain` for transforming virtual host-specific definition sets
+ * Virtual host equivalents of cluster-wide transformers: `PrepareForQuorumQueueMigrationVhost`, `StripCmqKeysFromVhostPolicies`, `DropEmptyVhostPolicies`
 
 ## v0.51.0 (Sep 16, 2025)
 
