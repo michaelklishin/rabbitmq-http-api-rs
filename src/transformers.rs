@@ -16,7 +16,10 @@ use crate::commons::{
     OVERFLOW_REJECT_PUBLISH, OVERFLOW_REJECT_PUBLISH_DLX, OverflowBehavior, QueueType,
     X_ARGUMENT_KEY_X_OVERFLOW,
 };
-use crate::responses::{ClusterDefinitionSet, OptionalArgumentSourceOps, Policy, QueueDefinition};
+use crate::responses::{
+    ClusterDefinitionSet, OptionalArgumentSourceOps, Policy, PolicyWithoutVirtualHost,
+    QueueDefinition, QueueDefinitionWithoutVirtualHost, QueueOps, VirtualHostDefinitionSet,
+};
 use serde_json::json;
 use std::collections::HashMap;
 
@@ -24,6 +27,13 @@ use crate::password_hashing;
 
 pub trait DefinitionSetTransformer {
     fn transform<'a>(&'a self, defs: &'a mut ClusterDefinitionSet) -> &'a mut ClusterDefinitionSet;
+}
+
+pub trait VirtualHostDefinitionSetTransformer {
+    fn transform<'a>(
+        &'a self,
+        defs: &'a mut VirtualHostDefinitionSet,
+    ) -> &'a mut VirtualHostDefinitionSet;
 }
 
 pub type TransformerFn<T> = Box<dyn Fn(T) -> T>;
@@ -35,6 +45,17 @@ pub type TransformerFnMut<T> = Box<dyn FnMut(T) -> T>;
 pub struct NoOp {}
 impl DefinitionSetTransformer for NoOp {
     fn transform<'a>(&self, defs: &'a mut ClusterDefinitionSet) -> &'a mut ClusterDefinitionSet {
+        defs
+    }
+}
+
+#[derive(Default, Debug)]
+pub struct NoOpVhost {}
+impl VirtualHostDefinitionSetTransformer for NoOpVhost {
+    fn transform<'a>(
+        &self,
+        defs: &'a mut VirtualHostDefinitionSet,
+    ) -> &'a mut VirtualHostDefinitionSet {
         defs
     }
 }
@@ -91,6 +112,67 @@ impl DefinitionSetTransformer for PrepareForQuorumQueueMigration {
 }
 
 #[derive(Default, Debug)]
+pub struct PrepareForQuorumQueueMigrationVhost {}
+
+impl VirtualHostDefinitionSetTransformer for PrepareForQuorumQueueMigrationVhost {
+    fn transform<'a>(
+        &self,
+        defs: &'a mut VirtualHostDefinitionSet,
+    ) -> &'a mut VirtualHostDefinitionSet {
+        // remove CMQ-related keys policies
+        let f1 = Box::new(|p: PolicyWithoutVirtualHost| p.without_cmq_keys());
+        let matched_policies: Vec<PolicyWithoutVirtualHost> =
+            defs.policies.iter().map(|p| f1(p.clone())).collect();
+        defs.policies = matched_policies.clone(); // Update policies in defs
+
+        // for the queue matched by the above policies, inject an "x-queue-type" set to `QueueType::Quorum`
+        for mp in matched_policies {
+            // Need to iterate through queues and update if they match the policy
+            defs.queues.iter_mut().for_each(|qd| {
+                if mp.does_match(&qd.name, qd.policy_target_type()) {
+                    qd.update_queue_type(QueueType::Quorum);
+                }
+            });
+        }
+
+        // remove other policy keys that are not supported by quorum queues
+        let f2 = Box::new(|p: PolicyWithoutVirtualHost| p.without_quorum_queue_incompatible_keys());
+        defs.policies = defs.policies.iter().map(|p| f2(p.clone())).collect();
+
+        // Queue x-arguments:
+        // replace x-overflow values that are equal to "reject-publish-dlx"
+        let f3 = Box::new(|mut qd: QueueDefinitionWithoutVirtualHost| {
+            if let Some(val) = qd.arguments.get(X_ARGUMENT_KEY_X_OVERFLOW)
+                && val.as_str().unwrap_or(OVERFLOW_REJECT_PUBLISH) == OVERFLOW_REJECT_PUBLISH_DLX
+            {
+                qd.arguments.insert(
+                    X_ARGUMENT_KEY_X_OVERFLOW.to_owned(),
+                    json!(OverflowBehavior::RejectPublish),
+                );
+            }
+            qd
+        });
+        defs.queues = defs.queues.iter().map(|q| f3(q.clone())).collect();
+
+        // Policy definitions:
+        // replace x-overflow values that are equal to "reject-publish-dlx"
+        let f4 = Box::new(|mut p: PolicyWithoutVirtualHost| {
+            let key = "overflow";
+            if let Some(val) = p.definition.get(key)
+                && val.as_str().unwrap_or(OVERFLOW_REJECT_PUBLISH) == OVERFLOW_REJECT_PUBLISH_DLX
+            {
+                p.definition
+                    .insert(key.to_owned(), json!(OverflowBehavior::RejectPublish));
+            }
+            p
+        });
+        defs.policies = defs.policies.iter().map(|p| f4(p.clone())).collect();
+
+        defs
+    }
+}
+
+#[derive(Default, Debug)]
 pub struct StripCmqKeysFromPolicies {}
 
 impl DefinitionSetTransformer for StripCmqKeysFromPolicies {
@@ -108,6 +190,31 @@ impl DefinitionSetTransformer for StripCmqKeysFromPolicies {
 }
 
 #[derive(Default, Debug)]
+pub struct StripCmqKeysFromVhostPolicies {}
+
+impl VirtualHostDefinitionSetTransformer for StripCmqKeysFromVhostPolicies {
+    fn transform<'a>(
+        &self,
+        defs: &'a mut VirtualHostDefinitionSet,
+    ) -> &'a mut VirtualHostDefinitionSet {
+        let pf = Box::new(|p: PolicyWithoutVirtualHost| p.without_cmq_keys());
+        let matched_policies: Vec<PolicyWithoutVirtualHost> =
+            defs.policies.iter().map(|p| pf(p.clone())).collect();
+        defs.policies = matched_policies.clone(); // Update policies in defs
+
+        // for the queue matched by the above policies, inject an "x-queue-type" set to `QueueType::Quorum`
+        for mp in matched_policies {
+            defs.queues.iter_mut().for_each(|qd| {
+                if mp.does_match(&qd.name, qd.policy_target_type()) {
+                    qd.update_queue_type(QueueType::Quorum);
+                }
+            });
+        }
+        defs
+    }
+}
+
+#[derive(Default, Debug)]
 pub struct DropEmptyPolicies {}
 
 impl DefinitionSetTransformer for DropEmptyPolicies {
@@ -120,6 +227,25 @@ impl DefinitionSetTransformer for DropEmptyPolicies {
             .collect::<Vec<_>>();
         defs.policies = non_empty;
 
+        defs
+    }
+}
+
+#[derive(Default, Debug)]
+pub struct DropEmptyVhostPolicies {}
+
+impl VirtualHostDefinitionSetTransformer for DropEmptyVhostPolicies {
+    fn transform<'a>(
+        &self,
+        defs: &'a mut VirtualHostDefinitionSet,
+    ) -> &'a mut VirtualHostDefinitionSet {
+        let non_empty = defs
+            .policies
+            .iter()
+            .filter(|p| !p.is_empty())
+            .cloned()
+            .collect::<Vec<_>>();
+        defs.policies = non_empty;
         defs
     }
 }
@@ -278,5 +404,68 @@ impl TransformationChain {
 
     pub fn is_empty(&self) -> bool {
         self.chain.is_empty()
+    }
+}
+
+pub struct VirtualHostTransformationChain {
+    pub chain: Vec<Box<dyn VirtualHostDefinitionSetTransformer>>,
+}
+
+impl VirtualHostTransformationChain {
+    pub fn new(
+        vec: Vec<Box<dyn VirtualHostDefinitionSetTransformer>>,
+    ) -> VirtualHostTransformationChain {
+        VirtualHostTransformationChain { chain: vec }
+    }
+
+    pub fn apply<'a>(
+        &'a self,
+        defs: &'a mut VirtualHostDefinitionSet,
+    ) -> &'a VirtualHostDefinitionSet {
+        self.chain.iter().for_each(
+            #[allow(clippy::borrowed_box)]
+            |item: &Box<dyn VirtualHostDefinitionSetTransformer>| {
+                item.transform(defs);
+            },
+        );
+        defs
+    }
+
+    pub fn len(&self) -> usize {
+        self.chain.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.chain.is_empty()
+    }
+}
+
+impl From<Vec<&str>> for VirtualHostTransformationChain {
+    fn from(names: Vec<&str>) -> Self {
+        let mut vec: Vec<Box<dyn VirtualHostDefinitionSetTransformer>> = Vec::new();
+        for name in names {
+            match name {
+                "prepare_for_quorum_queue_migration" => {
+                    vec.push(Box::new(PrepareForQuorumQueueMigrationVhost::default()));
+                }
+                "strip_cmq_keys_from_policies" => {
+                    vec.push(Box::new(StripCmqKeysFromVhostPolicies::default()));
+                }
+                "drop_empty_policies" => {
+                    vec.push(Box::new(DropEmptyVhostPolicies::default()));
+                }
+                _ => {
+                    vec.push(Box::new(NoOpVhost::default()));
+                }
+            }
+        }
+        VirtualHostTransformationChain { chain: vec }
+    }
+}
+
+impl From<Vec<String>> for VirtualHostTransformationChain {
+    fn from(names0: Vec<String>) -> Self {
+        let names: Vec<&str> = names0.iter().map(|s| s.as_str()).collect();
+        VirtualHostTransformationChain::from(names)
     }
 }
