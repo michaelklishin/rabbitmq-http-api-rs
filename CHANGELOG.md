@@ -1,10 +1,14 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.53.0 (in development)
+## v0.54.0 (in development)
+
+## v0.53.0 (Sep 18, 2025)
 
 ### Enhancements
 
- * `uris::UriBuilder` is a convenient way of modifying URIs used by [federation upstreams](https://www.rabbitmq.com/docs/federation#what-does-it-do) and [shovels](https://www.rabbitmq.com/docs/shovel)
+ * `uris::UriBuilder` is a convenient way of modifying URIs used by [federation upstreams](https://www.rabbitmq.com/docs/federation#what-does-it-do) and [shovels](https://www.rabbitmq.com/docs/shovel).
+   Its `replace` and `merge` methods are now much more efficient
+   as they no longer rebuild the URI query string multiple times.
 
    ```rust
    use rabbitmq_http_client::uris::UriBuilder;
