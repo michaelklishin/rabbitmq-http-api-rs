@@ -6,6 +6,8 @@
 
  * `VirtualHostDefinitionSetTransformer` trait and `VirtualHostTransformationChain` for transforming virtual host-specific definition sets
  * Virtual host equivalents of cluster-wide transformers: `PrepareForQuorumQueueMigrationVhost`, `StripCmqKeysFromVhostPolicies`, `DropEmptyVhostPolicies`
+ * `PrepareForQuorumQueueMigration` and `PrepareForQuorumQueueMigrationVhost` transformers now also strip CMQ-related x-arguments
+   (such as `x-ha-mode`) from queues definitions, as they won't pass validation on RabbitMQ `4.x`
 
 ## v0.51.0 (Sep 16, 2025)
 
