@@ -2,6 +2,16 @@
 
 ## v0.54.0 (in development)
 
+### Enhancements
+
+ * `FederationUpstream` and ``FederationUpstreamParams` no longer have a "fidelity gap," a difference between fields
+   that had made it impossible to convert the former into the latter
+ * `FederationUpstream` now includes several missing (rarely used) fields such as `bind_using_nowait`, channel_use_mode`
+
+### Breaking Changes
+
+ * `FederationUpstream#prefetch_count` and `FederationUpstream#reconnect_delay` were bumped to `u32`
+
 ## v0.53.0 (Sep 18, 2025)
 
 ### Enhancements
