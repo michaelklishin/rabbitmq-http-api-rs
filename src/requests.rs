@@ -17,7 +17,9 @@
 //!
 //! Most types provide constructor functions for common scenarios.
 
-use crate::commons::{ExchangeType, MessageTransferAcknowledgementMode, PolicyTarget, QueueType};
+use crate::commons::{
+    ChannelUseMode, ExchangeType, MessageTransferAcknowledgementMode, PolicyTarget, QueueType,
+};
 use crate::responses;
 use crate::responses::{
     ExchangeInfo, Policy, PolicyDefinition as PolDef, QueueInfo, RuntimeParameter, VirtualHost,
@@ -875,9 +877,9 @@ impl ExchangeFederationParams<'_> {
 }
 
 /// Matches the default used by the federation plugin.
-const DEFAULT_FEDERATION_PREFETCH: u32 = 1000;
+pub const DEFAULT_FEDERATION_PREFETCH: u32 = 1000;
 /// Matches the default used by the federation plugin.
-const DEFAULT_FEDERATION_RECONNECT_DELAY: u32 = 5;
+pub const DEFAULT_FEDERATION_RECONNECT_DELAY: u32 = 5;
 
 /// Represents a set of parameters that define a federation upstream
 /// and a number of the federation type-specific (exchange, queue) parameters
@@ -896,6 +898,7 @@ pub struct FederationUpstreamParams<'a> {
     pub prefetch_count: u32,
     pub ack_mode: MessageTransferAcknowledgementMode,
     pub bind_using_nowait: bool,
+    pub channel_use_mode: ChannelUseMode,
 
     pub queue_federation: Option<QueueFederationParams<'a>>,
     pub exchange_federation: Option<ExchangeFederationParams<'a>>,
@@ -918,6 +921,7 @@ impl<'a> FederationUpstreamParams<'a> {
             trust_user_id: false,
             prefetch_count: DEFAULT_FEDERATION_PREFETCH,
             bind_using_nowait: false,
+            channel_use_mode: ChannelUseMode::default(),
             exchange_federation: None,
             queue_federation: Some(params),
         }
@@ -939,6 +943,7 @@ impl<'a> FederationUpstreamParams<'a> {
             trust_user_id: false,
             prefetch_count: DEFAULT_FEDERATION_PREFETCH,
             bind_using_nowait: false,
+            channel_use_mode: ChannelUseMode::default(),
             queue_federation: None,
             exchange_federation: Some(params),
         }
@@ -1006,6 +1011,7 @@ pub struct OwnedFederationUpstreamParams {
     pub prefetch_count: u32,
     pub ack_mode: MessageTransferAcknowledgementMode,
     pub bind_using_nowait: bool,
+    pub channel_use_mode: ChannelUseMode,
 
     pub queue_federation: Option<OwnedQueueFederationParams>,
     pub exchange_federation: Option<OwnedExchangeFederationParams>,
@@ -1074,6 +1080,7 @@ impl From<responses::FederationUpstream> for OwnedFederationUpstreamParams {
                 .prefetch_count
                 .unwrap_or(DEFAULT_FEDERATION_PREFETCH),
             bind_using_nowait: upstream.bind_using_nowait,
+            channel_use_mode: upstream.channel_use_mode,
             queue_federation,
             exchange_federation,
         }
@@ -1113,6 +1120,7 @@ impl<'a> From<&'a OwnedFederationUpstreamParams> for FederationUpstreamParams<'a
             prefetch_count: owned.prefetch_count,
             ack_mode: owned.ack_mode.clone(),
             bind_using_nowait: owned.bind_using_nowait,
+            channel_use_mode: owned.channel_use_mode.clone(),
             queue_federation,
             exchange_federation,
         }

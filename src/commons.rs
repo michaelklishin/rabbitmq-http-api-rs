@@ -824,3 +824,55 @@ impl From<MessageTransferAcknowledgementMode> for String {
         value.to_string()
     }
 }
+
+/// Federation links can use multiple channels or reuse a single channel.
+/// This is an advanced setting.
+#[derive(Default, Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
+#[serde(rename_all = "lowercase")]
+pub enum ChannelUseMode {
+    #[default]
+    /// Federation links will use multiple channels for commands and message transfer
+    Multiple,
+    /// Federation links will reuse a single channel for both commands and message transfer
+    Single,
+}
+
+impl From<&str> for ChannelUseMode {
+    fn from(value: &str) -> Self {
+        match value {
+            "multiple" => ChannelUseMode::Multiple,
+            "single" => ChannelUseMode::Single,
+            _ => ChannelUseMode::default(),
+        }
+    }
+}
+
+impl From<String> for ChannelUseMode {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl AsRef<str> for ChannelUseMode {
+    fn as_ref(&self) -> &str {
+        match self {
+            ChannelUseMode::Multiple => "multiple",
+            ChannelUseMode::Single => "single",
+        }
+    }
+}
+
+impl Display for ChannelUseMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ChannelUseMode::Multiple => write!(f, "multiple"),
+            ChannelUseMode::Single => write!(f, "single"),
+        }
+    }
+}
+
+impl From<ChannelUseMode> for String {
+    fn from(value: ChannelUseMode) -> Self {
+        value.to_string()
+    }
+}

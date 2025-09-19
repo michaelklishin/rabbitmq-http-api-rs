@@ -19,8 +19,8 @@ use std::ops::{Deref, DerefMut};
 use std::{fmt, ops};
 
 use crate::commons::{
-    BindingDestinationType, ChannelId, MessageTransferAcknowledgementMode, OverflowBehavior,
-    PolicyTarget, QueueType, SupportedProtocol, Username, VirtualHostName,
+    BindingDestinationType, ChannelId, ChannelUseMode, MessageTransferAcknowledgementMode,
+    OverflowBehavior, PolicyTarget, QueueType, SupportedProtocol, Username, VirtualHostName,
     X_ARGUMENT_KEY_X_OVERFLOW, X_ARGUMENT_KEY_X_QUEUE_TYPE,
 };
 use crate::error::ConversionError;
@@ -3016,6 +3016,7 @@ pub struct FederationUpstream {
     pub message_ttl: Option<u32>,
     pub resource_cleanup_mode: FederationResourceCleanupMode,
     pub bind_using_nowait: bool,
+    pub channel_use_mode: ChannelUseMode,
 }
 
 impl TryFrom<RuntimeParameter> for FederationUpstream {
@@ -3085,6 +3086,11 @@ impl TryFrom<RuntimeParameter> for FederationUpstream {
             .and_then(|v| v.as_str())
             .map(FederationResourceCleanupMode::from)
             .unwrap_or_default();
+        let channel_use_mode = values
+            .get("channel-use-mode")
+            .and_then(|v| v.as_str())
+            .map(ChannelUseMode::from)
+            .unwrap_or_default();
 
         Ok(FederationUpstream {
             name: param.name,
@@ -3103,6 +3109,7 @@ impl TryFrom<RuntimeParameter> for FederationUpstream {
             message_ttl,
             resource_cleanup_mode,
             bind_using_nowait,
+            channel_use_mode,
         })
     }
 }
