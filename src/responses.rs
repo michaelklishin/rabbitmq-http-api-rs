@@ -3009,7 +3009,10 @@ pub struct FederationUpstream {
     pub max_hops: Option<u8>,
     #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub queue_type: Option<QueueType>,
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option", rename = "expires (queue TTL)"))]
+    #[cfg_attr(
+        feature = "tabled",
+        tabled(display = "display_option", rename = "expires (queue TTL)")
+    )]
     pub expires: Option<u32>,
     #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub message_ttl: Option<u32>,

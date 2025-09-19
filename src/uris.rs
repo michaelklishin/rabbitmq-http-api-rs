@@ -18,9 +18,10 @@
 //! with proper TLS configuration parameters as documented in the
 //! [RabbitMQ URI Query Parameters Guide](https://www.rabbitmq.com/docs/uri-query-parameters).
 
+use std::borrow::Cow;
 use crate::commons::TlsPeerVerificationMode;
 use std::collections::HashMap;
-use url::Url;
+use url::{EncodingOverride, Url};
 
 /// A builder for RabbitMQ-specific connection URIs with
 /// [TLS settings in query parameters](https://www.rabbitmq.com/docs/federation#tls-connections).
@@ -57,6 +58,21 @@ impl UriBuilder {
     pub fn new(base_uri: &str) -> Result<Self, url::ParseError> {
         let url = Url::parse(base_uri)?;
         Ok(Self { url })
+    }
+
+    pub fn new_with_encoding_override(base_uri: &str, encoder: EncodingOverride) -> Result<Self, url::ParseError> {
+        let url = Url::options()
+            .encoding_override(encoder)
+            .parse(base_uri)?;
+
+        Ok(Self { url })
+    }
+
+    pub fn new_with_passthrough_encoder(base_uri: &str) -> Result<Self, url::ParseError> {
+        let f: &dyn Fn(&str) -> Cow<'_, [u8]> = &passthrough_encoder_fn;
+        let encoder: EncodingOverride = Some(f);
+
+        Self::new_with_encoding_override(base_uri, encoder)
     }
 
     /// Sets the [TLS peer verification mode](https://www.rabbitmq.com/docs/ssl#peer-verification).
@@ -215,9 +231,6 @@ impl UriBuilder {
         // Add the new parameter
         params.push((key.to_string(), value.to_string()));
 
-        // Clear and rebuild query string
-        self.url.set_query(None);
-
         for (k, v) in params {
             self.url.query_pairs_mut().append_pair(&k, &v);
         }
@@ -236,6 +249,10 @@ impl UriBuilder {
             self.url.query_pairs_mut().append_pair(&k, &v);
         }
     }
+}
+
+pub fn passthrough_encoder_fn(s: &str) -> Cow<'_, [u8]> {
+    Cow::Borrowed(s.as_bytes())
 }
 
 /// TLS-related setting for RabbitMQ federation upstreams and shovels.
