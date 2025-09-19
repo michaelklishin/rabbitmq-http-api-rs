@@ -19,7 +19,7 @@
 //! [RabbitMQ URI Query Parameters Guide](https://www.rabbitmq.com/docs/uri-query-parameters).
 
 use crate::commons::TlsPeerVerificationMode;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use url::Url;
 
 /// A builder for RabbitMQ-specific connection URIs with
@@ -123,21 +123,7 @@ impl UriBuilder {
             self.set_query_param(&k, &v);
         }
 
-        if let Some(verification) = config.peer_verification {
-            self.set_query_param("verify", verification.as_ref());
-        }
-        if let Some(ca_cert) = config.ca_cert_file {
-            self.set_query_param("cacertfile", &ca_cert);
-        }
-        if let Some(client_cert) = config.client_cert_file {
-            self.set_query_param("certfile", &client_cert);
-        }
-        if let Some(client_key) = config.client_key_file {
-            self.set_query_param("keyfile", &client_key);
-        }
-        if let Some(sni) = config.server_name_indication {
-            self.set_query_param("server_name_indication", &sni);
-        }
+        self.apply_tls_settings(&config);
 
         self
     }
@@ -147,22 +133,7 @@ impl UriBuilder {
     /// Unlike [`replace`], this method preserves existing TLS-related query parameters that are not
     /// specified (set to [`None`]) in the provided `TlsClientSettings`.
     pub fn merge(mut self, settings: TlsClientSettings) -> Self {
-        if let Some(verification) = settings.peer_verification {
-            self.set_query_param("verify", verification.as_ref());
-        }
-        if let Some(ca_cert) = settings.ca_cert_file {
-            self.set_query_param("cacertfile", &ca_cert);
-        }
-        if let Some(client_cert) = settings.client_cert_file {
-            self.set_query_param("certfile", &client_cert);
-        }
-        if let Some(client_key) = settings.client_key_file {
-            self.set_query_param("keyfile", &client_key);
-        }
-        if let Some(sni) = settings.server_name_indication {
-            self.set_query_param("server_name_indication", &sni);
-        }
-
+        self.apply_tls_settings(&settings);
         self
     }
 
@@ -189,57 +160,62 @@ impl UriBuilder {
     //
 
     fn set_query_param(&mut self, key: &str, value: &str) {
-        // Collect existing parameters first, filtering out the key we're replacing
-        // and keeping only unique keys.
-        let mut params: Vec<(String, String)> = self
-            .url
+        let mut params = self.update_query_params_sans_encoding();
+
+        // Remove existing key (deduplication) and add the new parameter
+        params.retain(|(k, _)| k != key);
+        params.push((key.to_string(), value.to_string()));
+
+        self.rebuild_query_string(&params);
+    }
+
+    fn remove_query_param(&mut self, key: &str) {
+        let mut params = self.update_query_params_sans_encoding();
+        params.retain(|(k, _)| k != key);
+        self.rebuild_query_string(&params);
+    }
+
+    fn update_query_params_sans_encoding(&self) -> Vec<(String, String)> {
+        self.url
             .query_pairs()
             .map(|(k, v)| {
                 let decoded_key = urlencoding::decode(&k).unwrap_or_else(|_| k.clone());
                 let decoded_value = urlencoding::decode(&v).unwrap_or_else(|_| v.clone());
                 (decoded_key.into_owned(), decoded_value.into_owned())
             })
-            .filter(|(k, _)| k != key)
-            .collect::<HashSet<_>>()
-            .into_iter()
-            .collect();
-
-        // Add the new parameter
-        params.push((key.to_string(), value.to_string()));
-
-        // IMPORTANT: we intentionally build the query string manually to avoid percent-encoding
-        let query_parts: Vec<String> = params
-            .iter()
-            .map(|(k, v)| format!("{}={}", k, v))
-            .collect();
-        let qs = query_parts.join("&");
-
-        self.url.set_query(None);
-        self.url.set_query(Some(&qs));
+            .collect()
     }
 
-    fn remove_query_param(&mut self, key: &str) {
-        let params: Vec<(String, String)> = self
-            .url
-            .query_pairs()
-            .map(|(k, v)| (k.into_owned(), v.into_owned()))
-            .filter(|(k, _)| k != key)
-            .collect();
-
+    fn rebuild_query_string(&mut self, params: &[(String, String)]) {
         self.url.set_query(None);
 
         if !params.is_empty() {
-            // Build query string manually to avoid percent-encoding
-            let query_parts: Vec<String> = params
-                .iter()
-                .map(|(k, v)| format!("{}={}", k, v))
-                .collect();
+            // IMPORTANT: we intentionally build the query string manually to avoid percent-encoding
+            let query_parts: Vec<String> =
+                params.iter().map(|(k, v)| format!("{}={}", k, v)).collect();
             let qs = query_parts.join("&");
             self.url.set_query(Some(&qs));
         }
     }
-}
 
+    fn apply_tls_settings(&mut self, settings: &TlsClientSettings) {
+        if let Some(verification) = &settings.peer_verification {
+            self.set_query_param("verify", verification.as_ref());
+        }
+        if let Some(ca_cert) = &settings.ca_cert_file {
+            self.set_query_param("cacertfile", ca_cert);
+        }
+        if let Some(client_cert) = &settings.client_cert_file {
+            self.set_query_param("certfile", client_cert);
+        }
+        if let Some(client_key) = &settings.client_key_file {
+            self.set_query_param("keyfile", client_key);
+        }
+        if let Some(sni) = &settings.server_name_indication {
+            self.set_query_param("server_name_indication", sni);
+        }
+    }
+}
 
 /// TLS-related setting for RabbitMQ federation upstreams and shovels.
 #[derive(Debug, Clone, Default)]
