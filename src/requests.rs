@@ -799,6 +799,7 @@ impl From<String> for FederationResourceCleanupMode {
 pub const FEDERATION_UPSTREAM_COMPONENT: &str = "federation-upstream";
 
 /// Parameters specific to [queue federation](https://www.rabbitmq.com/docs/federated-queues).
+#[derive(Default, Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct QueueFederationParams<'a> {
     /// Name of the upstream queue to federate from (None uses the same name as downstream)
     pub queue: Option<&'a str>,
@@ -830,6 +831,7 @@ impl<'a> QueueFederationParams<'a> {
 }
 
 /// Parameters specific to [exchange federation](https://www.rabbitmq.com/docs/federated-exchanges).
+#[derive(Default, Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct ExchangeFederationParams<'a> {
     /// Name of the upstream exchange to federate from (None uses the same name as downstream)
     pub exchange: Option<&'a str>,
@@ -874,6 +876,7 @@ const DEFAULT_FEDERATION_RECONNECT_DELAY: u16 = 5;
 /// A federation upstream is declared as a runtime parameter,
 /// therefore this type implements a conversion that is used
 /// by [`crate::api::Client#declare_federation_upstream`] and [`crate::blocking_api::Client#declare_federation_upstream`]
+#[derive(Default, Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct FederationUpstreamParams<'a> {
     pub name: &'a str,
     pub vhost: &'a str,
@@ -951,10 +954,15 @@ impl<'a> From<FederationUpstreamParams<'a>> for RuntimeParameterDefinition<'a> {
 
         if let Some(ef) = params.exchange_federation {
             value.insert("queue-type".to_owned(), json!(ef.queue_type));
+            value.insert(
+                "resource-cleanup-mode".to_owned(),
+                json!(ef.resource_cleanup_mode),
+            );
+
+            value.insert("queue-type".to_owned(), json!(ef.queue_type));
             if let Some(val) = ef.exchange {
                 value.insert("exchange".to_owned(), json!(val));
             };
-
             if let Some(val) = ef.max_hops {
                 value.insert("max-hops".to_owned(), json!(val));
             }
