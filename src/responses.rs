@@ -35,6 +35,7 @@ use serde_json::{Map, json};
 
 use time::OffsetDateTime;
 
+use crate::requests::FederationResourceCleanupMode;
 use crate::transformers::{TransformerFn, TransformerFnOnce};
 use regex::Regex;
 #[cfg(feature = "tabled")]
@@ -3003,96 +3004,93 @@ pub struct FederationUpstream {
     #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub exchange: Option<String>,
     #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub max_hops: Option<u32>,
+    pub max_hops: Option<u8>,
     #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub queue_type: Option<QueueType>,
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    #[tabled(rename = "expires (queue TTL)")]
     pub expires: Option<u32>,
     #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub message_ttl: Option<u32>,
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub queue_type: Option<QueueType>,
+    pub resource_cleanup_mode: FederationResourceCleanupMode,
 }
 
 impl TryFrom<RuntimeParameter> for FederationUpstream {
     type Error = ConversionError;
 
     fn try_from(param: RuntimeParameter) -> Result<Self, Self::Error> {
-        let uri = param
-            .value
+        let values = &param.value.0;
+
+        let uri = values
             .get("uri")
             .and_then(|v| v.as_str())
-            .map(|s| s.to_owned())
-            .ok_or(ConversionError::MissingProperty {
-                argument: "uri".to_owned(),
-            })?;
+            .ok_or_else(|| ConversionError::MissingProperty {
+                argument: "uri".to_string(),
+            })?
+            .to_string();
 
-        let ack_mode = param
-            .value
+        let ack_mode = values
             .get("ack-mode")
             .and_then(|v| v.as_str())
             .map(MessageTransferAcknowledgementMode::from)
             .unwrap_or_default();
-        let reconnect_delay = param
-            .value
+
+        let trust_user_id = values.get("trust-user-id").and_then(|v| v.as_bool());
+        let reconnect_delay = values
             .get("reconnect-delay")
             .and_then(|v| v.as_u64())
             .map(|v| v as u32);
-        let trust_user_id = param.value.get("trust-user-id").and_then(|v| v.as_bool());
-
-        let exchange = param
-            .value
+        let queue = values
+            .get("queue")
+            .and_then(|v| v.as_str())
+            .map(String::from);
+        let consumer_tag = values
+            .get("consumer-tag")
+            .and_then(|v| v.as_str())
+            .map(String::from);
+        let exchange = values
             .get("exchange")
             .and_then(|v| v.as_str())
-            .map(|s| s.to_owned());
-
-        let max_hops = param
-            .value
+            .map(String::from);
+        let max_hops = values
             .get("max-hops")
             .and_then(|v| v.as_u64())
-            .map(|v| v as u32);
-        let expires = param
-            .value
-            .get("expires")
-            .and_then(|v| v.as_u64())
-            .map(|v| v as u32);
-        let message_ttl = param
-            .value
-            .get("message-ttl")
-            .and_then(|v| v.as_u64())
-            .map(|v| v as u32);
-        let queue_type = param
-            .value
+            .map(|v| v as u8);
+        let queue_type = values
             .get("queue-type")
             .and_then(|v| v.as_str())
             .map(QueueType::from);
+        let expires = values
+            .get("expires")
+            .and_then(|v| v.as_u64())
+            .map(|v| v as u32);
+        let message_ttl = values
+            .get("message-ttl")
+            .and_then(|v| v.as_u64())
+            .map(|v| v as u32);
 
-        let queue = param
-            .value
-            .get("queue")
+        let resource_cleanup_mode = values
+            .get("resource-cleanup-mode")
             .and_then(|v| v.as_str())
-            .map(|s| s.to_owned());
-        let consumer_tag = param
-            .value
-            .get("consumer-tag")
-            .and_then(|v| v.as_str())
-            .map(|s| s.to_owned());
+            .map(FederationResourceCleanupMode::from)
+            .unwrap_or_default();
 
-        let upstream = FederationUpstream {
-            name: param.name.clone(),
-            vhost: param.vhost.clone(),
+        Ok(FederationUpstream {
+            name: param.name,
+            vhost: param.vhost,
             uri,
             ack_mode,
             trust_user_id,
             reconnect_delay,
-            exchange,
-            max_hops,
-            expires,
-            message_ttl,
-            queue_type,
             queue,
             consumer_tag,
-        };
-
-        Ok(upstream)
+            exchange,
+            max_hops,
+            queue_type,
+            expires,
+            message_ttl,
+            resource_cleanup_mode,
+        })
     }
 }
 

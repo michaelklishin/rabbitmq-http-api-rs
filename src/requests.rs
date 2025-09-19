@@ -24,6 +24,7 @@ use crate::responses::{
 };
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value, json};
+use std::fmt::{Display, Formatter};
 
 /// Properties of a [virtual host](https://rabbitmq.com/docs/vhosts/) to be created or updated.
 ///
@@ -792,6 +793,15 @@ impl From<String> for FederationResourceCleanupMode {
     }
 }
 
+impl Display for FederationResourceCleanupMode {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            FederationResourceCleanupMode::Default => write!(f, "default"),
+            FederationResourceCleanupMode::Never => write!(f, "never"),
+        }
+    }
+}
+
 /// [Runtime parameter](https://www.rabbitmq.com/docs/parameters) component name used by federation upstreams.
 ///
 /// This constant is used internally when creating [`RuntimeParameterDefinition`]
@@ -958,8 +968,6 @@ impl<'a> From<FederationUpstreamParams<'a>> for RuntimeParameterDefinition<'a> {
                 "resource-cleanup-mode".to_owned(),
                 json!(ef.resource_cleanup_mode),
             );
-
-            value.insert("queue-type".to_owned(), json!(ef.queue_type));
             if let Some(val) = ef.exchange {
                 value.insert("exchange".to_owned(), json!(val));
             };
