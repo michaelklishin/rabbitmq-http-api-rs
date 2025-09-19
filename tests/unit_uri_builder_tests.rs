@@ -67,6 +67,38 @@ fn test_uri_builder_with_tls_peer_verification() {
 }
 
 #[test]
+fn test_uri_builder_with_tls_peer_verification_enabled_via_uri_query_parameters() {
+    let uri = "amqps://user:pass@localhost:5671/vhost?verify=verify_peer&cacertfile=/path/to/ca_bundle.pem";
+    let builder = UriBuilder::new(uri).unwrap();
+    let result = builder
+        .build()
+        .unwrap();
+
+    assert!(has_query_param(&result, "verify", "verify_peer"));
+    assert!(has_query_param(
+        &result,
+        "verify",
+        TlsPeerVerificationMode::Enabled.as_ref()
+    ));
+    assert!(has_query_param(&result, "cacertfile", "/path/to/ca_bundle.pem"));
+}
+
+#[test]
+fn test_uri_builder_with_tls_peer_verification_disabled_via_uri_query_parameters() {
+    let uri = "amqps://user:pass@localhost:5671/vhost?verify=verify_none";
+    let builder = UriBuilder::new(uri).unwrap();
+    let result = builder
+        .build()
+        .unwrap();
+
+    assert!(has_query_param(
+        &result,
+        "verify",
+        TlsPeerVerificationMode::Disabled.as_ref()
+    ));
+}
+
+#[test]
 fn test_uri_builder_with_tls_peer_verification_disabled() {
     let uri = "amqps://user:pass@localhost:5671/vhost";
     let builder = UriBuilder::new(uri).unwrap();
@@ -80,6 +112,23 @@ fn test_uri_builder_with_tls_peer_verification_disabled() {
         "verify",
         TlsPeerVerificationMode::Disabled.as_ref()
     ));
+}
+
+#[test]
+fn test_uri_builder_with_tls_peer_verification_flip() {
+    let uri = "amqps://user:pass@localhost:5671/vhost?verify=verify_peer&cacertfile=/path/to/ca_bundle.pem";
+    let builder = UriBuilder::new(uri).unwrap();
+    let result = builder
+        .with_tls_peer_verification(TlsPeerVerificationMode::Disabled)
+        .build()
+        .unwrap();
+
+    assert!(has_query_param(
+        &result,
+        "verify",
+        TlsPeerVerificationMode::Disabled.as_ref()
+    ));
+    assert!(has_query_param(&result, "cacertfile", "/path/to/ca_bundle.pem"));
 }
 
 #[test]
