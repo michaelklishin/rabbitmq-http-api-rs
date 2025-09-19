@@ -960,6 +960,10 @@ impl<'a> From<FederationUpstreamParams<'a>> for RuntimeParameterDefinition<'a> {
         value.insert("reconnect-delay".to_owned(), json!(params.reconnect_delay));
         value.insert("ack-mode".to_owned(), json!(params.ack_mode));
         value.insert("bind-nowait".to_owned(), json!(params.bind_using_nowait));
+        value.insert(
+            "channel-use-mode".to_owned(),
+            json!(params.channel_use_mode),
+        );
 
         if let Some(qf) = params.queue_federation {
             value.insert("queue".to_owned(), json!(qf.queue));
