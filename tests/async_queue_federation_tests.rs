@@ -11,9 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-use rabbitmq_http_client::requests::{FederationUpstreamParams, QueueFederationParams, OwnedFederationUpstreamParams, ExchangeFederationParams};
+use rabbitmq_http_client::commons::{MessageTransferAcknowledgementMode, QueueType};
+use rabbitmq_http_client::requests::{
+    ExchangeFederationParams, FederationUpstreamParams, OwnedFederationUpstreamParams,
+    QueueFederationParams,
+};
 use rabbitmq_http_client::{api::Client, requests::VirtualHostParams};
-use rabbitmq_http_client::commons::{QueueType, MessageTransferAcknowledgementMode};
 
 mod test_helpers;
 use crate::test_helpers::{PASSWORD, USERNAME, amqp_endpoint_with_vhost, endpoint};
@@ -64,7 +67,9 @@ async fn test_async_federation_upstream_fetch_and_update_workflow() {
     );
 
     // Step 1: Declare the original upstream
-    let result2 = rc.declare_federation_upstream(original_upstream_params).await;
+    let result2 = rc
+        .declare_federation_upstream(original_upstream_params)
+        .await;
     assert!(result2.is_ok());
 
     // Step 2: Fetch the upstream back as FederationUpstream
@@ -83,7 +88,10 @@ async fn test_async_federation_upstream_fetch_and_update_workflow() {
     assert_eq!(owned_params.name, upstream_name);
     assert_eq!(owned_params.vhost, vh);
     assert_eq!(owned_params.uri, amqp_endpoint);
-    assert_eq!(owned_params.ack_mode, MessageTransferAcknowledgementMode::WhenConfirmed);
+    assert_eq!(
+        owned_params.ack_mode,
+        MessageTransferAcknowledgementMode::WhenConfirmed
+    );
 
     // Step 4: Modify some parameters
     let mut modified_params = owned_params;
@@ -100,7 +108,9 @@ async fn test_async_federation_upstream_fetch_and_update_workflow() {
 
     // Step 5: Convert back to FederationUpstreamParams and update
     let updated_upstream_params = FederationUpstreamParams::from(&modified_params);
-    let result3 = rc.declare_federation_upstream(updated_upstream_params).await;
+    let result3 = rc
+        .declare_federation_upstream(updated_upstream_params)
+        .await;
     assert!(result3.is_ok());
 
     // Step 6: Fetch again to verify the update
@@ -113,11 +123,17 @@ async fn test_async_federation_upstream_fetch_and_update_workflow() {
         .expect("Should find the updated upstream");
 
     // Verify the updates were applied
-    assert_eq!(updated_upstream.ack_mode, MessageTransferAcknowledgementMode::WhenPublished);
+    assert_eq!(
+        updated_upstream.ack_mode,
+        MessageTransferAcknowledgementMode::WhenPublished
+    );
     assert_eq!(updated_upstream.trust_user_id, Some(true));
     assert_eq!(updated_upstream.reconnect_delay, Some(15));
     assert_eq!(updated_upstream.queue.as_ref().unwrap(), "updated-queue");
-    assert_eq!(updated_upstream.consumer_tag.as_ref().unwrap(), "updated-consumer-tag");
+    assert_eq!(
+        updated_upstream.consumer_tag.as_ref().unwrap(),
+        "updated-consumer-tag"
+    );
 
     let _ = rc.delete_vhost(vh_params.name, false).await;
 }
@@ -144,7 +160,9 @@ async fn test_async_exchange_federation_upstream_fetch_and_update_workflow() {
     );
 
     // Step 1: Declare the original upstream
-    let result2 = rc.declare_federation_upstream(original_upstream_params).await;
+    let result2 = rc
+        .declare_federation_upstream(original_upstream_params)
+        .await;
     assert!(result2.is_ok());
 
     // Step 2: Fetch the upstream back as FederationUpstream
@@ -179,7 +197,9 @@ async fn test_async_exchange_federation_upstream_fetch_and_update_workflow() {
 
     // Step 5: Convert back to FederationUpstreamParams and update
     let updated_upstream_params = FederationUpstreamParams::from(&modified_params);
-    let result3 = rc.declare_federation_upstream(updated_upstream_params).await;
+    let result3 = rc
+        .declare_federation_upstream(updated_upstream_params)
+        .await;
     assert!(result3.is_ok());
 
     // Step 6: Fetch again to verify the update
@@ -192,12 +212,21 @@ async fn test_async_exchange_federation_upstream_fetch_and_update_workflow() {
         .expect("Should find the updated upstream");
 
     // Verify the updates were applied
-    assert_eq!(updated_upstream.ack_mode, MessageTransferAcknowledgementMode::Immediate);
+    assert_eq!(
+        updated_upstream.ack_mode,
+        MessageTransferAcknowledgementMode::Immediate
+    );
     assert_eq!(updated_upstream.trust_user_id, Some(false));
     assert_eq!(updated_upstream.reconnect_delay, Some(20));
-    assert_eq!(updated_upstream.exchange.as_ref().unwrap(), "updated-exchange");
+    assert_eq!(
+        updated_upstream.exchange.as_ref().unwrap(),
+        "updated-exchange"
+    );
     assert_eq!(updated_upstream.max_hops.unwrap(), 3);
-    assert_eq!(updated_upstream.queue_type.unwrap(), QueueType::Classic);
+    assert_eq!(
+        updated_upstream.queue_type.clone().unwrap(),
+        QueueType::Classic
+    );
 
     let _ = rc.delete_vhost(vh_params.name, false).await;
 }

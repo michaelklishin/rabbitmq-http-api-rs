@@ -16,8 +16,8 @@ mod test_helpers;
 use rabbitmq_http_client::{
     commons::{MessageTransferAcknowledgementMode, QueueType},
     requests::{
-        FederationUpstreamParams, OwnedFederationUpstreamParams,
-        RuntimeParameterDefinition, FederationResourceCleanupMode,
+        FederationResourceCleanupMode, FederationUpstreamParams, OwnedFederationUpstreamParams,
+        RuntimeParameterDefinition,
     },
     responses::{FederationLink, FederationType, FederationUpstream, RuntimeParameter},
 };
@@ -183,7 +183,10 @@ fn test_federation_upstream_to_params_conversion_queue_federation() {
     assert_eq!(owned_params.name, "test-upstream");
     assert_eq!(owned_params.vhost, "/");
     assert_eq!(owned_params.uri, "amqp://user:pass@localhost:5673/%2f");
-    assert_eq!(owned_params.ack_mode, MessageTransferAcknowledgementMode::WhenPublished);
+    assert_eq!(
+        owned_params.ack_mode,
+        MessageTransferAcknowledgementMode::WhenPublished
+    );
     assert_eq!(owned_params.trust_user_id, false);
     assert_eq!(owned_params.reconnect_delay, 10);
     assert_eq!(owned_params.prefetch_count, 500);
@@ -239,7 +242,10 @@ fn test_federation_upstream_to_params_conversion_exchange_federation() {
     assert_eq!(owned_params.name, "exchange-upstream");
     assert_eq!(owned_params.vhost, "test-vhost");
     assert_eq!(owned_params.uri, "amqps://user:pass@remote-host:5671/vhost");
-    assert_eq!(owned_params.ack_mode, MessageTransferAcknowledgementMode::WhenConfirmed);
+    assert_eq!(
+        owned_params.ack_mode,
+        MessageTransferAcknowledgementMode::WhenConfirmed
+    );
     assert_eq!(owned_params.trust_user_id, true);
     assert_eq!(owned_params.reconnect_delay, 15);
 
@@ -251,7 +257,10 @@ fn test_federation_upstream_to_params_conversion_exchange_federation() {
     assert_eq!(exchange_fed.queue_type, QueueType::Quorum);
     assert_eq!(exchange_fed.ttl.unwrap(), 3600000);
     assert_eq!(exchange_fed.message_ttl.unwrap(), 7200000);
-    assert_eq!(exchange_fed.resource_cleanup_mode, FederationResourceCleanupMode::Never);
+    assert_eq!(
+        exchange_fed.resource_cleanup_mode,
+        FederationResourceCleanupMode::Never
+    );
 
     // Queue federation should be None for exchange federation
     assert!(owned_params.queue_federation.is_none());
@@ -295,7 +304,10 @@ fn test_federation_upstream_roundtrip_conversion() {
     assert_eq!(runtime_def.component, "federation-upstream");
 
     let uri_value = runtime_def.value.get("uri").unwrap();
-    assert_eq!(uri_value.as_str().unwrap(), "amqp://guest:guest@localhost:5672/%2f");
+    assert_eq!(
+        uri_value.as_str().unwrap(),
+        "amqp://guest:guest@localhost:5672/%2f"
+    );
 
     let ack_mode_value = runtime_def.value.get("ack-mode").unwrap();
     assert_eq!(ack_mode_value.as_str().unwrap(), "on-confirm");
@@ -358,15 +370,21 @@ fn test_federation_upstream_update_scenario() {
     // 5. Verify the updates
     assert_eq!(updated_params.name, "updatable-upstream");
     assert_eq!(updated_params.vhost, "/");
-    assert_eq!(updated_params.uri, "amqps://user:newpass@remote:5671/new-vhost");
-    assert_eq!(updated_params.ack_mode, MessageTransferAcknowledgementMode::WhenConfirmed);
+    assert_eq!(
+        updated_params.uri,
+        "amqps://user:newpass@remote:5671/new-vhost"
+    );
+    assert_eq!(
+        updated_params.ack_mode,
+        MessageTransferAcknowledgementMode::WhenConfirmed
+    );
     assert_eq!(updated_params.trust_user_id, true);
     assert_eq!(updated_params.reconnect_delay, 10);
 
     // Check updated queue federation
     assert!(updated_params.queue_federation.is_some());
     let queue_fed = updated_params.queue_federation.as_ref().unwrap();
-    assert_eq!(queue_fed.queue.as_ref().unwrap(), "new-queue");
+    assert_eq!(queue_fed.queue.unwrap().to_owned(), "new-queue".to_owned());
 
     // 6. Convert to runtime parameter definition for API call
     let runtime_def = RuntimeParameterDefinition::from(updated_params);
@@ -376,7 +394,10 @@ fn test_federation_upstream_update_scenario() {
     assert_eq!(runtime_def.vhost, "/");
 
     let uri_value = runtime_def.value.get("uri").unwrap();
-    assert_eq!(uri_value.as_str().unwrap(), "amqps://user:newpass@remote:5671/new-vhost");
+    assert_eq!(
+        uri_value.as_str().unwrap(),
+        "amqps://user:newpass@remote:5671/new-vhost"
+    );
 
     let queue_value = runtime_def.value.get("queue").unwrap();
     assert_eq!(queue_value.as_str().unwrap(), "new-queue");

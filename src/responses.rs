@@ -2994,6 +2994,8 @@ pub struct FederationUpstream {
     pub uri: String,
     pub ack_mode: MessageTransferAcknowledgementMode,
     #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub prefetch_count: Option<u32>,
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub trust_user_id: Option<bool>,
     #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub reconnect_delay: Option<u32>,
@@ -3013,6 +3015,7 @@ pub struct FederationUpstream {
     #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub message_ttl: Option<u32>,
     pub resource_cleanup_mode: FederationResourceCleanupMode,
+    pub bind_using_nowait: bool,
 }
 
 impl TryFrom<RuntimeParameter> for FederationUpstream {
@@ -3034,8 +3037,16 @@ impl TryFrom<RuntimeParameter> for FederationUpstream {
             .and_then(|v| v.as_str())
             .map(MessageTransferAcknowledgementMode::from)
             .unwrap_or_default();
+        let prefetch_count = values
+            .get("prefetch-count")
+            .and_then(|v| v.as_u64())
+            .map(|v| v as u32);
 
         let trust_user_id = values.get("trust-user-id").and_then(|v| v.as_bool());
+        let bind_using_nowait = values
+            .get("bind-nowait")
+            .and_then(|v| v.as_bool())
+            .unwrap_or_default();
         let reconnect_delay = values
             .get("reconnect-delay")
             .and_then(|v| v.as_u64())
@@ -3080,6 +3091,7 @@ impl TryFrom<RuntimeParameter> for FederationUpstream {
             vhost: param.vhost,
             uri,
             ack_mode,
+            prefetch_count,
             trust_user_id,
             reconnect_delay,
             queue,
@@ -3090,6 +3102,7 @@ impl TryFrom<RuntimeParameter> for FederationUpstream {
             expires,
             message_ttl,
             resource_cleanup_mode,
+            bind_using_nowait,
         })
     }
 }

@@ -875,9 +875,9 @@ impl ExchangeFederationParams<'_> {
 }
 
 /// Matches the default used by the federation plugin.
-const DEFAULT_FEDERATION_PREFETCH: u16 = 1000;
+const DEFAULT_FEDERATION_PREFETCH: u32 = 1000;
 /// Matches the default used by the federation plugin.
-const DEFAULT_FEDERATION_RECONNECT_DELAY: u16 = 5;
+const DEFAULT_FEDERATION_RECONNECT_DELAY: u32 = 5;
 
 /// Represents a set of parameters that define a federation upstream
 /// and a number of the federation type-specific (exchange, queue) parameters
@@ -891,9 +891,9 @@ pub struct FederationUpstreamParams<'a> {
     pub name: &'a str,
     pub vhost: &'a str,
     pub uri: &'a str,
-    pub reconnect_delay: u16,
+    pub reconnect_delay: u32,
     pub trust_user_id: bool,
-    pub prefetch_count: u16,
+    pub prefetch_count: u32,
     pub ack_mode: MessageTransferAcknowledgementMode,
     pub bind_using_nowait: bool,
 
@@ -954,6 +954,7 @@ impl<'a> From<FederationUpstreamParams<'a>> for RuntimeParameterDefinition<'a> {
         value.insert("trust-user-id".to_owned(), json!(params.trust_user_id));
         value.insert("reconnect-delay".to_owned(), json!(params.reconnect_delay));
         value.insert("ack-mode".to_owned(), json!(params.ack_mode));
+        value.insert("bind-nowait".to_owned(), json!(params.bind_using_nowait));
 
         if let Some(qf) = params.queue_federation {
             value.insert("queue".to_owned(), json!(qf.queue));
@@ -968,6 +969,7 @@ impl<'a> From<FederationUpstreamParams<'a>> for RuntimeParameterDefinition<'a> {
                 "resource-cleanup-mode".to_owned(),
                 json!(ef.resource_cleanup_mode),
             );
+
             if let Some(val) = ef.exchange {
                 value.insert("exchange".to_owned(), json!(val));
             };
@@ -1001,7 +1003,7 @@ pub struct OwnedFederationUpstreamParams {
     pub uri: String,
     pub reconnect_delay: u32,
     pub trust_user_id: bool,
-    pub prefetch_count: u16,
+    pub prefetch_count: u32,
     pub ack_mode: MessageTransferAcknowledgementMode,
     pub bind_using_nowait: bool,
 
@@ -1040,9 +1042,13 @@ impl From<responses::FederationUpstream> for OwnedFederationUpstreamParams {
         };
 
         // Create exchange federation parameters if exchange-related fields are present
-        let exchange_federation = if upstream.exchange.is_some() || upstream.max_hops.is_some() || 
-                                      upstream.queue_type.is_some() || upstream.expires.is_some() || 
-                                      upstream.message_ttl.is_some() {
+        let exchange_federation = if upstream.exchange.is_some()
+            || upstream.max_hops.is_some()
+            || upstream.queue_type.is_some()
+            || upstream.expires.is_some()
+            || upstream.message_ttl.is_some()
+            || upstream.resource_cleanup_mode != FederationResourceCleanupMode::default()
+        {
             Some(OwnedExchangeFederationParams {
                 exchange: upstream.exchange,
                 max_hops: upstream.max_hops,
@@ -1059,13 +1065,15 @@ impl From<responses::FederationUpstream> for OwnedFederationUpstreamParams {
             name: upstream.name,
             vhost: upstream.vhost,
             uri: upstream.uri,
-            // No conversion needed - both are u32
-            reconnect_delay: upstream.reconnect_delay.unwrap_or(DEFAULT_FEDERATION_RECONNECT_DELAY as u32),
+            reconnect_delay: upstream
+                .reconnect_delay
+                .unwrap_or(DEFAULT_FEDERATION_RECONNECT_DELAY),
             trust_user_id: upstream.trust_user_id.unwrap_or(false),
-            // Set reasonable defaults for fields not present in FederationUpstream
-            prefetch_count: DEFAULT_FEDERATION_PREFETCH,
             ack_mode: upstream.ack_mode,
-            bind_using_nowait: false, // Default value
+            prefetch_count: upstream
+                .prefetch_count
+                .unwrap_or(DEFAULT_FEDERATION_PREFETCH),
+            bind_using_nowait: upstream.bind_using_nowait,
             queue_federation,
             exchange_federation,
         }
@@ -1074,26 +1082,33 @@ impl From<responses::FederationUpstream> for OwnedFederationUpstreamParams {
 
 impl<'a> From<&'a OwnedFederationUpstreamParams> for FederationUpstreamParams<'a> {
     fn from(owned: &'a OwnedFederationUpstreamParams) -> Self {
-        let queue_federation = owned.queue_federation.as_ref().map(|qf| QueueFederationParams {
-            queue: qf.queue.as_deref(),
-            consumer_tag: qf.consumer_tag.as_deref(),
-        });
+        let queue_federation = owned
+            .queue_federation
+            .as_ref()
+            .map(|qf| QueueFederationParams {
+                queue: qf.queue.as_deref(),
+                consumer_tag: qf.consumer_tag.as_deref(),
+            });
 
-        let exchange_federation = owned.exchange_federation.as_ref().map(|ef| ExchangeFederationParams {
-            exchange: ef.exchange.as_deref(),
-            max_hops: ef.max_hops,
-            queue_type: ef.queue_type.clone(),
-            ttl: ef.ttl,
-            message_ttl: ef.message_ttl,
-            resource_cleanup_mode: ef.resource_cleanup_mode.clone(),
-        });
+        let exchange_federation =
+            owned
+                .exchange_federation
+                .as_ref()
+                .map(|ef| ExchangeFederationParams {
+                    exchange: ef.exchange.as_deref(),
+                    max_hops: ef.max_hops,
+                    queue_type: ef.queue_type.clone(),
+                    ttl: ef.ttl,
+                    message_ttl: ef.message_ttl,
+                    resource_cleanup_mode: ef.resource_cleanup_mode.clone(),
+                });
 
         Self {
             name: &owned.name,
             vhost: &owned.vhost,
             uri: &owned.uri,
             // Convert u32 to u16, clamping to max u16 value if necessary
-            reconnect_delay: owned.reconnect_delay.min(u16::MAX as u32) as u16,
+            reconnect_delay: owned.reconnect_delay,
             trust_user_id: owned.trust_user_id,
             prefetch_count: owned.prefetch_count,
             ack_mode: owned.ack_mode.clone(),
@@ -1122,7 +1137,7 @@ pub struct Amqp091ShovelParams<'a> {
     /// Message acknowledgment mode for reliability
     pub acknowledgement_mode: MessageTransferAcknowledgementMode,
     /// Delay in seconds before reconnecting after connection failure
-    pub reconnect_delay: Option<u16>,
+    pub reconnect_delay: Option<u32>,
 
     /// Source endpoint configuration
     pub source: Amqp091ShovelSourceParams<'a>,
@@ -1365,7 +1380,7 @@ pub struct Amqp10ShovelParams<'a> {
     /// Message acknowledgment mode for reliability
     pub acknowledgement_mode: MessageTransferAcknowledgementMode,
     /// Delay in seconds before reconnecting after connection failure
-    pub reconnect_delay: Option<u16>,
+    pub reconnect_delay: Option<u32>,
 
     /// Source endpoint configuration
     pub source: Amqp10ShovelSourceParams<'a>,
