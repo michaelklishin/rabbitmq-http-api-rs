@@ -134,9 +134,8 @@ fn test_uri_builder_with_tls_peer_verification_flip() {
         "/path/to/ca_bundle.pem"
     ));
 
-    dbg!(&result);
     assert_eq!(
-        "amqps://user:pass@localhost:5671/vhost?cacertfile=%2Fpath%2Fto%2Fca_bundle.pem&verify=verify_none",
+        "amqps://user:pass@localhost:5671/vhost?cacertfile=/path/to/ca_bundle.pem&verify=verify_none",
         result
     );
 }

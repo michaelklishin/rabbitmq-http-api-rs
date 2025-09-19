@@ -18,10 +18,9 @@
 //! with proper TLS configuration parameters as documented in the
 //! [RabbitMQ URI Query Parameters Guide](https://www.rabbitmq.com/docs/uri-query-parameters).
 
-use std::borrow::Cow;
 use crate::commons::TlsPeerVerificationMode;
-use std::collections::HashMap;
-use url::{EncodingOverride, Url};
+use std::collections::{HashMap, HashSet};
+use url::Url;
 
 /// A builder for RabbitMQ-specific connection URIs with
 /// [TLS settings in query parameters](https://www.rabbitmq.com/docs/federation#tls-connections).
@@ -54,25 +53,9 @@ pub struct UriBuilder {
 }
 
 impl UriBuilder {
-    /// Creates a new URI builder from a base URI string.
     pub fn new(base_uri: &str) -> Result<Self, url::ParseError> {
         let url = Url::parse(base_uri)?;
         Ok(Self { url })
-    }
-
-    pub fn new_with_encoding_override(base_uri: &str, encoder: EncodingOverride) -> Result<Self, url::ParseError> {
-        let url = Url::options()
-            .encoding_override(encoder)
-            .parse(base_uri)?;
-
-        Ok(Self { url })
-    }
-
-    pub fn new_with_passthrough_encoder(base_uri: &str) -> Result<Self, url::ParseError> {
-        let f: &dyn Fn(&str) -> Cow<'_, [u8]> = &passthrough_encoder_fn;
-        let encoder: EncodingOverride = Some(f);
-
-        Self::new_with_encoding_override(base_uri, encoder)
     }
 
     /// Sets the [TLS peer verification mode](https://www.rabbitmq.com/docs/ssl#peer-verification).
@@ -135,34 +118,25 @@ impl UriBuilder {
 
         self.url.set_query(None);
 
+        // Add back non-TLS parameters
         for (k, v) in non_tls_params {
-            self.url.query_pairs_mut().append_pair(&k, &v);
+            self.set_query_param(&k, &v);
         }
 
         if let Some(verification) = config.peer_verification {
-            self.url
-                .query_pairs_mut()
-                .append_pair("verify", verification.as_ref());
+            self.set_query_param("verify", verification.as_ref());
         }
         if let Some(ca_cert) = config.ca_cert_file {
-            self.url
-                .query_pairs_mut()
-                .append_pair("cacertfile", &ca_cert);
+            self.set_query_param("cacertfile", &ca_cert);
         }
         if let Some(client_cert) = config.client_cert_file {
-            self.url
-                .query_pairs_mut()
-                .append_pair("certfile", &client_cert);
+            self.set_query_param("certfile", &client_cert);
         }
         if let Some(client_key) = config.client_key_file {
-            self.url
-                .query_pairs_mut()
-                .append_pair("keyfile", &client_key);
+            self.set_query_param("keyfile", &client_key);
         }
         if let Some(sni) = config.server_name_indication {
-            self.url
-                .query_pairs_mut()
-                .append_pair("server_name_indication", &sni);
+            self.set_query_param("server_name_indication", &sni);
         }
 
         self
@@ -173,26 +147,21 @@ impl UriBuilder {
     /// Unlike [`replace`], this method preserves existing TLS-related query parameters that are not
     /// specified (set to [`None`]) in the provided `TlsClientSettings`.
     pub fn merge(mut self, settings: TlsClientSettings) -> Self {
-        let mut params: HashMap<String, String> = self.url.query_pairs().into_owned().collect();
-
         if let Some(verification) = settings.peer_verification {
-            params.insert("verify".to_string(), verification.as_ref().to_string());
+            self.set_query_param("verify", verification.as_ref());
         }
         if let Some(ca_cert) = settings.ca_cert_file {
-            params.insert("cacertfile".to_string(), ca_cert);
+            self.set_query_param("cacertfile", &ca_cert);
         }
         if let Some(client_cert) = settings.client_cert_file {
-            params.insert("certfile".to_string(), client_cert);
+            self.set_query_param("certfile", &client_cert);
         }
         if let Some(client_key) = settings.client_key_file {
-            params.insert("keyfile".to_string(), client_key);
+            self.set_query_param("keyfile", &client_key);
         }
         if let Some(sni) = settings.server_name_indication {
-            params.insert("server_name_indication".to_string(), sni);
+            self.set_query_param("server_name_indication", &sni);
         }
-
-        self.url.set_query(None);
-        self.url.query_pairs_mut().extend_pairs(params);
 
         self
     }
@@ -221,19 +190,32 @@ impl UriBuilder {
 
     fn set_query_param(&mut self, key: &str, value: &str) {
         // Collect existing parameters first, filtering out the key we're replacing
+        // and keeping only unique keys.
         let mut params: Vec<(String, String)> = self
             .url
             .query_pairs()
-            .map(|(k, v)| (k.into_owned(), v.into_owned()))
+            .map(|(k, v)| {
+                let decoded_key = urlencoding::decode(&k).unwrap_or_else(|_| k.clone());
+                let decoded_value = urlencoding::decode(&v).unwrap_or_else(|_| v.clone());
+                (decoded_key.into_owned(), decoded_value.into_owned())
+            })
             .filter(|(k, _)| k != key)
+            .collect::<HashSet<_>>()
+            .into_iter()
             .collect();
 
         // Add the new parameter
         params.push((key.to_string(), value.to_string()));
 
-        for (k, v) in params {
-            self.url.query_pairs_mut().append_pair(&k, &v);
-        }
+        // IMPORTANT: we intentionally build the query string manually to avoid percent-encoding
+        let query_parts: Vec<String> = params
+            .iter()
+            .map(|(k, v)| format!("{}={}", k, v))
+            .collect();
+        let qs = query_parts.join("&");
+
+        self.url.set_query(None);
+        self.url.set_query(Some(&qs));
     }
 
     fn remove_query_param(&mut self, key: &str) {
@@ -245,15 +227,19 @@ impl UriBuilder {
             .collect();
 
         self.url.set_query(None);
-        for (k, v) in params {
-            self.url.query_pairs_mut().append_pair(&k, &v);
+
+        if !params.is_empty() {
+            // Build query string manually to avoid percent-encoding
+            let query_parts: Vec<String> = params
+                .iter()
+                .map(|(k, v)| format!("{}={}", k, v))
+                .collect();
+            let qs = query_parts.join("&");
+            self.url.set_query(Some(&qs));
         }
     }
 }
 
-pub fn passthrough_encoder_fn(s: &str) -> Cow<'_, [u8]> {
-    Cow::Borrowed(s.as_bytes())
-}
 
 /// TLS-related setting for RabbitMQ federation upstreams and shovels.
 #[derive(Debug, Clone, Default)]
