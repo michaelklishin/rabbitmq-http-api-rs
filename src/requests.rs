@@ -991,6 +991,119 @@ impl<'a> From<FederationUpstreamParams<'a>> for RuntimeParameterDefinition<'a> {
     }
 }
 
+/// This auxiliary type is an owned version of FederationUpstreamParams.
+/// This is one of the simplest approaches to conversion because
+/// of [`FederationUpstreamParams`]'s lifetimes.
+#[derive(Default, Debug, Serialize, Clone, PartialEq, Eq)]
+pub struct OwnedFederationUpstreamParams {
+    pub name: String,
+    pub vhost: String,
+    pub uri: String,
+    pub reconnect_delay: u32,
+    pub trust_user_id: bool,
+    pub prefetch_count: u16,
+    pub ack_mode: MessageTransferAcknowledgementMode,
+    pub bind_using_nowait: bool,
+
+    pub queue_federation: Option<OwnedQueueFederationParams>,
+    pub exchange_federation: Option<OwnedExchangeFederationParams>,
+}
+
+/// Owned version of QueueFederationParams
+#[derive(Default, Debug, Serialize, Clone, PartialEq, Eq)]
+pub struct OwnedQueueFederationParams {
+    pub queue: Option<String>,
+    pub consumer_tag: Option<String>,
+}
+
+/// Owned version of ExchangeFederationParams
+#[derive(Default, Debug, Serialize, Clone, PartialEq, Eq)]
+pub struct OwnedExchangeFederationParams {
+    pub exchange: Option<String>,
+    pub max_hops: Option<u8>,
+    pub queue_type: QueueType,
+    pub ttl: Option<u32>,
+    pub message_ttl: Option<u32>,
+    pub resource_cleanup_mode: FederationResourceCleanupMode,
+}
+
+impl From<responses::FederationUpstream> for OwnedFederationUpstreamParams {
+    fn from(upstream: responses::FederationUpstream) -> Self {
+        // Create queue federation parameters if queue-related fields are present
+        let queue_federation = if upstream.queue.is_some() || upstream.consumer_tag.is_some() {
+            Some(OwnedQueueFederationParams {
+                queue: upstream.queue,
+                consumer_tag: upstream.consumer_tag,
+            })
+        } else {
+            None
+        };
+
+        // Create exchange federation parameters if exchange-related fields are present
+        let exchange_federation = if upstream.exchange.is_some() || upstream.max_hops.is_some() || 
+                                      upstream.queue_type.is_some() || upstream.expires.is_some() || 
+                                      upstream.message_ttl.is_some() {
+            Some(OwnedExchangeFederationParams {
+                exchange: upstream.exchange,
+                max_hops: upstream.max_hops,
+                queue_type: upstream.queue_type.unwrap_or_default(),
+                ttl: upstream.expires,
+                message_ttl: upstream.message_ttl,
+                resource_cleanup_mode: upstream.resource_cleanup_mode,
+            })
+        } else {
+            None
+        };
+
+        Self {
+            name: upstream.name,
+            vhost: upstream.vhost,
+            uri: upstream.uri,
+            // No conversion needed - both are u32
+            reconnect_delay: upstream.reconnect_delay.unwrap_or(DEFAULT_FEDERATION_RECONNECT_DELAY as u32),
+            trust_user_id: upstream.trust_user_id.unwrap_or(false),
+            // Set reasonable defaults for fields not present in FederationUpstream
+            prefetch_count: DEFAULT_FEDERATION_PREFETCH,
+            ack_mode: upstream.ack_mode,
+            bind_using_nowait: false, // Default value
+            queue_federation,
+            exchange_federation,
+        }
+    }
+}
+
+impl<'a> From<&'a OwnedFederationUpstreamParams> for FederationUpstreamParams<'a> {
+    fn from(owned: &'a OwnedFederationUpstreamParams) -> Self {
+        let queue_federation = owned.queue_federation.as_ref().map(|qf| QueueFederationParams {
+            queue: qf.queue.as_deref(),
+            consumer_tag: qf.consumer_tag.as_deref(),
+        });
+
+        let exchange_federation = owned.exchange_federation.as_ref().map(|ef| ExchangeFederationParams {
+            exchange: ef.exchange.as_deref(),
+            max_hops: ef.max_hops,
+            queue_type: ef.queue_type.clone(),
+            ttl: ef.ttl,
+            message_ttl: ef.message_ttl,
+            resource_cleanup_mode: ef.resource_cleanup_mode.clone(),
+        });
+
+        Self {
+            name: &owned.name,
+            vhost: &owned.vhost,
+            uri: &owned.uri,
+            // Convert u32 to u16, clamping to max u16 value if necessary
+            reconnect_delay: owned.reconnect_delay.min(u16::MAX as u32) as u16,
+            trust_user_id: owned.trust_user_id,
+            prefetch_count: owned.prefetch_count,
+            ack_mode: owned.ack_mode.clone(),
+            bind_using_nowait: owned.bind_using_nowait,
+            queue_federation,
+            exchange_federation,
+        }
+    }
+}
+
 /// [Runtime parameter](https://www.rabbitmq.com/docs/parameters) component used by dynamic shovels.
 ///
 /// This constant is used internally when creating [`RuntimeParameterDefinition`]

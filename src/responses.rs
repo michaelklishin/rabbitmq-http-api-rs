@@ -1656,7 +1656,7 @@ pub struct ClusterIdentity {
 }
 
 impl fmt::Display for ClusterIdentity {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.name)
     }
 }

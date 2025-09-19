@@ -59,7 +59,6 @@ async fn test_async_list_deprecated_features_in_use() {
     let result2 = rc.list_deprecated_features_in_use().await;
     match result2 {
         Ok(vec) => {
-            dbg!(&vec);
             assert!(
                 vec.0
                     .into_iter()

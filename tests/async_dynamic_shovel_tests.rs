@@ -116,7 +116,6 @@ async fn test_async_list_all_shovels() {
 
     await_metric_emission(400);
     let result5 = rc.list_shovels().await;
-    dbg!(&result5);
     assert!(result5.is_ok());
 
     let shovels = result5.unwrap();
