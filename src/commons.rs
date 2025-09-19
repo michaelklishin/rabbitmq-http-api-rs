@@ -839,7 +839,7 @@ pub enum ChannelUseMode {
 
 impl From<&str> for ChannelUseMode {
     fn from(value: &str) -> Self {
-        match value {
+        match value.to_lowercase().as_str() {
             "multiple" => ChannelUseMode::Multiple,
             "single" => ChannelUseMode::Single,
             _ => ChannelUseMode::default(),
