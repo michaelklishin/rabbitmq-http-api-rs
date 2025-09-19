@@ -26,8 +26,10 @@ use reqwest::{
 pub enum ConversionError {
     #[error("Unsupported argument value for property (field) {property}")]
     UnsupportedPropertyValue { property: String },
-    #[error("Missing required argument")]
+    #[error("Missing the required argument")]
     MissingProperty { argument: String },
+    #[error("Could not parse a value: {message}")]
+    ParsingError { message: String },
 }
 
 #[derive(Error, Debug)]
@@ -71,6 +73,8 @@ pub enum Error<U, S, E, BT> {
         error: ConversionError,
         backtrace: BT,
     },
+    #[error("Could not parse a value: {message}")]
+    ParsingError { message: String },
     #[error("encountered an error when performing an HTTP request")]
     RequestError { error: E, backtrace: BT },
     #[error("an unspecified error")]
@@ -117,8 +121,8 @@ impl From<reqwest::Error> for HttpClientError {
     }
 }
 
-impl From<reqwest::header::InvalidHeaderValue> for HttpClientError {
-    fn from(err: reqwest::header::InvalidHeaderValue) -> Self {
+impl From<InvalidHeaderValue> for HttpClientError {
+    fn from(err: InvalidHeaderValue) -> Self {
         HttpClientError::InvalidHeaderValue { error: err }
     }
 }
@@ -132,6 +136,7 @@ impl From<ConversionError> for HttpClientError {
             ConversionError::MissingProperty { argument } => {
                 HttpClientError::MissingProperty { argument }
             }
+            ConversionError::ParsingError { message } => HttpClientError::ParsingError { message },
         }
     }
 }
