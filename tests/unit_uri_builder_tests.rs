@@ -129,6 +129,8 @@ fn test_uri_builder_with_tls_peer_verification_flip() {
         TlsPeerVerificationMode::Disabled.as_ref()
     ));
     assert!(has_query_param(&result, "cacertfile", "/path/to/ca_bundle.pem"));
+
+    dbg!(&result);
 }
 
 #[test]
