@@ -46,8 +46,10 @@ pub mod responses;
 /// Error types
 #[cfg(any(feature = "async", feature = "blocking"))]
 pub mod error;
+
 /// Transformers are functions that mutate (transform) [definition sets](https://www.rabbitmq.com/docs/definitions)
 pub mod transformers;
-/// URI builders for RabbitMQ connections with TLS support
+
+/// Builder for the RabbitMQ-specific URIs
 pub mod uris;
 mod utils;
