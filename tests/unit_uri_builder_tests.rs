@@ -256,7 +256,7 @@ fn test_uri_builder_chained_operations() {
 fn test_uri_builder_query_params_method() {
     let uri = "amqps://user:pass@localhost:5671/vhost";
     let builder = UriBuilder::new(uri).unwrap();
-    let builder = builder
+    let mut builder = builder
         .with_tls_peer_verification(TlsPeerVerificationMode::Enabled)
         .with_ca_cert_file("/path/to/ca_bundle.pem");
 
@@ -274,7 +274,7 @@ fn test_uri_builder_query_params_method() {
 #[test]
 fn test_uri_builder_as_url_method() {
     let uri = "amqps://user:pass@localhost:5671/vhost";
-    let builder = UriBuilder::new(uri).unwrap();
+    let mut builder = UriBuilder::new(uri).unwrap();
     let url = builder.as_url();
     assert_eq!(url.scheme(), "amqps");
     assert_eq!(url.host_str(), Some("localhost"));
@@ -458,4 +458,94 @@ fn test_uri_builder_special_characters_in_values() {
         "server_name_indication",
         "host-with-dashes.example.com"
     ));
+}
+
+// Optimization-specific tests
+#[test]
+fn test_builder_api_smoke_case1() {
+    // Test the intentional percent-decoding behavior with batched operations
+    let mut builder = UriBuilder::new("amqps://user:pass@localhost:5671/vhost?verify=verify_none&cacertfile=%2Fpath%2Fto%2Fca.pem").unwrap();
+
+    // Multiple parameter updates should be batched
+    builder = builder
+        .with_query_param("certfile", "/path/to/cert.pem")
+        .with_query_param("keyfile", "/path/to/key.pem")
+        .with_query_param("server_name_indication", "example.com");
+
+    let result = builder.build().unwrap();
+
+    // Verify that percent-encoded paths are decoded
+    assert!(
+        result.contains("cacertfile=/path/to/ca.pem"),
+        "Percent-decoding not preserved. Result: {}",
+        result
+    );
+    assert!(result.contains("certfile=/path/to/cert.pem"));
+    assert!(result.contains("keyfile=/path/to/key.pem"));
+    assert!(result.contains("server_name_indication=example.com"));
+}
+
+#[test]
+fn test_builder_api_smoke_case2() {
+    // Test that the fluent API still works correctly
+    let uri = UriBuilder::new("amqps://user:pass@localhost:5671/vhost")
+        .unwrap()
+        .with_tls_peer_verification(TlsPeerVerificationMode::Enabled)
+        .with_ca_cert_file("/path/to/ca_bundle.pem")
+        .with_client_cert_file("/path/to/client.pem")
+        .with_client_key_file("/path/to/key.pem")
+        .with_server_name_indication("myhost.example.com")
+        .build()
+        .unwrap();
+
+    assert!(uri.contains("verify=verify_peer"));
+    assert!(uri.contains("cacertfile=/path/to/ca_bundle.pem"));
+    assert!(uri.contains("certfile=/path/to/client.pem"));
+    assert!(uri.contains("keyfile=/path/to/key.pem"));
+    assert!(uri.contains("server_name_indication=myhost.example.com"));
+}
+
+#[test]
+fn test_builder_api_smoke_case3() {
+    let mut builder = UriBuilder::new(
+        "amqps://user:pass@localhost:5671/vhost?verify=verify_none&cacertfile=/path/to/ca.pem",
+    )
+    .unwrap();
+
+    // Test query_params method with cached parameters
+    builder = builder.with_query_param("keyfile", "/path/to/key.pem");
+    let params = builder.query_params();
+
+    assert_eq!(params.get("verify"), Some(&"verify_none".to_string()));
+    assert_eq!(
+        params.get("cacertfile"),
+        Some(&"/path/to/ca.pem".to_string())
+    );
+    assert_eq!(params.get("keyfile"), Some(&"/path/to/key.pem".to_string()));
+}
+
+#[test]
+fn test_builder_api_smoke_case4() {
+    let uri = UriBuilder::new(
+        "amqps://user:pass@localhost:5671/vhost?verify=verify_none&cacertfile=/path/to/ca.pem",
+    )
+    .unwrap()
+    .with_query_param("keyfile", "/path/to/key.pem")
+    .without_query_param("verify")
+    .build()
+    .unwrap();
+
+    assert!(!uri.contains("verify="));
+    assert!(uri.contains("cacertfile=/path/to/ca.pem"));
+    assert!(uri.contains("keyfile=/path/to/key.pem"));
+}
+
+#[test]
+fn test_builder_api_smoke_case5() {
+    let mut builder = UriBuilder::new("amqps://user:pass@localhost:5671/vhost")
+        .unwrap()
+        .with_query_param("verify", "verify_peer");
+
+    let url = builder.as_url();
+    assert!(url.to_string().contains("verify=verify_peer"));
 }

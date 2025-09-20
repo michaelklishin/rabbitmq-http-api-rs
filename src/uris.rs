@@ -28,7 +28,17 @@ use url::Url;
 /// This builder provides convenient methods for (re)configuring TLS parameters
 /// for RabbitMQ federation links and shovels.
 ///
-/// # Example
+/// ## On Query String Parameter Encoding and Decoding
+///
+/// Most URI libraries always percent-encode URI query parameters. However, in the specific case
+/// of RabbitMQ URIs, we know that some parameters contain forward slashes,
+/// but encoding and decoding them would not be productive:
+/// there is no risk of encoded values being misinterpreted.
+///
+/// Therefore, for compatibility with a broad range of RabbitMQ release series, this implementation
+/// intentionally decodes percent-encoded query parameters.
+///
+/// ## Example
 ///
 /// ```rust
 /// use rabbitmq_http_client::uris::UriBuilder;
@@ -50,12 +60,21 @@ use url::Url;
 #[derive(Debug, Clone)]
 pub struct UriBuilder {
     url: Url,
+    /// Cached decoded query parameters for efficient batch operations
+    /// When None, parameters are recalculated from the URL
+    cached_params: Option<HashMap<String, String>>,
+    /// Have the cached params been modified?
+    has_pending_changes: bool,
 }
 
 impl UriBuilder {
     pub fn new(base_uri: &str) -> Result<Self, url::ParseError> {
         let url = Url::parse(base_uri)?;
-        Ok(Self { url })
+        Ok(Self {
+            url,
+            cached_params: None,
+            has_pending_changes: false,
+        })
     }
 
     /// Sets the [TLS peer verification mode](https://www.rabbitmq.com/docs/ssl#peer-verification).
@@ -109,18 +128,14 @@ impl UriBuilder {
             "keyfile",
             "server_name_indication",
         ];
-        let non_tls_params: Vec<(String, String)> = self
-            .url
-            .query_pairs()
-            .filter(|(k, _)| !TLS_PARAMS.contains(&k.as_ref()))
-            .map(|(k, v)| (k.into_owned(), v.into_owned()))
-            .collect();
 
-        self.url.set_query(None);
-
-        // Add back non-TLS parameters
-        for (k, v) in non_tls_params {
-            self.set_query_param(&k, &v);
+        self.ensure_params_cached();
+        if let Some(ref mut params) = self.cached_params {
+            for key in TLS_PARAMS {
+                if params.remove(*key).is_some() {
+                    self.has_pending_changes = true;
+                }
+            }
         }
 
         self.apply_tls_settings(&config);
@@ -133,22 +148,27 @@ impl UriBuilder {
     /// Unlike [`replace`], this method preserves existing TLS-related query parameters that are not
     /// specified (set to [`None`]) in the provided `TlsClientSettings`.
     pub fn merge(mut self, settings: TlsClientSettings) -> Self {
+        // Ensure we have cached parameters before applying settings
+        self.ensure_params_cached();
         self.apply_tls_settings(&settings);
         self
     }
 
     /// Returns the final URI string.
-    pub fn build(self) -> Result<String, url::ParseError> {
+    pub fn build(mut self) -> Result<String, url::ParseError> {
+        self.apply_cached_params_to_url();
         Ok(self.url.to_string())
     }
 
     /// Returns the current URL for inspection.
-    pub fn as_url(&self) -> &Url {
+    pub fn as_url(&mut self) -> &Url {
+        self.apply_cached_params_to_url();
         &self.url
     }
 
     /// Gets all current query parameters as a map.
-    pub fn query_params(&self) -> HashMap<String, String> {
+    pub fn query_params(&mut self) -> HashMap<String, String> {
+        self.apply_cached_params_to_url();
         self.url
             .query_pairs()
             .map(|(k, v)| (k.into_owned(), v.into_owned()))
@@ -160,22 +180,25 @@ impl UriBuilder {
     //
 
     fn set_query_param(&mut self, key: &str, value: &str) {
-        let mut params = self.update_query_params_sans_encoding();
+        self.ensure_params_cached();
 
-        // Remove existing key (deduplication) and add the new parameter
-        params.retain(|(k, _)| k != key);
-        params.push((key.to_string(), value.to_string()));
-
-        self.rebuild_query_string(&params);
+        if let Some(ref mut params) = self.cached_params {
+            params.insert(key.to_string(), value.to_string());
+            self.has_pending_changes = true;
+        }
     }
 
     fn remove_query_param(&mut self, key: &str) {
-        let mut params = self.update_query_params_sans_encoding();
-        params.retain(|(k, _)| k != key);
-        self.rebuild_query_string(&params);
+        self.ensure_params_cached();
+
+        if let Some(ref mut params) = self.cached_params {
+            if params.remove(key).is_some() {
+                self.has_pending_changes = true;
+            }
+        }
     }
 
-    fn update_query_params_sans_encoding(&self) -> Vec<(String, String)> {
+    fn recalculate_query_params(&self) -> HashMap<String, String> {
         self.url
             .query_pairs()
             .map(|(k, v)| {
@@ -186,7 +209,7 @@ impl UriBuilder {
             .collect()
     }
 
-    fn rebuild_query_string(&mut self, params: &[(String, String)]) {
+    fn rebuild_query_string_from_map(&mut self, params: &HashMap<String, String>) {
         self.url.set_query(None);
 
         if !params.is_empty() {
@@ -195,6 +218,23 @@ impl UriBuilder {
                 params.iter().map(|(k, v)| format!("{}={}", k, v)).collect();
             let qs = query_parts.join("&");
             self.url.set_query(Some(&qs));
+        }
+    }
+
+    fn ensure_params_cached(&mut self) {
+        if self.cached_params.is_none() {
+            // Recalculate parameters from the URL, intentionally decoding percent-encoded pairs
+            let params = self.recalculate_query_params();
+            self.cached_params = Some(params);
+        }
+    }
+
+    fn apply_cached_params_to_url(&mut self) {
+        if self.has_pending_changes {
+            if let Some(params) = self.cached_params.clone() {
+                self.rebuild_query_string_from_map(&params);
+            }
+            self.has_pending_changes = false;
         }
     }
 
