@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::HashMap;
 use rabbitmq_http_client::commons::TlsPeerVerificationMode;
 use rabbitmq_http_client::uris::{TlsClientSettings, UriBuilder};
+use std::collections::HashMap;
 use url::Url;
 
 fn get_query_params(uri_str: &str) -> HashMap<String, String> {

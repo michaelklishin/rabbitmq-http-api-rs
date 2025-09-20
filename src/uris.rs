@@ -68,11 +68,11 @@ pub struct UriBuilder {
 }
 
 impl UriBuilder {
-    const PEER_VERIFICATION_MODE_KEY: &'static str = "verify";
-    const CA_CERTIFICATE_BUNDLE_PATH_KEY: &'static str = "cacertfile";
-    const CLIENT_CERTIFICATE_PATH_KEY: &'static str = "certfile";
-    const CLIENT_PRIVATE_KEY_PATH_KEY: &'static str = "keyfile";
-    const SERVER_NAME_INDICATION_KEY: &'static str = "server_name_indication";
+    pub const PEER_VERIFICATION_MODE_KEY: &'static str = "verify";
+    pub const CA_CERTIFICATE_BUNDLE_PATH_KEY: &'static str = "cacertfile";
+    pub const CLIENT_CERTIFICATE_PATH_KEY: &'static str = "certfile";
+    pub const CLIENT_PRIVATE_KEY_PATH_KEY: &'static str = "keyfile";
+    pub const SERVER_NAME_INDICATION_KEY: &'static str = "server_name_indication";
 
     const TLS_PARAMS: &'static [&'static str] = &[
         Self::PEER_VERIFICATION_MODE_KEY,
@@ -137,10 +137,13 @@ impl UriBuilder {
     pub fn replace(mut self, config: TlsClientSettings) -> Self {
         self.ensure_params_cached();
         if let Some(ref mut params) = self.cached_params {
-            let any_removed = Self::TLS_PARAMS
-                .iter()
-                .map(|key| params.remove(*key))
-                .any(|removed| removed.is_some());
+            // Remove all TLS-related keys, not just the first found
+            let mut any_removed = false;
+            for &key in Self::TLS_PARAMS {
+                if params.remove(key).is_some() {
+                    any_removed = true;
+                }
+            }
             if any_removed {
                 self.has_pending_changes = true;
             }
