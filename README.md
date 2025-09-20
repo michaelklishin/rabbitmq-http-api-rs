@@ -19,19 +19,19 @@ All older series have [reached End of Life](https://www.rabbitmq.com/release-inf
 ### Blocking Client
 
 ```toml
-rabbitmq_http_client = { version = "0.54.0", features = ["core", "blocking"] }
+rabbitmq_http_client = { version = "0.55.0", features = ["core", "blocking"] }
 ```
 
 ### Async Client
 
 ```toml
-rabbitmq_http_client = { version = "0.54.0", features = ["core", "async"] }
+rabbitmq_http_client = { version = "0.55.0", features = ["core", "async"] }
 ```
 
 ### Blocking Client with Tabled Support
 
 ```toml
-rabbitmq_http_client = { version = "0.54.0", features = ["core", "blocking", "tabled"] }
+rabbitmq_http_client = { version = "0.55.0", features = ["core", "blocking", "tabled"] }
 ```
 
 ### Async Client with Tabled Support
