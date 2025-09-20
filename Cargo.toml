@@ -37,6 +37,7 @@ time = { version = "0.3.41", features = ["serde-human-readable"] }
 [dev-dependencies]
 amqprs = { version = "2" }
 cargo-nextest = "0.9.104"
+proptest = "1.4"
 
 [features]
 default = ["blocking", "default-tls"]
