@@ -6,7 +6,13 @@ No changes yet.
 
 ## v0.55.0 (Sep 20, 2025)
 
-No changes yet.
+### Enhancements
+
+ * Optimized `uris::UriBuilder` for updates of multiple query parameters
+
+### Bug Fixes
+
+ * Fix several `uris::UriBuilder` bugs around query parameter updates
 
 ## v0.54.0 (Sep 19, 2025)
 
