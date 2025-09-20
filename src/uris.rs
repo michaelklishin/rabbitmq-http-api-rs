@@ -191,11 +191,10 @@ impl UriBuilder {
     fn remove_query_param(&mut self, key: &str) {
         self.ensure_params_cached();
 
-        if let Some(ref mut params) = self.cached_params {
-            if params.remove(key).is_some() {
+        if let Some(ref mut params) = self.cached_params
+            && params.remove(key).is_some() {
                 self.has_pending_changes = true;
             }
-        }
     }
 
     fn recalculate_query_params(&self) -> HashMap<String, String> {
