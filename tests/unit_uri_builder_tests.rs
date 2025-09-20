@@ -134,10 +134,21 @@ fn test_uri_builder_with_tls_peer_verification_flip() {
         "/path/to/ca_bundle.pem"
     ));
 
-    assert_eq!(
-        "amqps://user:pass@localhost:5671/vhost?cacertfile=/path/to/ca_bundle.pem&verify=verify_none",
-        result
-    );
+    // Compare query parameters as a map to avoid flakiness due to iteration order
+    let params = get_query_params(&result);
+    let expected: HashMap<String, String> = vec![
+        (
+            "cacertfile".to_string(),
+            "/path/to/ca_bundle.pem".to_string(),
+        ),
+        (
+            "verify".to_string(),
+            TlsPeerVerificationMode::Disabled.as_ref().to_string(),
+        ),
+    ]
+    .into_iter()
+    .collect();
+    assert_eq!(params, expected);
 }
 
 #[test]

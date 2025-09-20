@@ -68,6 +68,20 @@ pub struct UriBuilder {
 }
 
 impl UriBuilder {
+    const PEER_VERIFICATION_MODE_KEY: &'static str = "verify";
+    const CA_CERTIFICATE_BUNDLE_PATH_KEY: &'static str = "cacertfile";
+    const CLIENT_CERTIFICATE_PATH_KEY: &'static str = "certfile";
+    const CLIENT_PRIVATE_KEY_PATH_KEY: &'static str = "keyfile";
+    const SERVER_NAME_INDICATION_KEY: &'static str = "server_name_indication";
+
+    const TLS_PARAMS: &'static [&'static str] = &[
+        Self::PEER_VERIFICATION_MODE_KEY,
+        Self::CA_CERTIFICATE_BUNDLE_PATH_KEY,
+        Self::CLIENT_CERTIFICATE_PATH_KEY,
+        Self::CLIENT_PRIVATE_KEY_PATH_KEY,
+        Self::SERVER_NAME_INDICATION_KEY,
+    ];
+
     pub fn new(base_uri: &str) -> Result<Self, url::ParseError> {
         let url = Url::parse(base_uri)?;
         Ok(Self {
@@ -79,31 +93,31 @@ impl UriBuilder {
 
     /// Sets the [TLS peer verification mode](https://www.rabbitmq.com/docs/ssl#peer-verification).
     pub fn with_tls_peer_verification(mut self, mode: TlsPeerVerificationMode) -> Self {
-        self.set_query_param("verify", mode.as_ref());
+        self.set_query_param(Self::PEER_VERIFICATION_MODE_KEY, mode.as_ref());
         self
     }
 
     /// Sets the CA certificate file path for TLS verification.
     pub fn with_ca_cert_file<S: AsRef<str>>(mut self, path: S) -> Self {
-        self.set_query_param("cacertfile", path.as_ref());
+        self.set_query_param(Self::CA_CERTIFICATE_BUNDLE_PATH_KEY, path.as_ref());
         self
     }
 
     /// Sets the client certificate (public key) file path (the `certfile` query parameter)
     pub fn with_client_cert_file<S: AsRef<str>>(mut self, path: S) -> Self {
-        self.set_query_param("certfile", path.as_ref());
+        self.set_query_param(Self::CLIENT_CERTIFICATE_PATH_KEY, path.as_ref());
         self
     }
 
     /// Sets the client private key file path (the `keyfile` query parameter).
     pub fn with_client_key_file<S: AsRef<str>>(mut self, path: S) -> Self {
-        self.set_query_param("keyfile", path.as_ref());
+        self.set_query_param(Self::CLIENT_PRIVATE_KEY_PATH_KEY, path.as_ref());
         self
     }
 
     /// Sets the [server name indication (SNI)](https://www.rabbitmq.com/docs/ssl#erlang-ssl) value using the `server_name_indication` key.
     pub fn with_server_name_indication<S: AsRef<str>>(mut self, hostname: S) -> Self {
-        self.set_query_param("server_name_indication", hostname.as_ref());
+        self.set_query_param(Self::SERVER_NAME_INDICATION_KEY, hostname.as_ref());
         self
     }
 
@@ -121,20 +135,14 @@ impl UriBuilder {
 
     /// Replaces a number of TLS-related settings with new values.
     pub fn replace(mut self, config: TlsClientSettings) -> Self {
-        const TLS_PARAMS: &[&str] = &[
-            "verify",
-            "cacertfile",
-            "certfile",
-            "keyfile",
-            "server_name_indication",
-        ];
-
         self.ensure_params_cached();
         if let Some(ref mut params) = self.cached_params {
-            for key in TLS_PARAMS {
-                if params.remove(*key).is_some() {
-                    self.has_pending_changes = true;
-                }
+            let any_removed = Self::TLS_PARAMS
+                .iter()
+                .map(|key| params.remove(*key))
+                .any(|removed| removed.is_some());
+            if any_removed {
+                self.has_pending_changes = true;
             }
         }
 
@@ -166,7 +174,7 @@ impl UriBuilder {
         &self.url
     }
 
-    /// Gets all current query parameters as a map.
+    /// Returns the query parameters as a [`HashMap`]
     pub fn query_params(&mut self) -> HashMap<String, String> {
         self.apply_cached_params_to_url();
         self.url
@@ -182,19 +190,22 @@ impl UriBuilder {
     fn set_query_param(&mut self, key: &str, value: &str) {
         self.ensure_params_cached();
 
-        if let Some(ref mut params) = self.cached_params {
-            params.insert(key.to_string(), value.to_string());
-            self.has_pending_changes = true;
-        }
+        let Some(ref mut params) = self.cached_params else {
+            return;
+        };
+        params.insert(key.to_string(), value.to_string());
+        self.has_pending_changes = true;
     }
 
     fn remove_query_param(&mut self, key: &str) {
         self.ensure_params_cached();
 
-        if let Some(ref mut params) = self.cached_params
-            && params.remove(key).is_some() {
-                self.has_pending_changes = true;
-            }
+        let Some(ref mut params) = self.cached_params else {
+            return;
+        };
+        if params.remove(key).is_some() {
+            self.has_pending_changes = true;
+        }
     }
 
     fn recalculate_query_params(&self) -> HashMap<String, String> {
@@ -209,15 +220,18 @@ impl UriBuilder {
     }
 
     fn rebuild_query_string_from_map(&mut self, params: &HashMap<String, String>) {
-        self.url.set_query(None);
-
-        if !params.is_empty() {
-            // IMPORTANT: we intentionally build the query string manually to avoid percent-encoding
-            let query_parts: Vec<String> =
-                params.iter().map(|(k, v)| format!("{}={}", k, v)).collect();
-            let qs = query_parts.join("&");
-            self.url.set_query(Some(&qs));
+        if params.is_empty() {
+            self.url.set_query(None);
+            return;
         }
+
+        // IMPORTANT: we intentionally build the query string manually to avoid percent-encoding
+        let query_string = params
+            .iter()
+            .map(|(k, v)| format!("{}={}", k, v))
+            .collect::<Vec<_>>()
+            .join("&");
+        self.url.set_query(Some(&query_string));
     }
 
     fn ensure_params_cached(&mut self) {
@@ -229,29 +243,31 @@ impl UriBuilder {
     }
 
     fn apply_cached_params_to_url(&mut self) {
-        if self.has_pending_changes {
-            if let Some(params) = self.cached_params.clone() {
-                self.rebuild_query_string_from_map(&params);
-            }
-            self.has_pending_changes = false;
+        if !self.has_pending_changes {
+            return;
         }
+
+        if let Some(params) = self.cached_params.clone() {
+            self.rebuild_query_string_from_map(&params);
+        }
+        self.has_pending_changes = false;
     }
 
     fn apply_tls_settings(&mut self, settings: &TlsClientSettings) {
         if let Some(verification) = &settings.peer_verification {
-            self.set_query_param("verify", verification.as_ref());
+            self.set_query_param(Self::PEER_VERIFICATION_MODE_KEY, verification.as_ref());
         }
         if let Some(ca_cert) = &settings.ca_cert_file {
-            self.set_query_param("cacertfile", ca_cert);
+            self.set_query_param(Self::CA_CERTIFICATE_BUNDLE_PATH_KEY, ca_cert);
         }
         if let Some(client_cert) = &settings.client_cert_file {
-            self.set_query_param("certfile", client_cert);
+            self.set_query_param(Self::CLIENT_CERTIFICATE_PATH_KEY, client_cert);
         }
         if let Some(client_key) = &settings.client_key_file {
-            self.set_query_param("keyfile", client_key);
+            self.set_query_param(Self::CLIENT_PRIVATE_KEY_PATH_KEY, client_key);
         }
         if let Some(sni) = &settings.server_name_indication {
-            self.set_query_param("server_name_indication", sni);
+            self.set_query_param(Self::SERVER_NAME_INDICATION_KEY, sni);
         }
     }
 }
