@@ -2396,7 +2396,7 @@ where
 
 impl Default for Client<&'static str, &'static str, &'static str> {
     fn default() -> Self {
-        Self::new("http://localhost:15672", "guest", "guest")
+        Self::new("http://localhost:15672/api", "guest", "guest")
     }
 }
 
