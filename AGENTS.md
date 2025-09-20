@@ -6,7 +6,7 @@ This is a Rust client for the [RabbitMQ HTTP API](https://www.rabbitmq.com/docs/
 
 ## Build System
 
-All the standard Cargo commands apply but with one caveat: make sure to add `--all-features` so that
+All the standard Cargo commands apply but with one important detail: make sure to add `--all-features` so that
 both async and blocking client are built, tested, linted, and so on.
 
  * `cargo build --all-features` to build
@@ -14,6 +14,9 @@ both async and blocking client are built, tested, linted, and so on.
  * `cargo clippy --all-features` to lint
  * `cargo fmt` to reformat
  * `cargo publish` to publish the crate
+
+Always run `cargo check --all-features` before making changes to verify the codebase compiles cleanly.
+If compilation fails, investigate and fix compilation errors before proceeding with any modifications.
 
 ## The Async and Blocking Clients
 
@@ -26,13 +29,13 @@ They have very similar APIs except that all functions of the async client are, w
 
 ## Key Files
 
- * Async client: @src/api.rs
- * Blocking client: @src/blocking_api.rs
- * HTTP API request types: @src/requests.rs
- * HTTP API response types: @src/responses.rs
- * Types shared between requests and responses: @src/commons.rs
- * Error types: @src/error.rs
- * Definition transformations: @src/transformers.rs
+ * Async client: `src/api.rs`
+ * Blocking client: `src/blocking_api.rs`
+ * Error types: @src/error.rs 
+ * HTTP API request types: `src/requests.rs`
+ * HTTP API response types: `src/responses.rs`
+ * Types shared between requests and responses: `src/commons.rs`
+ * Definition transformations: `src/transformers.rs`
 
 ## Test Suite Layout
 
