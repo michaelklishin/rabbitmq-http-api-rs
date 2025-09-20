@@ -14,7 +14,7 @@
 #![allow(rustdoc::bare_urls)]
 //! # Rust client for the RabbitMQ HTTP API
 //!
-//! This library is Rust client for the [RabbitMQ HTTP API](https://rabbitmq.com/docs/management/#http-api).
+//! This library is a Rust client for the [RabbitMQ HTTP API](https://rabbitmq.com/docs/management/#http-api).
 //!
 //! It can be used for [monitoring](https://www.rabbitmq.com/docs/monitoring) and automation of provisioning or maintenance of RabbitMQ clusters
 //! and topologies used by applications.
