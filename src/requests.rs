@@ -17,8 +17,6 @@
 //!
 //! Most types provide constructor functions for common scenarios.
 
-use crate::commons::QueueType;
-use crate::responses::VirtualHost;
 use serde::Serialize;
 use serde_json::{Map, Value};
 
@@ -59,84 +57,11 @@ pub use users::{BulkUserDelete, UserParams};
 pub mod permissions;
 pub use permissions::{Permissions, TopicPermissions};
 
-/// Properties of a [virtual host](https://rabbitmq.com/docs/vhosts/) to be created or updated.
-///
-/// Virtual hosts provide logical separation within a RabbitMQ instance, similar to
-/// namespaces. Each virtual host has its own set of exchanges, queues, bindings, and permissions.
-///
-/// # Examples
-///
-/// ```rust
-/// use rabbitmq_http_client::requests::{VirtualHostParams, QueueType};
-///
-/// // Basic virtual host
-/// let basic = VirtualHostParams::named("production");
-///
-/// // Virtual host with description and settings
-/// let configured = VirtualHostParams {
-///     name: "app-staging",
-///     description: Some("Staging environment for application testing"),
-///     tags: Some(vec!["staging", "testing"]),
-///     default_queue_type: Some(QueueType::Quorum),
-///     tracing: true,
-/// };
-/// ```
-#[derive(Serialize)]
-pub struct VirtualHostParams<'a> {
-    /// Virtual host name (must be unique within the RabbitMQ instance)
-    pub name: &'a str,
-    /// Optional description explaining the virtual host's purpose
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub description: Option<&'a str>,
-    /// List of tags for organizing and categorizing virtual hosts
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub tags: Option<Vec<&'a str>>,
-    /// Default queue type for new queues in this virtual host
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub default_queue_type: Option<QueueType>,
-    /// Enable message tracing for debugging and monitoring
-    pub tracing: bool,
-}
+pub mod vhosts;
+pub use vhosts::VirtualHostParams;
 
-impl<'a> VirtualHostParams<'a> {
-    pub fn named(name: &'a str) -> Self {
-        VirtualHostParams {
-            name,
-            description: None,
-            tags: None,
-            default_queue_type: None,
-            tracing: false,
-        }
-    }
-}
-
-/// Represents a resource usage limit to be enforced on a [virtual host](https://rabbitmq.com/docs/vhosts/) or a user.
-///
-/// Can enforce limits on connections, queues, or other resources depending on the limit type.
-/// The `kind` parameter specifies what type of resource to limit, while `value` sets the maximum allowed.
-///
-/// # Examples
-///
-/// ```rust
-/// use rabbitmq_http_client::requests::EnforcedLimitParams;
-///
-/// // A limit of 100 connections
-/// let max_connections = EnforcedLimitParams::new("max-connections", 100);
-///
-/// // A limit of 50 queues
-/// let max_queues = EnforcedLimitParams::new("max-queues", 50);
-/// ```
-#[derive(Serialize)]
-pub struct EnforcedLimitParams<T> {
-    pub kind: T,
-    pub value: i64,
-}
-
-impl<T> EnforcedLimitParams<T> {
-    pub fn new(kind: T, value: i64) -> Self {
-        EnforcedLimitParams { kind, value }
-    }
-}
+pub mod limits;
+pub use limits::EnforcedLimitParams;
 
 /// Optional arguments map ("x-arguments") for queue and exchange declarations.
 ///
@@ -172,24 +97,5 @@ impl EmptyPayload {
     /// Returns a new empty payload instance.
     pub fn new() -> Self {
         Self
-    }
-}
-
-impl<'a> From<&'a VirtualHost> for VirtualHostParams<'a> {
-    fn from(vhost: &'a VirtualHost) -> Self {
-        Self {
-            name: &vhost.name,
-            description: vhost.description.as_deref(),
-            tags: vhost
-                .tags
-                .as_ref()
-                .map(|tags| tags.iter().map(|s| s.as_str()).collect()),
-            default_queue_type: vhost
-                .default_queue_type
-                .as_ref()
-                .map(|s| QueueType::from(s.as_str())),
-            // this is an inherently transient setting
-            tracing: false,
-        }
     }
 }
