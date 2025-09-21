@@ -7,7 +7,7 @@ This is a Rust client for the [RabbitMQ HTTP API](https://www.rabbitmq.com/docs/
 ## Build System
 
 All the standard Cargo commands apply but with one important detail: make sure to add `--all-features` so that
-both async and blocking client are built, tested, linted, and so on.
+both the async and blocking client are built, tested, linted, and so on.
 
  * `cargo build --all-features` to build
  * `cargo nextest run --all-features` to run tests
@@ -22,8 +22,8 @@ If compilation fails, investigate and fix compilation errors before proceeding w
 
 This library provides two clients:
 
- * An async client, `rabbitmq_http_client::api::Client`, defined in @src/api.rs
- * A blocking client, `rabbitmq_http_client::api::BlockingClient`, defined in @src/blocking_api.rs
+ * An async client, `rabbitmq_http_client::api::Client`, defined in `src/api.rs`
+ * A blocking client, `rabbitmq_http_client::api::BlockingClient`, defined in `src/blocking_api.rs`
 
 They have very similar APIs except that all functions of the async client are, well, `async`.
 
@@ -31,7 +31,7 @@ They have very similar APIs except that all functions of the async client are, w
 
  * Async client: `src/api.rs`
  * Blocking client: `src/blocking_api.rs`
- * Error types: @src/error.rs 
+ * Error types: `src/error.rs` 
  * HTTP API request types: `src/requests.rs`
  * HTTP API response types: `src/responses.rs`
  * Types shared between requests and responses: `src/commons.rs`
@@ -53,7 +53,7 @@ Treat this documentation as the ultimate first party source of truth.
 
 ## Change Log
 
-If asked to perform change log updates, consult and modify @CHANGELOG.md and stick to its
+If asked to perform change log updates, consult and modify `CHANGELOG.md` and stick to its
 existing writing style.
 
 ## Git Commits
