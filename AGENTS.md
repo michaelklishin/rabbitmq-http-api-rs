@@ -32,7 +32,7 @@ They have very similar APIs except that all functions of the async client are, w
  * Async client: `src/api.rs`
  * Blocking client: `src/blocking_api.rs`
  * Error types: `src/error.rs` 
- * HTTP API request types: `src/requests.rs`
+ * HTTP API request types: `src/requests.rs`, `src/requests/*.rs`
  * HTTP API response types: `src/responses.rs`
  * Types shared between requests and responses: `src/commons.rs`
  * Definition transformations: `src/transformers.rs`

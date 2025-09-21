@@ -19,7 +19,7 @@
 
 use crate::commons::QueueType;
 use crate::responses::VirtualHost;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use serde_json::{Map, Value};
 
 pub mod exchanges;
@@ -52,6 +52,12 @@ pub use shovels::{
 
 pub mod queues_and_streams;
 pub use queues_and_streams::{QueueParams, StreamParams};
+
+pub mod users;
+pub use users::{BulkUserDelete, UserParams};
+
+pub mod permissions;
+pub use permissions::{Permissions, TopicPermissions};
 
 /// Properties of a [virtual host](https://rabbitmq.com/docs/vhosts/) to be created or updated.
 ///
@@ -132,21 +138,6 @@ impl<T> EnforcedLimitParams<T> {
     }
 }
 
-/// Properties of a [user](https://rabbitmq.com/docs/access-control/#user-management) to be created or updated.
-///
-/// Use the functions in [`crate::password_hashing`] to generate
-/// [salted password hashes](https://rabbitmq.com/docs/passwords/#computing-password-hash).
-#[derive(Serialize)]
-pub struct UserParams<'a> {
-    /// Username (must be unique within the RabbitMQ cluster)
-    pub name: &'a str,
-    /// Pre-hashed and salted password, see [RabbitMQ doc guide on passwords](https://www.rabbitmq.com/docs/passwords) to learn more
-    /// Use [`crate::password_hashing`] functions to generate secure hashes.
-    pub password_hash: &'a str,
-    /// Comma-separated list of user tags (e.g., "administrator", "monitoring", "management")
-    pub tags: &'a str,
-}
-
 /// Optional arguments map ("x-arguments") for queue and exchange declarations.
 ///
 /// Used to pass RabbitMQ-specific arguments when declaring queues or exchanges.
@@ -169,47 +160,6 @@ pub struct UserParams<'a> {
 /// let no_args: XArguments = None;
 /// ```
 pub type XArguments = Option<Map<String, Value>>;
-
-/// Represents a bulk user delete operation.
-/// Used by [`crate::api::Client`] and [`crate::blocking_api::Client`]'s functions
-/// that delete multiple users in a single operation.
-#[derive(Serialize, Deserialize)]
-pub struct BulkUserDelete<'a> {
-    #[serde(borrow, rename = "users")]
-    pub usernames: Vec<&'a str>,
-}
-
-/// Represents a user's [permission in a particular virtual host](https://rabbitmq.com/docs/access-control/).
-///
-/// Permissions are defined using regular expression patterns that match resource names.
-///
-/// Use ".*" to grant full access, or "" to deny access for a group of operations
-#[derive(Serialize, Debug)]
-pub struct Permissions<'a> {
-    pub user: &'a str,
-    pub vhost: &'a str,
-    /// Regex pattern for resources user can configure (create/delete)
-    pub configure: &'a str,
-    /// Regex pattern for resources user can read from
-    pub read: &'a str,
-    /// Regex pattern for resources user can write to
-    pub write: &'a str,
-}
-
-/// Represents a user's [topic permission in a particular virtual host](https://www.rabbitmq.com/docs/access-control#topic-authorisation).
-///
-/// Topic permissions are defined using regular expression patterns that match exchange names.
-#[derive(Serialize, Debug)]
-pub struct TopicPermissions<'a> {
-    pub user: &'a str,
-    pub vhost: &'a str,
-    /// Regex pattern for the topics the user can publish to
-    pub write: &'a str,
-    /// Regex pattern for the topics the user can consume from (subscribe to)
-    pub read: &'a str,
-    /// The topic exchange these permissions apply to
-    pub exchange: &'a str,
-}
 
 /// Empty payload struct for API requests that don't require a body.
 ///
