@@ -13,17 +13,16 @@
 // limitations under the License.
 
 //! Types in this module are used to represent API responses, such as [`QueueDefinition`], [`PolicyDefinition`],
-//! [`User`], [`VirtualHost`], [`Shovel`] or [`FederationLink`].
+//! [`User`], [`VirtualHost`], [`shovel::Shovel`] or [`federation::FederationLink`].
 
 use std::ops::{Deref, DerefMut};
 use std::{fmt, ops};
 
 use crate::commons::{
-    BindingDestinationType, ChannelId, ChannelUseMode, MessageTransferAcknowledgementMode,
-    OverflowBehavior, PolicyTarget, QueueType, SupportedProtocol, Username, VirtualHostName,
-    X_ARGUMENT_KEY_X_OVERFLOW, X_ARGUMENT_KEY_X_QUEUE_TYPE,
+    BindingDestinationType, ChannelId, OverflowBehavior, PolicyTarget, QueueType,
+    SupportedProtocol, Username, VirtualHostName, X_ARGUMENT_KEY_X_OVERFLOW,
+    X_ARGUMENT_KEY_X_QUEUE_TYPE,
 };
-use crate::error::ConversionError;
 use crate::formatting::*;
 use crate::utils::{percentage, percentage_as_text};
 use serde::{
@@ -35,7 +34,6 @@ use serde_json::{Map, json};
 
 use time::OffsetDateTime;
 
-use crate::requests::federation::FederationResourceCleanupMode;
 use crate::transformers::{TransformerFn, TransformerFnOnce};
 use regex::Regex;
 #[cfg(feature = "tabled")]
@@ -43,6 +41,12 @@ use std::borrow::Cow;
 use std::fmt::Formatter;
 #[cfg(feature = "tabled")]
 use tabled::Tabled;
+
+pub mod federation;
+pub use federation::{FederationLink, FederationType, FederationUpstream};
+
+pub mod shovel;
+pub use shovel::{Shovel, ShovelPublishingState, ShovelState, ShovelType};
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
 pub struct TagList(pub Vec<String>);
@@ -2978,351 +2982,6 @@ impl From<MessagingProtocol> for String {
             MessagingProtocol::Local => "local".to_owned(),
         }
     }
-}
-
-//
-// Federation
-//
-
-#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
-#[serde(rename_all = "kebab-case")]
-#[allow(dead_code)]
-pub struct FederationUpstream {
-    pub name: String,
-    pub vhost: VirtualHostName,
-    pub uri: String,
-    pub ack_mode: MessageTransferAcknowledgementMode,
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub prefetch_count: Option<u32>,
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub trust_user_id: Option<bool>,
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub reconnect_delay: Option<u32>,
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub queue: Option<String>,
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub consumer_tag: Option<String>,
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub exchange: Option<String>,
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub max_hops: Option<u8>,
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub queue_type: Option<QueueType>,
-    #[cfg_attr(
-        feature = "tabled",
-        tabled(display = "display_option", rename = "expires (queue TTL)")
-    )]
-    pub expires: Option<u32>,
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub message_ttl: Option<u32>,
-    pub resource_cleanup_mode: FederationResourceCleanupMode,
-    pub bind_using_nowait: bool,
-    pub channel_use_mode: ChannelUseMode,
-}
-
-impl TryFrom<RuntimeParameter> for FederationUpstream {
-    type Error = ConversionError;
-
-    fn try_from(param: RuntimeParameter) -> Result<Self, Self::Error> {
-        let values = &param.value.0;
-
-        let uri = values
-            .get("uri")
-            .and_then(|v| v.as_str())
-            .ok_or_else(|| ConversionError::MissingProperty {
-                argument: "uri".to_string(),
-            })?
-            .to_string();
-
-        let ack_mode = values
-            .get("ack-mode")
-            .and_then(|v| v.as_str())
-            .map(MessageTransferAcknowledgementMode::from)
-            .unwrap_or_default();
-        let prefetch_count = values
-            .get("prefetch-count")
-            .and_then(|v| v.as_u64())
-            .map(|v| v as u32);
-
-        let trust_user_id = values.get("trust-user-id").and_then(|v| v.as_bool());
-        let bind_using_nowait = values
-            .get("bind-nowait")
-            .and_then(|v| v.as_bool())
-            .unwrap_or_default();
-        let reconnect_delay = values
-            .get("reconnect-delay")
-            .and_then(|v| v.as_u64())
-            .map(|v| v as u32);
-        let queue = values
-            .get("queue")
-            .and_then(|v| v.as_str())
-            .map(String::from);
-        let consumer_tag = values
-            .get("consumer-tag")
-            .and_then(|v| v.as_str())
-            .map(String::from);
-        let exchange = values
-            .get("exchange")
-            .and_then(|v| v.as_str())
-            .map(String::from);
-        let max_hops = values
-            .get("max-hops")
-            .and_then(|v| v.as_u64())
-            .map(|v| v as u8);
-        let queue_type = values
-            .get("queue-type")
-            .and_then(|v| v.as_str())
-            .map(QueueType::from);
-        let expires = values
-            .get("expires")
-            .and_then(|v| v.as_u64())
-            .map(|v| v as u32);
-        let message_ttl = values
-            .get("message-ttl")
-            .and_then(|v| v.as_u64())
-            .map(|v| v as u32);
-
-        let resource_cleanup_mode = values
-            .get("resource-cleanup-mode")
-            .and_then(|v| v.as_str())
-            .map(FederationResourceCleanupMode::from)
-            .unwrap_or_default();
-        let channel_use_mode = values
-            .get("channel-use-mode")
-            .and_then(|v| v.as_str())
-            .map(ChannelUseMode::from)
-            .unwrap_or_default();
-
-        Ok(FederationUpstream {
-            name: param.name,
-            vhost: param.vhost,
-            uri,
-            ack_mode,
-            prefetch_count,
-            trust_user_id,
-            reconnect_delay,
-            queue,
-            consumer_tag,
-            exchange,
-            max_hops,
-            queue_type,
-            expires,
-            message_ttl,
-            resource_cleanup_mode,
-            bind_using_nowait,
-            channel_use_mode,
-        })
-    }
-}
-
-#[derive(Debug, Deserialize, Clone, Eq, PartialEq, Default)]
-#[serde(rename_all = "lowercase")]
-pub enum FederationType {
-    #[default]
-    Exchange,
-    Queue,
-}
-
-impl fmt::Display for FederationType {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            FederationType::Exchange => write!(f, "exchange"),
-            FederationType::Queue => write!(f, "queue"),
-        }
-    }
-}
-
-impl From<String> for FederationType {
-    fn from(value: String) -> Self {
-        match value.as_str() {
-            "exchange" => FederationType::Exchange,
-            "queue" => FederationType::Queue,
-            _ => FederationType::default(),
-        }
-    }
-}
-
-#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
-#[allow(dead_code)]
-pub struct FederationLink {
-    pub node: String,
-    pub vhost: VirtualHostName,
-    pub id: String,
-    pub uri: String,
-    pub status: String,
-    #[serde(rename = "type")]
-    #[cfg_attr(feature = "tabled", tabled(rename = "type"))]
-    pub typ: FederationType,
-    pub upstream: String,
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub consumer_tag: Option<String>,
-}
-
-//
-// Shovels
-//
-
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
-#[serde(rename_all = "snake_case")]
-pub enum ShovelType {
-    Dynamic,
-    Static,
-}
-
-impl fmt::Display for ShovelType {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            ShovelType::Dynamic => write!(f, "dynamic"),
-            ShovelType::Static => write!(f, "static"),
-        }
-    }
-}
-
-impl From<String> for ShovelType {
-    fn from(value: String) -> Self {
-        match value.as_str() {
-            "dynamic" => ShovelType::Dynamic,
-            "static" => ShovelType::Static,
-            _ => ShovelType::Dynamic,
-        }
-    }
-}
-
-impl From<ShovelType> for String {
-    fn from(value: ShovelType) -> Self {
-        match value {
-            ShovelType::Dynamic => "dynamic".to_owned(),
-            ShovelType::Static => "static".to_owned(),
-        }
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
-#[serde(rename_all = "snake_case")]
-pub enum ShovelState {
-    Starting,
-    Running,
-    Terminated,
-    Unknown,
-}
-
-impl fmt::Display for ShovelState {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            ShovelState::Starting => write!(f, "starting"),
-            ShovelState::Running => write!(f, "running"),
-            ShovelState::Terminated => write!(f, "terminated"),
-            ShovelState::Unknown => write!(f, "unknown"),
-        }
-    }
-}
-
-impl From<String> for ShovelState {
-    fn from(value: String) -> Self {
-        match value.as_str() {
-            "starting" => ShovelState::Starting,
-            "running" => ShovelState::Running,
-            "terminated" => ShovelState::Terminated,
-            _ => ShovelState::Unknown,
-        }
-    }
-}
-
-impl From<ShovelState> for String {
-    fn from(value: ShovelState) -> Self {
-        match value {
-            ShovelState::Starting => "starting".to_owned(),
-            ShovelState::Running => "running".to_owned(),
-            ShovelState::Terminated => "terminated".to_owned(),
-            ShovelState::Unknown => "unknown".to_owned(),
-        }
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
-#[serde(rename_all = "snake_case")]
-pub enum ShovelPublishingState {
-    Running,
-    Blocked,
-    Unknown,
-}
-
-impl fmt::Display for ShovelPublishingState {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            ShovelPublishingState::Running => write!(f, "running"),
-            ShovelPublishingState::Blocked => write!(f, "blocked"),
-            ShovelPublishingState::Unknown => write!(f, "unknown"),
-        }
-    }
-}
-
-impl From<String> for ShovelPublishingState {
-    fn from(value: String) -> Self {
-        match value.as_str() {
-            "running" => ShovelPublishingState::Running,
-            "blocked" => ShovelPublishingState::Blocked,
-            _ => ShovelPublishingState::Unknown,
-        }
-    }
-}
-
-impl From<ShovelPublishingState> for String {
-    fn from(value: ShovelPublishingState) -> Self {
-        match value {
-            ShovelPublishingState::Running => "running".to_owned(),
-            ShovelPublishingState::Blocked => "blocked".to_owned(),
-            ShovelPublishingState::Unknown => "unknown".to_owned(),
-        }
-    }
-}
-
-#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
-#[allow(dead_code)]
-/// Represents a shovel.
-pub struct Shovel {
-    pub node: String,
-    pub name: String,
-    /// Dynamic shovels are associated with a virtual host but
-    /// static ones are not, so for them, the [`Shovel#vhost`] field
-    /// will be [`None`].
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub vhost: Option<String>,
-    #[serde(rename = "type")]
-    #[cfg_attr(feature = "tabled", tabled(rename = "type"))]
-    pub typ: ShovelType,
-    pub state: ShovelState,
-
-    #[serde(rename = "src_uri")]
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub source_uri: Option<String>,
-    #[serde(rename = "dest_uri")]
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub destination_uri: Option<String>,
-    #[serde(rename = "src_queue")]
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub source: Option<String>,
-    #[serde(rename = "dest_queue")]
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub destination: Option<String>,
-
-    #[serde(rename = "src_address")]
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub source_address: Option<String>,
-    #[serde(rename = "dest_address")]
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub destination_address: Option<String>,
-
-    #[serde(rename = "src_protocol")]
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub source_protocol: Option<MessagingProtocol>,
-
-    #[serde(rename = "dest_protocol")]
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub destination_protocol: Option<MessagingProtocol>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
