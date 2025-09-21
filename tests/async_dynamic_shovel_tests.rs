@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 use rabbitmq_http_client::commons::MessageTransferAcknowledgementMode;
-use rabbitmq_http_client::requests::{
+use rabbitmq_http_client::requests::QueueParams;
+use rabbitmq_http_client::requests::shovels::{
     Amqp10ShovelDestinationParams, Amqp10ShovelParams, Amqp10ShovelSourceParams,
-    Amqp091ShovelDestinationParams, Amqp091ShovelParams, Amqp091ShovelSourceParams, QueueParams,
+    Amqp091ShovelDestinationParams, Amqp091ShovelParams, Amqp091ShovelSourceParams,
 };
 use rabbitmq_http_client::{api::Client, requests::VirtualHostParams};
 

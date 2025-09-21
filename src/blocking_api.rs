@@ -15,9 +15,10 @@
 
 use crate::error::Error;
 use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
+use crate::requests::shovels::{Amqp10ShovelParams, Amqp091ShovelParams, SHOVEL_COMPONENT};
 use crate::requests::{
-    Amqp10ShovelParams, Amqp091ShovelParams, EmptyPayload, FEDERATION_UPSTREAM_COMPONENT,
-    FederationUpstreamParams, GlobalRuntimeParameterDefinition, SHOVEL_COMPONENT, StreamParams,
+    EmptyPayload, FEDERATION_UPSTREAM_COMPONENT, FederationUpstreamParams,
+    GlobalRuntimeParameterDefinition, StreamParams,
 };
 use crate::responses::{
     AuthenticationAttemptStatistics, ClusterTags, DeprecatedFeatureList, FeatureFlag,
