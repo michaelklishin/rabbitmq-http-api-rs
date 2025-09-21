@@ -26,7 +26,10 @@ use crate::responses::{
     OAuthConfiguration, WarmStandbyReplicationStatus,
 };
 use crate::{
-    commons::{BindingDestinationType, SupportedProtocol, UserLimitTarget, VirtualHostLimitTarget},
+    commons::{
+        BindingDestinationType, BindingVertex, SupportedProtocol, UserLimitTarget,
+        VirtualHostLimitTarget,
+    },
     path,
     requests::{
         self, BulkUserDelete, EnforcedLimitParams, ExchangeParams, Permissions, PolicyParams,
@@ -535,7 +538,7 @@ where
         self.list_exchange_bindings_with_source_or_destination(
             virtual_host,
             exchange,
-            BindindVertex::Source,
+            BindingVertex::Source,
         )
     }
 
@@ -549,7 +552,7 @@ where
         self.list_exchange_bindings_with_source_or_destination(
             virtual_host,
             exchange,
-            BindindVertex::Destination,
+            BindingVertex::Destination,
         )
     }
 
@@ -1939,7 +1942,7 @@ where
         &self,
         vhost: &str,
         exchange: &str,
-        vertex: BindindVertex,
+        vertex: BindingVertex,
     ) -> Result<Vec<BindingInfo>> {
         let response = self.http_get(
             path!("exchanges", vhost, exchange, "bindings", vertex),
@@ -2161,20 +2164,5 @@ where
 impl Default for Client<&'static str, &'static str, &'static str> {
     fn default() -> Self {
         Self::new("http://localhost:15672/api", "guest", "guest")
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
-enum BindindVertex {
-    Source,
-    Destination,
-}
-
-impl AsRef<str> for BindindVertex {
-    fn as_ref(&self) -> &str {
-        match self {
-            Self::Source => "source",
-            Self::Destination => "destination",
-        }
     }
 }

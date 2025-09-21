@@ -477,6 +477,22 @@ impl From<String> for BindingDestinationType {
     }
 }
 
+/// Represents whether a binding resource is a source or destination in binding operations.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BindingVertex {
+    Source,
+    Destination,
+}
+
+impl AsRef<str> for BindingVertex {
+    fn as_ref(&self) -> &str {
+        match self {
+            Self::Source => "source",
+            Self::Destination => "destination",
+        }
+    }
+}
+
 impl AsRef<str> for BindingDestinationType {
     fn as_ref(&self) -> &str {
         match self {
