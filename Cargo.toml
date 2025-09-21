@@ -5,6 +5,10 @@ edition = "2024"
 
 description = "RabbitMQ HTTP API client"
 license = "MIT OR Apache-2.0"
+repository = "https://github.com/michaelklishin/rabbitmq-http-api-rs"
+keywords = [
+    "rabbitmq"
+]
 
 [lib]
 # doctests for async client must be wrapped
