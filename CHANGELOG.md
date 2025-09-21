@@ -4,8 +4,10 @@
 
 ### Module Organization
 
- * `crate::requests` was split into multiple smaller modules, `crate::requests::*`. Re-exports are
-   provided for backwards compatibility.
+ * `crate::api` was split into multiple smaller modules, `crate::api::*`. Re-exports are provided for backwards compatibility.
+ * Similarly, `crate::blocking_api` was split into multiple smaller modules, `crate::blocking_api::*`, with re-exports in place.
+ * Similarly, `crate::requests` was split into multiple smaller modules, `crate::requests::*`.
+ * `crate::requests` was split into multiple smaller modules, `crate::requests::*`.
  * Similarly, `crate::responses` was split into multiple smaller modules, `crate::responses::*`, with re-exports in place.
 
 ## v0.55.0 (Sep 20, 2025)

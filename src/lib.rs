@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 #![allow(rustdoc::bare_urls)]
+#![allow(clippy::result_large_err)]
 //! # Rust client for the RabbitMQ HTTP API
 //!
 //! This library is a Rust client for the [RabbitMQ HTTP API](https://rabbitmq.com/docs/management/#http-api).

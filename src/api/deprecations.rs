@@ -1,0 +1,42 @@
+// Copyright (C) 2023-2025 RabbitMQ Core Team (teamrabbitmq@gmail.com)
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+use crate::responses::DeprecatedFeatureList;
+
+use super::client::{Client, Result};
+
+impl<E, U, P> Client<E, U, P>
+where
+    E: std::fmt::Display,
+    U: std::fmt::Display,
+    P: std::fmt::Display,
+{
+    /// Lists all deprecated features.
+    /// See [Deprecated Features](https://www.rabbitmq.com/docs/deprecated) to learn more.
+    pub async fn list_all_deprecated_features(&self) -> Result<DeprecatedFeatureList> {
+        let response = self.http_get("deprecated-features", None, None).await?;
+        let response = response.json().await?;
+        Ok(response)
+    }
+
+    /// Lists deprecated features that are in use.
+    /// See [Deprecated Features](https://www.rabbitmq.com/docs/deprecated) to learn more.
+    pub async fn list_deprecated_features_in_use(&self) -> Result<DeprecatedFeatureList> {
+        let response = self
+            .http_get("deprecated-features/used", None, None)
+            .await?;
+        let response = response.json().await?;
+        Ok(response)
+    }
+}
