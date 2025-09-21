@@ -18,7 +18,7 @@
 //! Most types provide constructor functions for common scenarios.
 
 use crate::commons::{ExchangeType, QueueType};
-use crate::responses::{ExchangeInfo, QueueInfo, RuntimeParameter, VirtualHost};
+use crate::responses::{ExchangeInfo, QueueInfo, VirtualHost};
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value, json};
 
@@ -620,52 +620,10 @@ pub struct BulkUserDelete<'a> {
     pub usernames: Vec<&'a str>,
 }
 
-/// Runtime parameter value map.
-///
-/// Contains the actual configuration data for a runtime parameter.
-/// The structure depends on the component type (federation, shovel, etc.).
-pub type RuntimeParameterValue = Map<String, Value>;
-
-/// Represents a [runtime parameter](https://rabbitmq.com/docs/parameters/).
-///
-/// Runtime parameters are key-value pairs that configure plugin behavior at runtime.
-/// The `component` field identifies the plugin (e.g., "federation-upstream", "shovel"),
-/// while `name` is the parameter identifier within that component's namespace.
-///
-/// Common components include:
-/// * "federation-upstream": Federation plugin upstreams
-/// * "shovel": Dynamic shovel configurations
-/// * "mqtt": MQTT plugin parameters
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RuntimeParameterDefinition<'a> {
-    pub name: &'a str,
-    pub vhost: &'a str,
-    pub component: &'a str,
-    pub value: RuntimeParameterValue,
-}
-
-impl<'a> From<&'a RuntimeParameter> for RuntimeParameterDefinition<'a> {
-    fn from(param: &'a RuntimeParameter) -> Self {
-        Self {
-            name: &param.name,
-            vhost: &param.vhost,
-            component: &param.component,
-            value: param.value.0.clone(),
-        }
-    }
-}
-
-/// Represents a [global runtime parameter](https://rabbitmq.com/docs/parameters/).
-///
-/// Global parameters apply to the entire RabbitMQ node rather than a specific virtual host.
-/// Used for cluster-wide configuration settings.
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct GlobalRuntimeParameterDefinition<'a> {
-    /// Parameter name
-    pub name: &'a str,
-    /// Parameter value (structure depends on the parameter type)
-    pub value: RuntimeParameterValue,
-}
+pub mod parameters;
+pub use parameters::{
+    GlobalRuntimeParameterDefinition, RuntimeParameterDefinition, RuntimeParameterValue,
+};
 
 pub mod policies;
 pub use policies::{PolicyDefinition, PolicyParams};

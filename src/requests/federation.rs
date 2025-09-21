@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use crate::commons::{ChannelUseMode, MessageTransferAcknowledgementMode, QueueType};
-use crate::requests::RuntimeParameterDefinition;
+use crate::requests::parameters::RuntimeParameterDefinition;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, json};
 use std::fmt::{Display, Formatter};

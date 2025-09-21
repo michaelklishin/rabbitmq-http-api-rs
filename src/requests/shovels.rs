@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use crate::commons::MessageTransferAcknowledgementMode;
-use crate::requests::RuntimeParameterDefinition;
+use crate::requests::parameters::RuntimeParameterDefinition;
 use serde::Serialize;
 use serde_json::{Map, Value, json};
 
