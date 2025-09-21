@@ -482,3 +482,15 @@ pub struct Overview {
     pub object_totals: ObjectTotals,
     pub message_stats: MessageStats,
 }
+
+/// Garbage collection details for queue processes
+#[derive(Debug, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+#[allow(dead_code)]
+pub struct GarbageCollectionDetails {
+    pub fullsweep_after: u32,
+    pub max_heap_size: u32,
+    pub min_bin_vheap_size: u32,
+    pub min_heap_size: u32,
+    pub minor_gcs: u32,
+}

@@ -18,7 +18,7 @@
 use std::fmt;
 use std::ops::{Deref, DerefMut};
 
-use crate::commons::{PolicyTarget, QueueType, Username, VirtualHostName};
+use crate::commons::Username;
 use crate::formatting::*;
 use serde::{
     Deserialize, Serialize,
@@ -26,8 +26,6 @@ use serde::{
 };
 use serde_json::Map;
 
-#[cfg(feature = "tabled")]
-use std::borrow::Cow;
 #[cfg(feature = "tabled")]
 use tabled::Tabled;
 
@@ -90,11 +88,20 @@ pub use channels::{Channel, ChannelDetails, ChannelState};
 pub mod cluster;
 pub use cluster::{
     AuthenticationAttemptStatistics, ChurnRates, ClusterIdentity, ClusterNode, ClusterTags,
-    Listener, NodeList, NodeMemoryBreakdown, NodeMemoryFootprint, NodeMemoryTotals, Overview,
+    GarbageCollectionDetails, Listener, NodeList, NodeMemoryBreakdown, NodeMemoryFootprint,
+    NodeMemoryTotals, Overview,
 };
 
 pub mod permissions;
 pub use permissions::{Permissions, TopicPermission};
+
+pub mod queues_and_streams;
+pub use queues_and_streams::{
+    DetailedQueueInfo, NameAndVirtualHost, QueueInfo, StreamConsumer, StreamPublisher,
+};
+
+pub mod consumers;
+pub use consumers::Consumer;
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
 pub struct TagList(pub Vec<String>);
@@ -192,36 +199,6 @@ impl IntoIterator for PluginList {
     }
 }
 
-#[derive(Debug, Deserialize, Clone)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
-#[allow(dead_code)]
-pub struct StreamPublisher {
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub connection_details: ConnectionDetails,
-    pub queue: NameAndVirtualHost,
-    pub reference: String,
-    pub publisher_id: u32,
-    pub published: u64,
-    pub confirmed: u64,
-    pub errored: u64,
-}
-
-#[derive(Debug, Deserialize, Clone)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
-#[allow(dead_code)]
-pub struct StreamConsumer {
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub connection_details: ConnectionDetails,
-    pub queue: NameAndVirtualHost,
-    pub subscription_id: u32,
-    pub credits: u64,
-    pub consumed: u64,
-    pub offset_lag: u64,
-    pub offset: u64,
-    #[cfg_attr(feature = "tabled", tabled(display = "display_arg_table"))]
-    pub properties: XArguments,
-}
-
 /// Represents a number of key OAuth 2 configuration settings.
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
@@ -285,359 +262,6 @@ impl User {
 pub struct CurrentUser {
     pub name: Username,
     pub tags: TagList,
-}
-
-#[derive(Debug, Deserialize, Clone)]
-#[allow(dead_code)]
-pub struct Consumer {
-    pub consumer_tag: String,
-    pub active: bool,
-    #[serde(rename(deserialize = "ack_required"))]
-    pub manual_ack: bool,
-    pub prefetch_count: u32,
-    pub exclusive: bool,
-    pub arguments: XArguments,
-    #[serde(rename(deserialize = "consumer_timeout"))]
-    pub delivery_ack_timeout: u64,
-    pub queue: NameAndVirtualHost,
-
-    #[serde(deserialize_with = "deserialize_object_that_may_be_empty")]
-    pub channel_details: Option<ChannelDetails>,
-}
-
-#[cfg(feature = "tabled")]
-impl Tabled for Consumer {
-    const LENGTH: usize = 9;
-
-    fn fields(&self) -> Vec<Cow<'_, str>> {
-        let mut fds: Vec<Cow<'static, str>> = Vec::with_capacity(Self::LENGTH);
-        let qinfo = &self.queue;
-        fds.push(Cow::Owned(qinfo.vhost.clone()));
-        fds.push(Cow::Owned(qinfo.name.clone()));
-        fds.push(Cow::Owned(self.consumer_tag.clone()));
-        fds.push(Cow::Owned(self.manual_ack.to_string()));
-        fds.push(Cow::Owned(self.prefetch_count.to_string()));
-        fds.push(Cow::Owned(self.active.to_string()));
-        fds.push(Cow::Owned(self.exclusive.to_string()));
-        fds.push(Cow::Owned(self.arguments.to_string()));
-        fds.push(Cow::Owned(self.delivery_ack_timeout.to_string()));
-
-        fds
-    }
-
-    fn headers() -> Vec<Cow<'static, str>> {
-        let mut hds: Vec<Cow<'static, str>> = Vec::with_capacity(Self::LENGTH);
-        hds.push(Cow::Borrowed("vhost"));
-        hds.push(Cow::Borrowed("queue"));
-        hds.push(Cow::Borrowed("consumer_tag"));
-        hds.push(Cow::Borrowed("manual_ack"));
-        hds.push(Cow::Borrowed("prefetch_count"));
-        hds.push(Cow::Borrowed("active"));
-        hds.push(Cow::Borrowed("exclusive"));
-        hds.push(Cow::Borrowed("arguments"));
-        hds.push(Cow::Borrowed("delivery_ack_timeout"));
-
-        hds
-    }
-}
-
-#[derive(Debug, Deserialize, Clone)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
-#[allow(dead_code)]
-pub struct NameAndVirtualHost {
-    pub name: String,
-    #[serde(rename(deserialize = "vhost"))]
-    pub vhost: VirtualHostName,
-}
-
-impl fmt::Display for NameAndVirtualHost {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "'{}' in virtual host '{}'", self.name, self.vhost)
-    }
-}
-
-#[derive(Debug, Deserialize, Clone, PartialEq)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
-#[allow(dead_code)]
-pub struct QueueInfo {
-    pub name: String,
-    pub vhost: VirtualHostName,
-    #[serde(rename(deserialize = "type"))]
-    pub queue_type: String,
-    pub durable: bool,
-    pub auto_delete: bool,
-    pub exclusive: bool,
-    #[cfg_attr(feature = "tabled", tabled(display = "display_arg_table"))]
-    pub arguments: XArguments,
-
-    #[serde(default = "undefined")]
-    pub node: String,
-    #[serde(default)]
-    pub state: String,
-    // only quorum queues and streams will have this
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub leader: Option<String>,
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub members: Option<NodeList>,
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub online: Option<NodeList>,
-
-    #[serde(default)]
-    pub memory: u64,
-    #[serde(rename(deserialize = "consumers"))]
-    #[serde(default)]
-    pub consumer_count: u16,
-    #[serde(default)]
-    pub consumer_utilisation: f32,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub exclusive_consumer_tag: Option<String>,
-
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub policy: Option<String>,
-
-    #[serde(default)]
-    pub message_bytes: u64,
-    #[serde(default)]
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub message_bytes_persistent: u64,
-    #[serde(default)]
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub message_bytes_ram: u64,
-    #[serde(default)]
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub message_bytes_ready: u64,
-    #[serde(default)]
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub message_bytes_unacknowledged: u64,
-
-    #[serde(rename(deserialize = "messages"))]
-    #[serde(default)]
-    pub message_count: u64,
-    #[serde(rename(deserialize = "messages_persistent"))]
-    #[serde(default)]
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub on_disk_message_count: u64,
-    #[serde(rename(deserialize = "messages_ram"))]
-    #[serde(default)]
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub in_memory_message_count: u64,
-    #[serde(rename(deserialize = "messages_unacknowledged"))]
-    #[serde(default)]
-    pub unacknowledged_message_count: u64,
-}
-
-/// Represents detailed queue information with extended metrics and garbage collection details.
-/// This is an enhanced version of `QueueInfo` that includes additional fields from the detailed queues endpoint.
-#[derive(Debug, Deserialize, Clone)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
-#[allow(dead_code)]
-pub struct DetailedQueueInfo {
-    pub name: String,
-    pub vhost: VirtualHostName,
-    #[serde(rename(deserialize = "type"))]
-    pub queue_type: String,
-    pub durable: bool,
-    pub auto_delete: bool,
-    pub exclusive: bool,
-    #[cfg_attr(feature = "tabled", tabled(display = "display_arg_table"))]
-    pub arguments: XArguments,
-
-    #[serde(default = "undefined")]
-    pub node: String,
-    #[serde(default)]
-    pub state: String,
-    // only quorum queues and streams will have this
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub leader: Option<String>,
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub members: Option<NodeList>,
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub online: Option<NodeList>,
-
-    #[serde(default)]
-    pub memory: u64,
-    #[serde(rename(deserialize = "consumers"))]
-    #[serde(default)]
-    pub consumer_count: u16,
-    #[serde(default)]
-    pub consumer_utilisation: f32,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub exclusive_consumer_tag: Option<String>,
-
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub policy: Option<String>,
-
-    #[serde(default)]
-    pub message_bytes: u64,
-    #[serde(default)]
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub message_bytes_persistent: u64,
-    #[serde(default)]
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub message_bytes_ram: u64,
-    #[serde(default)]
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub message_bytes_ready: u64,
-    #[serde(default)]
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub message_bytes_unacknowledged: u64,
-
-    #[serde(rename(deserialize = "messages"))]
-    #[serde(default)]
-    pub message_count: u64,
-    #[serde(rename(deserialize = "messages_persistent"))]
-    #[serde(default)]
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub on_disk_message_count: u64,
-    #[serde(rename(deserialize = "messages_ram"))]
-    #[serde(default)]
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub in_memory_message_count: u64,
-    #[serde(rename(deserialize = "messages_unacknowledged"))]
-    #[serde(default)]
-    pub unacknowledged_message_count: u64,
-
-    // Additional detailed fields
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub garbage_collection: Option<GarbageCollectionDetails>,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub io_batch_size: Option<u32>,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub io_batch_size_avg: Option<f64>,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub io_batch_size_details: Option<Rate>,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub io_file_handle_open_attempt_avg_time: Option<f64>,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub io_file_handle_open_attempt_avg_time_details: Option<Rate>,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub io_read_avg_time: Option<f64>,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub io_read_avg_time_details: Option<Rate>,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub io_read_bytes: Option<u64>,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub io_read_bytes_details: Option<Rate>,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub io_read_count: Option<u64>,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub io_read_count_details: Option<Rate>,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub io_reopen_count: Option<u64>,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub io_reopen_count_details: Option<Rate>,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub io_seek_avg_time: Option<f64>,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub io_seek_avg_time_details: Option<Rate>,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub io_seek_count: Option<u64>,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub io_seek_count_details: Option<Rate>,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub io_sync_avg_time: Option<f64>,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub io_sync_avg_time_details: Option<Rate>,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub io_sync_count: Option<u64>,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub io_sync_count_details: Option<Rate>,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub io_write_avg_time: Option<f64>,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub io_write_avg_time_details: Option<Rate>,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub io_write_bytes: Option<u64>,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub io_write_bytes_details: Option<Rate>,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub io_write_count: Option<u64>,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub io_write_count_details: Option<Rate>,
-}
-
-/// Garbage collection details for queue processes
-#[derive(Debug, Deserialize, Clone)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
-#[allow(dead_code)]
-pub struct GarbageCollectionDetails {
-    pub fullsweep_after: u32,
-    pub max_heap_size: u32,
-    pub min_bin_vheap_size: u32,
-    pub min_heap_size: u32,
-    pub minor_gcs: u32,
-}
-
-impl QueueOps for DetailedQueueInfo {
-    fn name(&self) -> &str {
-        &self.name
-    }
-
-    fn queue_type(&self) -> QueueType {
-        QueueType::from(self.queue_type.as_str())
-    }
-
-    fn policy_target_type(&self) -> PolicyTarget {
-        PolicyTarget::from(self.queue_type())
-    }
-
-    fn x_arguments(&self) -> &XArguments {
-        &self.arguments
-    }
-}
-
-impl NamedPolicyTargetObject for DetailedQueueInfo {
-    fn vhost(&self) -> String {
-        self.vhost.clone()
-    }
-
-    fn name(&self) -> String {
-        self.name.clone()
-    }
-
-    fn policy_target(&self) -> PolicyTarget {
-        self.policy_target_type()
-    }
-
-    fn does_match(&self, policy: &Policy) -> bool {
-        policy.does_match_object(self)
-    }
-}
-
-impl QueueOps for QueueInfo {
-    fn name(&self) -> &str {
-        &self.name
-    }
-
-    fn queue_type(&self) -> QueueType {
-        QueueType::from(self.queue_type.as_str())
-    }
-
-    fn policy_target_type(&self) -> PolicyTarget {
-        PolicyTarget::from(self.queue_type())
-    }
-
-    fn x_arguments(&self) -> &XArguments {
-        &self.arguments
-    }
-}
-
-impl NamedPolicyTargetObject for QueueInfo {
-    fn vhost(&self) -> String {
-        self.vhost.clone()
-    }
-
-    fn name(&self) -> String {
-        self.name.clone()
-    }
-
-    fn policy_target(&self) -> PolicyTarget {
-        self.policy_target_type()
-    }
-
-    fn does_match(&self, policy: &Policy) -> bool {
-        policy.does_match_object(self)
-    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
@@ -787,10 +411,6 @@ pub struct TagMap(pub Map<String, serde_json::Value>);
 //
 // Implementation
 //
-
-fn undefined() -> String {
-    "?".to_string()
-}
 
 fn deserialize_map_or_seq<'de, T, D>(deserializer: D) -> Result<T, D::Error>
 where
