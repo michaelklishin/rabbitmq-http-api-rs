@@ -17,10 +17,7 @@ use std::ops::{Deref, DerefMut};
 
 use crate::commons::SupportedProtocol;
 use crate::formatting::*;
-use crate::responses::{
-    MessageStats, ObjectTotals, PluginList, QueueTotals, TagMap,
-    parameters::GlobalRuntimeParameterValue,
-};
+use crate::responses::{PluginList, parameters::GlobalRuntimeParameterValue, permissions::TagMap};
 use crate::utils::{percentage, percentage_as_text};
 use serde::Deserialize;
 use serde_aux::prelude::*;
@@ -493,4 +490,70 @@ pub struct GarbageCollectionDetails {
     pub min_bin_vheap_size: u32,
     pub min_heap_size: u32,
     pub minor_gcs: u32,
+}
+
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq, Default)]
+#[serde(default)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+pub struct ObjectTotals {
+    pub connections: u64,
+    pub channels: u64,
+    pub queues: u64,
+    pub exchanges: u64,
+    pub consumers: u64,
+}
+
+#[derive(Debug, Deserialize, Clone, PartialEq, Default)]
+#[serde(default)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+pub struct QueueTotals {
+    pub messages: u64,
+    #[serde(rename = "messages_ready", default)]
+    pub messages_ready_for_delivery: u64,
+    #[serde(rename = "messages_unacknowledged", default)]
+    pub messages_delivered_but_unacknowledged_by_consumers: u64,
+    pub messages_details: Rate,
+    #[serde(rename = "messages_ready_details", default)]
+    pub messages_ready_for_delivery_details: Rate,
+    #[serde(rename = "messages_unacknowledged_details", default)]
+    pub messages_delivered_but_unacknowledged_by_consumers_details: Rate,
+}
+
+#[derive(Debug, Deserialize, Clone, PartialEq, Default)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+pub struct MessageStats {
+    #[serde(rename = "deliver_get_details", default)]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub delivery_details: Option<Rate>,
+    #[serde(rename = "publish_details", default)]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub publishing_details: Option<Rate>,
+
+    #[serde(rename = "deliver_no_ack_details", default)]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub delivery_with_automatic_acknowledgement_details: Option<Rate>,
+    #[serde(rename = "redeliver_details", default)]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub redelivery_details: Option<Rate>,
+
+    #[serde(rename = "confirm_details", default)]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub publisher_confirmation_details: Option<Rate>,
+    #[serde(rename = "ack_details", default)]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub consumer_acknowledgement_details: Option<Rate>,
+
+    #[serde(rename = "drop_unroutable_details", default)]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub unroutable_dropped_message_details: Option<Rate>,
+    #[serde(rename = "return_unroutable_details", default)]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub unroutable_returned_message_details: Option<Rate>,
+}
+
+#[derive(Debug, Deserialize, Clone, PartialEq, PartialOrd, Default)]
+#[serde(default)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+pub struct Rate {
+    pub rate: f64,
 }

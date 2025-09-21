@@ -18,7 +18,6 @@
 use std::fmt;
 use std::ops::{Deref, DerefMut};
 
-use crate::formatting::*;
 use serde::{
     Deserialize, Serialize,
     de::{MapAccess, Visitor},
@@ -87,12 +86,12 @@ pub use channels::{Channel, ChannelDetails, ChannelState};
 pub mod cluster;
 pub use cluster::{
     AuthenticationAttemptStatistics, ChurnRates, ClusterIdentity, ClusterNode, ClusterTags,
-    GarbageCollectionDetails, Listener, NodeList, NodeMemoryBreakdown, NodeMemoryFootprint,
-    NodeMemoryTotals, Overview,
+    GarbageCollectionDetails, Listener, MessageStats, NodeList, NodeMemoryBreakdown,
+    NodeMemoryFootprint, NodeMemoryTotals, ObjectTotals, Overview, QueueTotals, Rate,
 };
 
 pub mod permissions;
-pub use permissions::{Permissions, TopicPermission};
+pub use permissions::{OAuthConfiguration, Permissions, TagMap, TopicPermission};
 
 pub mod queues_and_streams;
 pub use queues_and_streams::{
@@ -201,17 +200,6 @@ impl IntoIterator for PluginList {
     }
 }
 
-/// Represents a number of key OAuth 2 configuration settings.
-#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
-pub struct OAuthConfiguration {
-    pub oauth_enabled: bool,
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub oauth_client_id: Option<String>,
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub oauth_provider_url: Option<String>,
-}
-
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
@@ -284,77 +272,6 @@ pub struct MessageRouted {
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Default)]
 #[serde(transparent)]
 pub struct MessageProperties(pub Map<String, serde_json::Value>);
-
-#[derive(Debug, Deserialize, Clone, PartialEq, PartialOrd, Default)]
-#[serde(default)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
-pub struct Rate {
-    pub rate: f64,
-}
-
-#[derive(Debug, Deserialize, Clone, Eq, PartialEq, Default)]
-#[serde(default)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
-pub struct ObjectTotals {
-    pub connections: u64,
-    pub channels: u64,
-    pub queues: u64,
-    pub exchanges: u64,
-    pub consumers: u64,
-}
-
-#[derive(Debug, Deserialize, Clone, PartialEq, Default)]
-#[serde(default)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
-pub struct QueueTotals {
-    pub messages: u64,
-    #[serde(rename = "messages_ready", default)]
-    pub messages_ready_for_delivery: u64,
-    #[serde(rename = "messages_unacknowledged", default)]
-    pub messages_delivered_but_unacknowledged_by_consumers: u64,
-    pub messages_details: Rate,
-    #[serde(rename = "messages_ready_details", default)]
-    pub messages_ready_for_delivery_details: Rate,
-    #[serde(rename = "messages_unacknowledged_details", default)]
-    pub messages_delivered_but_unacknowledged_by_consumers_details: Rate,
-}
-
-#[derive(Debug, Deserialize, Clone, PartialEq, Default)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
-pub struct MessageStats {
-    /// Consumer delivery rate plus polling (via 'basic.get') rate
-    #[serde(rename = "deliver_get_details", default)]
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub delivery_details: Option<Rate>,
-    #[serde(rename = "publish_details", default)]
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub publishing_details: Option<Rate>,
-
-    #[serde(rename = "deliver_no_ack_details", default)]
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub delivery_with_automatic_acknowledgement_details: Option<Rate>,
-    #[serde(rename = "redeliver_details", default)]
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub redelivery_details: Option<Rate>,
-
-    #[serde(rename = "confirm_details", default)]
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub publisher_confirmation_details: Option<Rate>,
-    #[serde(rename = "ack_details", default)]
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub consumer_acknowledgement_details: Option<Rate>,
-
-    #[serde(rename = "drop_unroutable_details", default)]
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub unroutable_dropped_message_details: Option<Rate>,
-    #[serde(rename = "return_unroutable_details", default)]
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub unroutable_returned_message_details: Option<Rate>,
-}
-
-#[derive(Debug, Deserialize, Clone, Eq, PartialEq, Default)]
-#[serde(transparent)]
-pub struct TagMap(pub Map<String, serde_json::Value>);
 
 //
 // Implementation

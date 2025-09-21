@@ -13,7 +13,9 @@
 // limitations under the License.
 
 use crate::commons::{Username, VirtualHostName};
+use crate::formatting::*;
 use serde::{Deserialize, Serialize};
+use serde_json::Map;
 
 #[cfg(feature = "tabled")]
 use tabled::Tabled;
@@ -51,3 +53,17 @@ impl Permissions {
         }
     }
 }
+
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+pub struct OAuthConfiguration {
+    pub oauth_enabled: bool,
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub oauth_client_id: Option<String>,
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub oauth_provider_url: Option<String>,
+}
+
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq, Default)]
+#[serde(transparent)]
+pub struct TagMap(pub Map<String, serde_json::Value>);
