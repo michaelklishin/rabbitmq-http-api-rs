@@ -18,7 +18,6 @@
 use std::fmt;
 use std::ops::{Deref, DerefMut};
 
-use crate::commons::Username;
 use crate::formatting::*;
 use serde::{
     Deserialize, Serialize,
@@ -102,6 +101,9 @@ pub use queues_and_streams::{
 
 pub mod consumers;
 pub use consumers::Consumer;
+
+pub mod users;
+pub use users::{CurrentUser, User, UserLimits};
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
 pub struct TagList(pub Vec<String>);
@@ -208,60 +210,6 @@ pub struct OAuthConfiguration {
     pub oauth_client_id: Option<String>,
     #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub oauth_provider_url: Option<String>,
-}
-
-#[derive(Debug, Deserialize, Clone)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
-#[allow(dead_code)]
-pub struct UserLimits {
-    #[serde(rename(deserialize = "user"))]
-    pub username: Username,
-    #[serde(rename(deserialize = "value"))]
-    pub limits: EnforcedLimits,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
-#[allow(dead_code)]
-pub struct User {
-    pub name: Username,
-    pub tags: TagList,
-    pub password_hash: String,
-}
-
-impl User {
-    pub fn with_name(&self, name: String) -> Self {
-        Self {
-            name,
-            tags: self.tags.clone(),
-            password_hash: self.password_hash.clone(),
-        }
-    }
-
-    pub fn with_tags(&self, tags: TagList) -> Self {
-        Self {
-            name: self.name.clone(),
-            tags,
-            password_hash: self.password_hash.clone(),
-        }
-    }
-
-    pub fn with_password_hash(&self, password_hash: String) -> Self {
-        Self {
-            name: self.name.clone(),
-            tags: self.tags.clone(),
-            password_hash,
-        }
-    }
-}
-
-/// Represents the currently authenticated user details returned by the `GET /api/whoami` endpoint.
-#[derive(Debug, Serialize, Deserialize, Clone)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
-#[allow(dead_code)]
-pub struct CurrentUser {
-    pub name: Username,
-    pub tags: TagList,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
