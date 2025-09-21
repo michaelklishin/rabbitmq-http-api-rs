@@ -16,7 +16,7 @@
 //! [`User`], [`VirtualHost`], [`Shovel`] or [`FederationLink`].
 
 use std::ops::{Deref, DerefMut};
-use std::{fmt, ops};
+use std::fmt;
 
 use crate::commons::{
     ChannelId, PolicyTarget, QueueType, SupportedProtocol, Username, VirtualHostName,

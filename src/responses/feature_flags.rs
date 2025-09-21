@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use serde::{Deserialize, Serialize};
-use std::{fmt, ops};
+use std::{fmt, ops::{Deref, DerefMut}};
 #[cfg(feature = "tabled")]
 use tabled::Tabled;
 

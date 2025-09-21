@@ -25,7 +25,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Map, json};
 use std::{
     fmt,
-    ops::{self, Deref, DerefMut},
+    ops::{Deref, DerefMut},
 };
 #[cfg(feature = "tabled")]
 use tabled::Tabled;
