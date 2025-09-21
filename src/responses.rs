@@ -18,9 +18,7 @@
 use std::fmt;
 use std::ops::{Deref, DerefMut};
 
-use crate::commons::{
-    ChannelId, PolicyTarget, QueueType, SupportedProtocol, Username, VirtualHostName,
-};
+use crate::commons::{PolicyTarget, QueueType, SupportedProtocol, Username, VirtualHostName};
 use crate::formatting::*;
 use crate::utils::{percentage, percentage_as_text};
 use serde::{
@@ -80,6 +78,17 @@ pub use tanzu::{
     WarmStandbyReplicationLinkStateOnDownstream, WarmStandbyReplicationState,
     WarmStandbyReplicationStateOnUpstream, WarmStandbyReplicationStatus,
 };
+
+pub mod vhosts;
+pub use vhosts::{EnforcedLimits, VirtualHost, VirtualHostLimits, VirtualHostMetadata};
+
+pub mod connections;
+pub use connections::{
+    ClientCapabilities, ClientProperties, Connection, ConnectionDetails, UserConnection,
+};
+
+pub mod channels;
+pub use channels::{Channel, ChannelDetails, ChannelState};
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
 pub struct TagList(pub Vec<String>);
@@ -554,66 +563,6 @@ pub struct AuthenticationAttemptStatistics {
     pub success_count: u64,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
-#[allow(dead_code)]
-pub struct VirtualHostMetadata {
-    /// Optional tags
-    pub tags: Option<TagList>,
-    /// Optional description
-    pub description: Option<String>,
-    /// Default queue type used in this virtual host when clients
-    /// do not explicitly specify one
-    pub default_queue_type: Option<String>,
-}
-
-/// Represents a [RabbitMQ virtual host](https://rabbitmq.com/docs/vhosts/).
-#[derive(Debug, Serialize, Deserialize, Clone)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
-#[allow(dead_code)]
-pub struct VirtualHost {
-    /// Virtual host name
-    pub name: VirtualHostName,
-    /// Optional tags
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub tags: Option<TagList>,
-    /// Optional description
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub description: Option<String>,
-    /// Default queue type used in this virtual host when clients
-    /// do not explicitly specify one
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub default_queue_type: Option<String>,
-    /// All virtual host metadata combined
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub metadata: Option<VirtualHostMetadata>,
-}
-
-#[derive(Debug, Deserialize, Clone)]
-pub struct EnforcedLimits(pub Map<String, serde_json::Value>);
-
-impl Deref for EnforcedLimits {
-    type Target = Map<String, serde_json::Value>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl fmt::Display for EnforcedLimits {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt_map_as_colon_separated_pairs(f, &self.0)
-    }
-}
-
-#[derive(Debug, Deserialize, Clone)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
-#[allow(dead_code)]
-pub struct VirtualHostLimits {
-    pub vhost: VirtualHostName,
-    #[serde(rename(deserialize = "value"))]
-    pub limits: EnforcedLimits,
-}
-
 #[derive(Debug, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
@@ -666,192 +615,6 @@ impl User {
 pub struct CurrentUser {
     pub name: Username,
     pub tags: TagList,
-}
-
-/// Represents a client connection.
-#[derive(Debug, Deserialize, Clone)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
-#[allow(dead_code)]
-pub struct Connection {
-    /// Connection name. Use it to close this connection.
-    pub name: String,
-    /// To what node the client is connected
-    pub node: String,
-    /// Connection state.
-    /// Regular client connections (a.k.a. network connections) will usually
-    /// have this state, while direct AMQP 0-9-1 Erlang client connections won't.
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub state: Option<String>,
-    /// What protocol the connection uses
-    pub protocol: String,
-    /// The name of the authenticated user
-    #[serde(rename(deserialize = "user"))]
-    pub username: Username,
-    /// When was this connection opened (a timestamp).
-    pub connected_at: u64,
-    /// The hostname used to connect.
-    #[serde(rename(deserialize = "host"))]
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub server_hostname: Option<String>,
-    /// The port used to connect.
-    #[serde(rename(deserialize = "port"))]
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub server_port: Option<u32>,
-    /// Client hostname.
-    #[serde(rename(deserialize = "peer_host"))]
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub client_hostname: Option<String>,
-    /// Ephemeral client port.
-    #[serde(rename(deserialize = "peer_port"))]
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub client_port: Option<u32>,
-    /// Maximum number of channels that can be opened on this connection.
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub channel_max: Option<u16>,
-    /// How many channels are opened on this connection.
-    #[serde(rename(deserialize = "channels"))]
-    #[serde(default)]
-    pub channel_count: u16,
-    /// Client-provided properties (metadata and capabilities).
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub client_properties: ClientProperties,
-}
-
-#[derive(Debug, Deserialize, Clone)]
-#[allow(dead_code)]
-pub struct ClientProperties {
-    #[serde(default)]
-    pub connection_name: String,
-    #[serde(default)]
-    pub platform: String,
-    #[serde(default)]
-    pub product: String,
-    #[serde(default)]
-    pub version: String,
-    pub capabilities: Option<ClientCapabilities>,
-}
-
-#[derive(Debug, Deserialize, Clone)]
-#[allow(dead_code)]
-pub struct ClientCapabilities {
-    #[serde(default)]
-    pub authentication_failure_close: bool,
-    #[serde(rename(deserialize = "basic.nack"), default)]
-    pub basic_nack: bool,
-    #[serde(rename(deserialize = "connection.blocked"), default)]
-    pub connection_blocked: bool,
-    #[serde(rename(deserialize = "consumer_cancel_notify"), default)]
-    pub consumer_cancel_notify: bool,
-    #[serde(rename(deserialize = "exchange_exchange_bindings"), default)]
-    pub exchange_to_exchange_bindings: bool,
-    #[serde(default)]
-    pub publisher_confirms: bool,
-}
-
-#[derive(Debug, Deserialize, Clone)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
-#[allow(dead_code)]
-pub struct UserConnection {
-    pub name: Username,
-    pub node: String,
-    #[serde(rename(deserialize = "user"))]
-    pub username: Username,
-    pub vhost: VirtualHostName,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
-#[serde(rename_all = "lowercase")]
-pub enum ChannelState {
-    Starting,
-    Running,
-    Closing,
-    #[serde(untagged)]
-    Unknown(String),
-}
-
-impl From<&str> for ChannelState {
-    fn from(value: &str) -> Self {
-        match value {
-            "starting" => ChannelState::Starting,
-            "running" => ChannelState::Running,
-            "closing" => ChannelState::Closing,
-            other => ChannelState::Unknown(other.to_owned()),
-        }
-    }
-}
-
-impl From<String> for ChannelState {
-    fn from(value: String) -> Self {
-        Self::from(value.as_str())
-    }
-}
-
-impl AsRef<str> for ChannelState {
-    fn as_ref(&self) -> &str {
-        match self {
-            ChannelState::Starting => "starting",
-            ChannelState::Running => "running",
-            ChannelState::Closing => "closing",
-            ChannelState::Unknown(s) => s.as_str(),
-        }
-    }
-}
-
-impl fmt::Display for ChannelState {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            ChannelState::Starting => write!(f, "starting"),
-            ChannelState::Running => write!(f, "running"),
-            ChannelState::Closing => write!(f, "closing"),
-            ChannelState::Unknown(s) => write!(f, "{}", s),
-        }
-    }
-}
-
-#[derive(Debug, Deserialize, Clone)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
-#[allow(dead_code)]
-pub struct Channel {
-    #[serde(rename(deserialize = "number"))]
-    pub id: ChannelId,
-    pub name: String,
-    #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub connection_details: ConnectionDetails,
-    pub vhost: VirtualHostName,
-    pub state: ChannelState,
-    pub consumer_count: u32,
-    #[serde(rename(deserialize = "confirm"))]
-    pub has_publisher_confirms_enabled: bool,
-    pub prefetch_count: u32,
-    pub messages_unacknowledged: u32,
-    pub messages_unconfirmed: u32,
-}
-
-#[derive(Debug, Deserialize, Clone)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
-#[allow(dead_code)]
-pub struct ConnectionDetails {
-    pub name: String,
-    #[serde(rename(deserialize = "peer_host"))]
-    pub client_hostname: String,
-    #[serde(rename(deserialize = "peer_port"))]
-    pub client_port: u32,
-}
-
-#[derive(Debug, Deserialize, Clone)]
-#[allow(dead_code)]
-pub struct ChannelDetails {
-    #[serde(rename(deserialize = "number"))]
-    pub id: ChannelId,
-    pub name: String,
-    pub connection_name: String,
-    pub node: String,
-    #[serde(rename(deserialize = "peer_host"))]
-    pub client_hostname: String,
-    #[serde(rename(deserialize = "peer_port"))]
-    pub client_port: u32,
-    #[serde(rename(deserialize = "user"))]
-    pub username: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]
