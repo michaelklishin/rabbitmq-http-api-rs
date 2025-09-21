@@ -35,7 +35,7 @@ use serde_json::{Map, json};
 
 use time::OffsetDateTime;
 
-use crate::requests::FederationResourceCleanupMode;
+use crate::requests::federation::FederationResourceCleanupMode;
 use crate::transformers::{TransformerFn, TransformerFnOnce};
 use regex::Regex;
 #[cfg(feature = "tabled")]
