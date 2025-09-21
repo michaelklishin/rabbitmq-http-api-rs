@@ -27,7 +27,10 @@ where
 {
     /// Returns the status of schema definition synchronization.
     /// See [Schema Definition Synchronization](https://docs.vmware.com/en/VMware-Tanzu-RabbitMQ-for-Kubernetes/index.html) to learn more.
-    pub async fn schema_definition_sync_status(&self, node: Option<&str>) -> Result<SchemaDefinitionSyncStatus> {
+    pub async fn schema_definition_sync_status(
+        &self,
+        node: Option<&str>,
+    ) -> Result<SchemaDefinitionSyncStatus> {
         let response = match node {
             Some(val) => {
                 self.http_get(path!("tanzu", "osr", "schema", "status", val), None, None)
