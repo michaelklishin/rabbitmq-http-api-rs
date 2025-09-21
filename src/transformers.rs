@@ -17,9 +17,8 @@ use crate::commons::{
     X_ARGUMENT_KEY_X_OVERFLOW,
 };
 use crate::responses::{
-    ClusterDefinitionSet, OptionalArgumentSourceOps, Policy, PolicyWithoutVirtualHost,
-    QueueDefinition, QueueDefinitionWithoutVirtualHost, QueueOps, VirtualHostDefinitionSet,
-    XArguments,
+    ClusterDefinitionSet, Policy, PolicyWithoutVirtualHost, QueueDefinition,
+    QueueDefinitionWithoutVirtualHost, QueueOps, VirtualHostDefinitionSet, XArguments,
 };
 use serde_json::json;
 use std::collections::HashMap;
