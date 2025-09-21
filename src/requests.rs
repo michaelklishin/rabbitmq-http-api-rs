@@ -17,11 +17,8 @@
 //!
 //! Most types provide constructor functions for common scenarios.
 
-use crate::commons::{ExchangeType, PolicyTarget, QueueType};
-use crate::responses;
-use crate::responses::{
-    ExchangeInfo, Policy, PolicyDefinition as PolDef, QueueInfo, RuntimeParameter, VirtualHost,
-};
+use crate::commons::{ExchangeType, QueueType};
+use crate::responses::{ExchangeInfo, QueueInfo, RuntimeParameter, VirtualHost};
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value, json};
 
@@ -670,65 +667,8 @@ pub struct GlobalRuntimeParameterDefinition<'a> {
     pub value: RuntimeParameterValue,
 }
 
-/// Policy definition map containing the actual policy rules.
-///
-/// Contains key-value pairs that define the policy behavior, such as:
-/// * "ha-mode": "all" (high availability settings)
-/// * "message-ttl": 60000 (message time-to-live in milliseconds)
-/// * "max-length": 1000 (maximum queue length)
-pub type PolicyDefinition = Map<String, Value>;
-
-impl From<PolDef> for PolicyDefinition {
-    fn from(policy: responses::PolicyDefinition) -> Self {
-        match policy.0 {
-            None => {
-                let empty: Map<String, Value> = Map::new();
-                empty
-            }
-            Some(value) => value,
-        }
-    }
-}
-
-/// Represents a [policy](https://rabbitmq.com/docs/parameters/#policies).
-///
-/// Policies apply configuration to queues and exchanges whose names match a regex pattern.
-/// When multiple policies match the same resource, the one with the highest priority wins.
-///
-/// # Pattern Examples
-/// * `"^amq\\."` - Matches resources starting with "amq."
-/// * `".*"` - Matches all resources
-/// * `"orders\\.(urgent|normal)"` - Matches "orders.urgent" or "orders.normal"
-/// * `"temp_.*"` - Matches resources starting with "temp_"
-///
-/// # Priority
-/// Higher numbers have higher priority. If two policies match the same resource,
-/// the policy with the higher priority value takes precedence. Typical range: 0-999.
-#[derive(Serialize, Debug)]
-pub struct PolicyParams<'a> {
-    pub vhost: &'a str,
-    pub name: &'a str,
-    /// Regular expression pattern to match queue/exchange names
-    pub pattern: &'a str,
-    #[serde(rename(serialize = "apply-to"))]
-    pub apply_to: PolicyTarget,
-    /// Priority when multiple policies match (higher wins)
-    pub priority: i32,
-    pub definition: PolicyDefinition,
-}
-
-impl<'a> From<&'a Policy> for PolicyParams<'a> {
-    fn from(policy: &'a Policy) -> Self {
-        PolicyParams {
-            vhost: &policy.vhost,
-            name: &policy.name,
-            pattern: &policy.pattern,
-            apply_to: policy.apply_to.clone(),
-            priority: policy.priority as i32, // Converting i16 to i32
-            definition: policy.definition.clone().into(),
-        }
-    }
-}
+pub mod policies;
+pub use policies::{PolicyDefinition, PolicyParams};
 
 /// Represents a user's [permission in a particular virtual host](https://rabbitmq.com/docs/access-control/).
 ///
