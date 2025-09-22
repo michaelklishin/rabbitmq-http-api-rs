@@ -14,14 +14,16 @@
 
 mod test_helpers;
 
-use crate::test_helpers::{PASSWORD, USERNAME, endpoint};
+use crate::test_helpers::{PASSWORD, USERNAME, async_await_metric_emission, endpoint};
 use proptest::prelude::*;
 use proptest::test_runner::Config as ProptestConfig;
 use rabbitmq_http_client::{
     api::Client,
     commons::{ExchangeType, PolicyTarget, QueueType},
     password_hashing,
-    requests::{ExchangeParams, Permissions, PolicyParams, QueueParams, UserParams, VirtualHostParams}
+    requests::{
+        ExchangeParams, Permissions, PolicyParams, QueueParams, UserParams, VirtualHostParams,
+    },
 };
 use serde_json::{Map, json};
 use tokio::runtime::Runtime;
@@ -46,8 +48,10 @@ fn arb_queue_name() -> impl Strategy<Value = String> {
 }
 
 fn arb_exchange_name() -> impl Strategy<Value = String> {
-    prop::string::string_regex(r"rust\.tests\.proptest\.definitions\.exchanges\.[a-zA-Z0-9_-]{8,20}")
-        .unwrap()
+    prop::string::string_regex(
+        r"rust\.tests\.proptest\.definitions\.exchanges\.[a-zA-Z0-9_-]{8,20}",
+    )
+    .unwrap()
 }
 
 fn arb_policy_name() -> impl Strategy<Value = String> {
@@ -78,6 +82,17 @@ fn arb_queue_type() -> impl Strategy<Value = QueueType> {
         Just(QueueType::Classic),
         Just(QueueType::Quorum),
         Just(QueueType::Stream),
+    ]
+}
+
+fn arb_policy_target() -> impl Strategy<Value = PolicyTarget> {
+    prop_oneof![
+        Just(PolicyTarget::Queues),
+        Just(PolicyTarget::ClassicQueues),
+        Just(PolicyTarget::QuorumQueues),
+        Just(PolicyTarget::Streams),
+        Just(PolicyTarget::Exchanges),
+        Just(PolicyTarget::All),
     ]
 }
 
@@ -113,10 +128,12 @@ proptest! {
             let declare_queue_result = client.declare_queue(&vhost_name, &qp).await;
             prop_assert!(declare_queue_result.is_ok(), "Failed to declare a queue: {declare_queue_result:?}");
 
+            async_await_metric_emission(20).await;
+
             let bind_result = client.bind_queue(&vhost_name, &queue_name, &exchange_name, None, None).await;
             prop_assert!(bind_result.is_ok(), "Failed to bind a queue: {bind_result:?}");
 
-            test_helpers::async_await_metric_emission(100).await;
+            async_await_metric_emission(100).await;
 
             let export_result = client.export_cluster_wide_definitions_as_data().await;
             prop_assert!(export_result.is_ok(), "Failed to export the definitions: {export_result:?}");
@@ -179,7 +196,7 @@ proptest! {
             let import_result = client.import_vhost_definitions(&vhost_name, vhost_def).await;
             prop_assert!(import_result.is_ok(), "Failed to import the virtual host definitions: {import_result:?}");
 
-            test_helpers::async_await_metric_emission(100).await;
+            async_await_metric_emission(100).await;
 
             let get_queue_result = client.get_queue_info(&vhost_name, &queue_name).await;
             prop_assert!(get_queue_result.is_ok(), "Imported queue was not found: {get_queue_result:?}");
@@ -296,7 +313,8 @@ proptest! {
     fn prop_async_export_import_definitions_with_policies(
         vhost_name in arb_vhost_name(),
         policy_name in arb_policy_name(),
-        queue_name in arb_queue_name()
+        queue_name in arb_queue_name(),
+        policy_target in arb_policy_target()
     ) {
         let rt = Runtime::new().unwrap();
         rt.block_on(async {
@@ -317,7 +335,7 @@ proptest! {
                 vhost: &vhost_name,
                 name: &policy_name,
                 pattern: &format!("{}.*", queue_name),
-                apply_to: PolicyTarget::Queues,
+                apply_to: policy_target,
                 priority: 1,
                 definition: policy_def,
             };
@@ -398,6 +416,96 @@ proptest! {
             ) {
                 prop_assert_eq!(string_exchanges.len(), data_exchanges.len(),
                     "Exchange count mismatch between string and data exports");
+            }
+
+            let _ = client.delete_vhost(&vhost_name, true).await;
+
+            Ok(())
+        })?;
+    }
+
+    #[test]
+    fn prop_async_policy_target_conversion_and_matching(
+        vhost_name in arb_vhost_name(),
+        policy_name in arb_policy_name(),
+        queue_name in arb_queue_name(),
+        exchange_name in arb_exchange_name(),
+        policy_target in arb_policy_target(),
+        queue_type in arb_queue_type()
+    ) {
+        let rt = Runtime::new().unwrap();
+        rt.block_on(async {
+            let endpoint = endpoint();
+            let client = Client::new(&endpoint, USERNAME, PASSWORD);
+
+            let _ = client.delete_vhost(&vhost_name, true).await;
+
+            let vh_params = VirtualHostParams::named(&vhost_name);
+            let create_vhost_result = client.create_vhost(&vh_params).await;
+            prop_assert!(create_vhost_result.is_ok(), "Failed to create a virtual host: {create_vhost_result:?}");
+
+            let mut policy_def = Map::new();
+            policy_def.insert("max-length".to_string(), json!(1000));
+
+            let pattern = "rust\\.tests\\.proptest\\.definitions\\..*";
+            let policy_params = PolicyParams {
+                vhost: &vhost_name,
+                name: &policy_name,
+                pattern,
+                apply_to: policy_target.clone(),
+                priority: 1,
+                definition: policy_def,
+            };
+
+            let declare_policy_result = client.declare_policy(&policy_params).await;
+            prop_assert!(declare_policy_result.is_ok(), "Failed to declare a policy: {declare_policy_result:?}");
+
+            let get_policy_result = client.get_policy(&vhost_name, &policy_name).await;
+            prop_assert!(get_policy_result.is_ok(), "Failed to get policy: {get_policy_result:?}");
+
+            let retrieved_policy = get_policy_result.unwrap();
+            prop_assert_eq!(&retrieved_policy.apply_to, &policy_target, "Policy target mismatch after roundtrip");
+            prop_assert_eq!(&retrieved_policy.name, &policy_name, "Policy name mismatch");
+            prop_assert_eq!(&retrieved_policy.vhost, &vhost_name, "Policy vhost mismatch");
+
+            let policy_target_from_queue_type = PolicyTarget::from(queue_type.clone());
+            let queue_type_matches = match (policy_target.clone(), queue_type.clone()) {
+                (PolicyTarget::ClassicQueues, QueueType::Classic) => true,
+                (PolicyTarget::QuorumQueues, QueueType::Quorum) => true,
+                (PolicyTarget::Streams, QueueType::Stream) => true,
+                (PolicyTarget::Queues, QueueType::Classic | QueueType::Quorum | QueueType::Stream) => true,
+                (PolicyTarget::All, _) => true,
+                _ => false,
+            };
+
+            if queue_type_matches {
+                let mut queue_args = Map::new();
+                queue_args.insert("x-queue-type".to_string(), json!(queue_type.to_string()));
+                let qp = QueueParams::new(&queue_name, queue_type, true, false, Some(queue_args));
+                let declare_queue_result = client.declare_queue(&vhost_name, &qp).await;
+                prop_assert!(declare_queue_result.is_ok(), "Failed to declare a queue: {declare_queue_result:?}");
+
+                async_await_metric_emission(20).await;
+
+                let list_result = client.list_queues_in(&vhost_name).await;
+                prop_assert!(list_result.is_ok(), "Failed to list queues: {list_result:?}");
+
+                let queues = list_result.unwrap();
+                let found_queue = queues.iter().find(|q| q.name == queue_name);
+                prop_assert!(found_queue.is_some(), "Declared queue was not found in list");
+
+                let queue = found_queue.unwrap();
+                prop_assert!(retrieved_policy.does_match_name(&vhost_name, &queue.name, policy_target_from_queue_type),
+                    "Policy should match the created queue based on policy target");
+            }
+
+            if policy_target == PolicyTarget::Exchanges || policy_target == PolicyTarget::All {
+                let xp = ExchangeParams::durable_fanout(&exchange_name, None);
+                let declare_exchange_result = client.declare_exchange(&vhost_name, &xp).await;
+                prop_assert!(declare_exchange_result.is_ok(), "Failed to declare an exchange: {declare_exchange_result:?}");
+
+                prop_assert!(retrieved_policy.does_match_name(&vhost_name, &exchange_name, PolicyTarget::Exchanges),
+                    "Policy should match the created exchange when targeting exchanges");
             }
 
             let _ = client.delete_vhost(&vhost_name, true).await;

@@ -52,7 +52,7 @@ fn arb_default_queue_type() -> impl Strategy<Value = Option<QueueType>> {
     ]
 }
 
-fn arb_vhost_params() -> impl Strategy<
+fn arb_vh_params() -> impl Strategy<
     Value = (
         String,
         Option<String>,
@@ -75,7 +75,7 @@ proptest! {
 
     #[test]
     fn prop_async_vhost_create_list_delete(
-        (name, description, tags, default_queue_type, tracing) in arb_vhost_params()
+        (name, description, tags, default_queue_type, tracing) in arb_vh_params()
     ) {
         let rt = Runtime::new().unwrap();
         rt.block_on(async {
@@ -93,32 +93,32 @@ proptest! {
                 tracing,
             };
 
-            let create_result = client.create_vhost(&params).await;
-            prop_assert!(create_result.is_ok(), "Failed to create a virtual host: {create_result:?}");
+            let result1 = client.create_vhost(&params).await;
+            prop_assert!(result1.is_ok(), "Failed to create a virtual host: {result1:?}");
 
 
-            let list_result = client.list_vhosts().await;
-            prop_assert!(list_result.is_ok(), "Failed to list virtual hosts: {list_result:?}");
+            let result2 = client.list_vhosts().await;
+            prop_assert!(result2.is_ok(), "Failed to list virtual hosts: {result2:?}");
 
-            let vhosts = list_result.unwrap();
+            let vhosts = result2.unwrap();
             let found_vhost = vhosts.iter().find(|v| v.name == name);
             prop_assert!(found_vhost.is_some(), "list_vhosts did not include the created vhost: {}", name);
 
             let vhost = found_vhost.unwrap();
             prop_assert_eq!(&vhost.name, &name);
 
-            let get_result = client.get_vhost(&name).await;
-            prop_assert!(get_result.is_ok(), "Failed to get virtual host info: {get_result:?}");
+            let result3 = client.get_vhost(&name).await;
+            prop_assert!(result3.is_ok(), "Failed to get virtual host info: {result3:?}");
 
-            let vhost_info = get_result.unwrap();
+            let vhost_info = result3.unwrap();
             prop_assert_eq!(&vhost_info.name, &name);
 
             if let Some(ref desc) = description {
                 prop_assert_eq!(vhost_info.description.as_ref(), Some(desc));
             }
 
-            let delete_result = client.delete_vhost(&name, false).await;
-            prop_assert!(delete_result.is_ok(), "Failed to delete a virtual host: {delete_result:?}");
+            let result4 = client.delete_vhost(&name, false).await;
+            prop_assert!(result4.is_ok(), "Failed to delete a virtual host: {result4:?}");
 
             Ok(())
         })?;
@@ -147,8 +147,8 @@ proptest! {
                 tracing: false,
             };
 
-            let create_result = client.create_vhost(&initial_params).await;
-            prop_assert!(create_result.is_ok(), "Failed to create initial vhost: {create_result:?}");
+            let result1 = client.create_vhost(&initial_params).await;
+            prop_assert!(result1.is_ok(), "Failed to create initial vhost: {result1:?}");
 
 
             let updated_params = VirtualHostParams {
@@ -159,14 +159,14 @@ proptest! {
                 tracing: true,
             };
 
-            let update_result = client.update_vhost(&updated_params).await;
-            prop_assert!(update_result.is_ok(), "Failed to update a virtual host: {update_result:?}");
+            let result2 = client.update_vhost(&updated_params).await;
+            prop_assert!(result2.is_ok(), "Failed to update a virtual host: {result2:?}");
 
 
-            let get_result = client.get_vhost(&name).await;
-            prop_assert!(get_result.is_ok(), "Failed to get Update virtual host info: {get_result:?}");
+            let result3 = client.get_vhost(&name).await;
+            prop_assert!(result3.is_ok(), "Failed to get Update virtual host info: {result3:?}");
 
-            let updated_vhost = get_result.unwrap();
+            let updated_vhost = result3.unwrap();
             if let Some(ref desc) = updated_desc {
                 prop_assert_eq!(updated_vhost.description.as_ref(), Some(desc));
             }
@@ -197,21 +197,21 @@ proptest! {
             let _ = client.delete_vhost(&name, true).await;
 
             let params = VirtualHostParams::named(&name);
-            let create_result = client.create_vhost(&params).await;
-            prop_assert!(create_result.is_ok(), "Failed to create a virtual host: {create_result:?}");
+            let result1 = client.create_vhost(&params).await;
+            prop_assert!(result1.is_ok(), "Failed to create a virtual host: {result1:?}");
 
 
-            let enable_protection_result = client.enable_vhost_deletion_protection(&name).await;
-            prop_assert!(enable_protection_result.is_ok(), "Failed to enable deletion protection: {enable_protection_result:?}");
+            let result2 = client.enable_vhost_deletion_protection(&name).await;
+            prop_assert!(result2.is_ok(), "Failed to enable deletion protection: {result2:?}");
 
-            let delete_protected_result = client.delete_vhost(&name, false).await;
-            prop_assert!(delete_protected_result.is_err(), "Attempts at deleting a protected virtual host should fail");
+            let result3 = client.delete_vhost(&name, false).await;
+            prop_assert!(result3.is_err(), "Attempts at deleting a protected virtual host should fail");
 
-            let disable_protection_result = client.disable_vhost_deletion_protection(&name).await;
-            prop_assert!(disable_protection_result.is_ok(), "Failed to disable deletion protection: {disable_protection_result:?}");
+            let result4 = client.disable_vhost_deletion_protection(&name).await;
+            prop_assert!(result4.is_ok(), "Failed to disable deletion protection: {result4:?}");
 
-            let delete_result = client.delete_vhost(&name, false).await;
-            prop_assert!(delete_result.is_ok(), "Failed to delete a virtual host after disabling protection: {delete_result:?}");
+            let result5 = client.delete_vhost(&name, false).await;
+            prop_assert!(result5.is_ok(), "Failed to delete a virtual host after disabling protection: {result5:?}");
 
             Ok(())
         })?;
@@ -226,19 +226,19 @@ proptest! {
             let endpoint = endpoint();
             let client = Client::new(&endpoint, USERNAME, PASSWORD);
 
-            let delete_nonexistent_result = client.delete_vhost(&name, true).await;
-            prop_assert!(delete_nonexistent_result.is_ok(), "Idempotent delete of non-existent vhost should succeed: {delete_nonexistent_result:?}");
+            let result1 = client.delete_vhost(&name, true).await;
+            prop_assert!(result1.is_ok(), "Idempotent delete of non-existent vhost should succeed: {result1:?}");
 
             let params = VirtualHostParams::named(&name);
-            let create_result = client.create_vhost(&params).await;
-            prop_assert!(create_result.is_ok(), "Failed to create a virtual host: {create_result:?}");
+            let result2 = client.create_vhost(&params).await;
+            prop_assert!(result2.is_ok(), "Failed to create a virtual host: {result2:?}");
 
 
-            let delete_existing_result = client.delete_vhost(&name, true).await;
-            prop_assert!(delete_existing_result.is_ok(), "Failed to delete existing vhost: {delete_existing_result:?}");
+            let result3 = client.delete_vhost(&name, true).await;
+            prop_assert!(result3.is_ok(), "Failed to delete existing vhost: {result3:?}");
 
-            let delete_again_result = client.delete_vhost(&name, true).await;
-            prop_assert!(delete_again_result.is_ok(), "Second idempotent delete should succeed: {delete_again_result:?}");
+            let result4 = client.delete_vhost(&name, true).await;
+            prop_assert!(result4.is_ok(), "Second idempotent delete should succeed: {result4:?}");
 
             Ok(())
         })?;
@@ -259,15 +259,15 @@ proptest! {
 
             for name in &names {
                 let params = VirtualHostParams::named(name);
-                let create_result = client.create_vhost(&params).await;
-                prop_assert!(create_result.is_ok(), "Failed to create a virtual host {}: {create_result:?}", name);
+                let result1 = client.create_vhost(&params).await;
+                prop_assert!(result1.is_ok(), "Failed to create a virtual host {}: {result1:?}", name);
             }
 
 
-            let list_result = client.list_vhosts().await;
-            prop_assert!(list_result.is_ok(), "Failed to list virtual hosts: {list_result:?}");
+            let result2 = client.list_vhosts().await;
+            prop_assert!(result2.is_ok(), "Failed to list virtual hosts: {result2:?}");
 
-            let vhosts = list_result.unwrap();
+            let vhosts = result2.unwrap();
 
             for name in &names {
                 let found_vhost = vhosts.iter().any(|v| v.name == *name);

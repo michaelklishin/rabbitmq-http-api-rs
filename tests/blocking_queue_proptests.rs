@@ -14,7 +14,7 @@
 
 mod test_helpers;
 
-use crate::test_helpers::{PASSWORD, USERNAME, endpoint};
+use crate::test_helpers::{PASSWORD, USERNAME, await_metric_emission, endpoint};
 use proptest::prelude::*;
 use proptest::test_runner::Config as ProptestConfig;
 use rabbitmq_http_client::{blocking_api::Client, commons::QueueType, requests::QueueParams};
@@ -95,15 +95,15 @@ proptest! {
         let _ = client.delete_queue(vhost, &name, true);
 
         let params = QueueParams::new(&name, QueueType::Classic, durable, auto_delete, optional_args);
-        let declare_result = client.declare_queue(vhost, &params);
-        prop_assert!(declare_result.is_ok(), "Failed to declare classic queue: {declare_result:?}");
+        let result1 = client.declare_queue(vhost, &params);
+        prop_assert!(result1.is_ok(), "Failed to declare classic queue: {result1:?}");
 
-        test_helpers::await_metric_emission(20);
+        await_metric_emission(20);
 
-        let list_result = client.list_queues();
-        prop_assert!(list_result.is_ok(), "Failed to list queues: {list_result:?}");
+        let result2 = client.list_queues();
+        prop_assert!(result2.is_ok(), "Failed to list queues: {result2:?}");
 
-        let queues = list_result.unwrap();
+        let queues = result2.unwrap();
         let found_queue = queues.iter().find(|q| q.name == name);
         prop_assert!(found_queue.is_some(), "list_queues did not include the declared queue: {}", name);
 
@@ -126,15 +126,15 @@ proptest! {
         let _ = client.delete_queue(vhost, &name, true);
 
         let params = QueueParams::new_quorum_queue(&name, optional_args);
-        let declare_result = client.declare_queue(vhost, &params);
-        prop_assert!(declare_result.is_ok(), "Failed to declare quorum queue: {declare_result:?}");
+        let result1 = client.declare_queue(vhost, &params);
+        prop_assert!(result1.is_ok(), "Failed to declare quorum queue: {result1:?}");
 
-        test_helpers::await_metric_emission(20);
+        await_metric_emission(20);
 
-        let list_result = client.list_queues_in(vhost);
-        prop_assert!(list_result.is_ok(), "Failed to list queues in vhost: {list_result:?}");
+        let result2 = client.list_queues_in(vhost);
+        prop_assert!(result2.is_ok(), "Failed to list queues in vhost: {result2:?}");
 
-        let queues = list_result.unwrap();
+        let queues = result2.unwrap();
         let found_queue = queues.iter().find(|q| q.name == name);
         prop_assert!(found_queue.is_some(), "list_queues did not include the declared queue: {}", name);
 
@@ -161,15 +161,15 @@ proptest! {
         let optional_args = Some(map);
 
         let params = QueueParams::new_stream(&name, optional_args);
-        let declare_result = client.declare_queue(vhost, &params);
-        prop_assert!(declare_result.is_ok(), "Failed to declare stream: {declare_result:?}");
+        let result1 = client.declare_queue(vhost, &params);
+        prop_assert!(result1.is_ok(), "Failed to declare stream: {result1:?}");
 
-        test_helpers::await_metric_emission(20);
+        await_metric_emission(20);
 
-        let list_result = client.list_queues_with_details();
-        prop_assert!(list_result.is_ok(), "list_queues_with_details did not include the declared queue: {list_result:?}");
+        let result2 = client.list_queues_with_details();
+        prop_assert!(result2.is_ok(), "list_queues_with_details did not include the declared queue: {result2:?}");
 
-        let queues = list_result.unwrap();
+        let queues = result2.unwrap();
         let found_queue = queues.iter().find(|q| q.name == name);
         prop_assert!(found_queue.is_some(), "list_queues_with_details did not include the declared stream: {}", name);
 
@@ -193,15 +193,15 @@ proptest! {
         let _ = client.delete_queue(vhost, &name, true);
 
         let params = QueueParams::new_transient_autodelete(&name, optional_args);
-        let declare_result = client.declare_queue(vhost, &params);
-        prop_assert!(declare_result.is_ok(), "Failed to declare transient auto-delete queue: {declare_result:?}");
+        let result1 = client.declare_queue(vhost, &params);
+        prop_assert!(result1.is_ok(), "Failed to declare transient auto-delete queue: {result1:?}");
 
-        test_helpers::await_metric_emission(20);
+        await_metric_emission(20);
 
-        let get_result = client.get_queue_info(vhost, &name);
-        prop_assert!(get_result.is_ok(), "Failed to get queue info: {get_result:?}");
+        let result2 = client.get_queue_info(vhost, &name);
+        prop_assert!(result2.is_ok(), "Failed to get queue info: {result2:?}");
 
-        let queue = get_result.unwrap();
+        let queue = result2.unwrap();
         prop_assert_eq!(queue.name, name.clone());
         prop_assert_eq!(queue.vhost, vhost);
         prop_assert_eq!(&queue.queue_type, "classic");
@@ -225,20 +225,20 @@ proptest! {
 
         for name in &names {
             let params = QueueParams::new_durable_classic_queue(name, None);
-            let declare_result = client.declare_queue(vhost, &params);
-            prop_assert!(declare_result.is_ok(), "Failed to declare queue {}: {declare_result:?}", name);
+            let result1 = client.declare_queue(vhost, &params);
+            prop_assert!(result1.is_ok(), "Failed to declare queue {}: {result1:?}", name);
         }
 
-        test_helpers::await_metric_emission(20);
+        await_metric_emission(20);
 
-        let list_all_result = client.list_queues();
-        prop_assert!(list_all_result.is_ok(), "Failed to list all queues: {list_all_result:?}");
+        let result2 = client.list_queues();
+        prop_assert!(result2.is_ok(), "Failed to list all queues: {result2:?}");
 
-        let list_vhost_result = client.list_queues_in(vhost);
-        prop_assert!(list_vhost_result.is_ok(), "Failed to list queues in vhost: {list_vhost_result:?}");
+        let result3 = client.list_queues_in(vhost);
+        prop_assert!(result3.is_ok(), "Failed to list queues in vhost: {result3:?}");
 
-        let all_queues = list_all_result.unwrap();
-        let vhost_queues = list_vhost_result.unwrap();
+        let all_queues = result2.unwrap();
+        let vhost_queues = result3.unwrap();
 
         for name in &names {
             let found_in_all = all_queues.iter().any(|q| q.name == *name);

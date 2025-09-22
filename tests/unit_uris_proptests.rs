@@ -50,7 +50,7 @@ fn arb_query_params() -> impl Strategy<Value = HashMap<String, String>> {
 
 proptest! {
     #[test]
-    fn test_uri_builder_proptest(
+    fn prop_uri_builder(
         host in arb_host(),
         path in arb_path(),
         key in arb_query_key(),
@@ -66,7 +66,7 @@ proptest! {
     }
 
     #[test]
-    fn test_without_query_param_proptest(
+    fn prop_without_query_param(
         host in arb_host(),
         path in arb_path(),
         key in arb_query_key(),
@@ -82,7 +82,7 @@ proptest! {
     }
 
     #[test]
-    fn test_replace_tls_settings_proptest(
+    fn prop_replace_tls_settings(
         host in arb_host(),
         path in arb_path()
     ) {
@@ -105,7 +105,7 @@ proptest! {
     }
 
     #[test]
-    fn test_merge_tls_settings_proptest(
+    fn prop_merge_tls_settings(
         host in arb_host(),
         path in arb_path()
     ) {
@@ -135,7 +135,7 @@ proptest! {
     }
 
     #[test]
-    fn test_with_existing_params_proptest(
+    fn prop_with_existing_params(
         host in arb_host(),
         path in arb_path(),
         initial_params in arb_query_params(),
@@ -160,7 +160,7 @@ proptest! {
     }
 
     #[test]
-    fn test_intentional_percent_decoding_proptest(host in arb_host(), path in arb_path()) {
+    fn prop_intentional_percent_decoding(host in arb_host(), path in arb_path()) {
         let base_uri = format!("amqps://user:pass@{}:5671{}?cacertfile=%2Fpath%2Fto%2Fca.pem", host, path);
         if let Ok(builder) = UriBuilder::new(&base_uri) {
             let result = builder.with_query_param("dummy", "dummy").without_query_param("dummy").build().unwrap();
@@ -225,7 +225,7 @@ proptest! {
     }
 
     #[test]
-    fn test_with_server_name_indication_proptest(
+    fn prop_with_server_name_indication(
         host in arb_host(),
         path in arb_path(),
         sni in arb_hostname()
@@ -240,7 +240,7 @@ proptest! {
     }
 
     #[test]
-    fn test_replace_removes_unspecified_tls_and_preserves_non_tls_proptest(
+    fn prop_replace_removes_unspecified_tls_and_preserves_non_tls(
         host in arb_host(),
         path in arb_path(),
         old_ca in arb_abs_path(),
@@ -306,7 +306,7 @@ proptest! {
     }
 
     #[test]
-    fn test_merge_overrides_and_preserves_tls_and_non_tls_proptest(
+    fn prop_merge_overrides_and_preserves_tls_and_non_tls(
         host in arb_host(),
         path in arb_path(),
         old_ca in arb_abs_path(),
@@ -367,7 +367,7 @@ proptest! {
     }
 
     #[test]
-    fn test_with_tls_peer_verification_proptest(
+    fn prop_with_tls_peer_verification(
         host in arb_host(),
         path in arb_path(),
         enabled in proptest::bool::ANY
@@ -397,7 +397,7 @@ proptest! {
     }
 
     #[test]
-    fn test_last_write_wins_for_same_param_proptest(
+    fn prop_last_write_wins_for_same_param(
         host in arb_host(),
         path in arb_path(),
         first in arb_abs_path(),
@@ -419,7 +419,7 @@ proptest! {
     }
 
     #[test]
-    fn test_as_url_and_query_params_apply_cached_changes_proptest(
+    fn prop_as_url_and_query_params_apply_cached_changes(
         host in arb_host(),
         path in arb_path(),
         key in arb_query_key(),
@@ -442,7 +442,7 @@ proptest! {
     }
 
     #[test]
-    fn test_tls_peer_verification_disabled_on_no_query_uri_proptest(
+    fn prop_tls_peer_verification_disabled_on_no_query_uri(
         host in arb_host(),
         port in 1024u16..65535u16
     ) {
@@ -463,7 +463,7 @@ proptest! {
     }
 
     #[test]
-    fn test_tls_peer_verification_enabled_on_no_query_uri_proptest(
+    fn prop_tls_peer_verification_enabled_on_no_query_uri(
         host in arb_host(),
         port in 1024u16..65535u16
     ) {
@@ -484,7 +484,7 @@ proptest! {
     }
 
     #[test]
-    fn test_tls_ca_cert_only_on_no_query_uri_proptest(
+    fn prop_tls_ca_cert_only_on_no_query_uri(
         host in arb_host(),
         port in 1024u16..65535u16,
         ca_path in arb_abs_path()
@@ -507,7 +507,7 @@ proptest! {
     }
 
     #[test]
-    fn test_tls_client_cert_and_key_on_no_query_uri_proptest(
+    fn prop_tls_client_cert_and_key_on_no_query_uri(
         host in arb_host(),
         port in 1024u16..65535u16,
         cert_path in arb_abs_path(),
@@ -534,7 +534,7 @@ proptest! {
     }
 
     #[test]
-    fn test_adding_tls_params_to_no_query_uri_proptest(
+    fn prop_adding_tls_params_to_no_query_uri(
         host in arb_host(),
         port in 1024u16..65535u16,
         ca_path in arb_abs_path(),
@@ -571,7 +571,7 @@ proptest! {
     }
 
     #[test]
-    fn test_tls_settings_merge_with_disabled_verification_on_no_query_uri_proptest(
+    fn prop_tls_settings_merge_with_disabled_verification_on_no_query_uri(
         host in arb_host(),
         port in 1024u16..65535u16,
         ca_path in arb_abs_path()
@@ -597,7 +597,7 @@ proptest! {
     }
 
     #[test]
-    fn test_tls_settings_replace_with_enabled_verification_on_no_query_uri_proptest(
+    fn prop_tls_settings_replace_with_enabled_verification_on_no_query_uri(
         host in arb_host(),
         port in 1024u16..65535u16,
         cert_path in arb_abs_path(),
@@ -626,7 +626,7 @@ proptest! {
     }
 
     #[test]
-    fn test_tls_sni_hostname_on_no_query_uri_proptest(
+    fn prop_tls_sni_hostname_on_no_query_uri(
         host in arb_host(),
         port in 1024u16..65535u16,
         sni in arb_hostname()
@@ -649,7 +649,7 @@ proptest! {
     }
 
     #[test]
-    fn test_tls_settings_without_verification_on_no_query_uri_proptest(
+    fn prop_tls_settings_without_verification_on_no_query_uri(
         host in arb_host(),
         port in 1024u16..65535u16,
         ca_path in arb_abs_path(),

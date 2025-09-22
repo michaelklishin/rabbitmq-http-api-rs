@@ -52,7 +52,7 @@ fn arb_default_queue_type() -> impl Strategy<Value = Option<QueueType>> {
     ]
 }
 
-fn arb_vhost_params() -> impl Strategy<
+fn arb_vh_params() -> impl Strategy<
     Value = (
         String,
         Option<String>,
@@ -75,7 +75,7 @@ proptest! {
 
     #[test]
     fn prop_blocking_vhost_create_list_delete(
-        (name, description, tags, default_queue_type, tracing) in arb_vhost_params()
+        (name, description, tags, default_queue_type, tracing) in arb_vh_params()
     ) {
         let endpoint = endpoint();
         let client = Client::new(&endpoint, USERNAME, PASSWORD);
@@ -91,32 +91,32 @@ proptest! {
             tracing,
         };
 
-        let create_result = client.create_vhost(&params);
-        prop_assert!(create_result.is_ok(), "Failed to create a virtual host: {create_result:?}");
+        let result1 = client.create_vhost(&params);
+        prop_assert!(result1.is_ok(), "Failed to create a virtual host: {result1:?}");
 
 
-        let list_result = client.list_vhosts();
-        prop_assert!(list_result.is_ok(), "Failed to list virtual hosts: {list_result:?}");
+        let result2 = client.list_vhosts();
+        prop_assert!(result2.is_ok(), "Failed to list virtual hosts: {result2:?}");
 
-        let vhosts = list_result.unwrap();
+        let vhosts = result2.unwrap();
         let found_vhost = vhosts.iter().find(|v| v.name == name);
         prop_assert!(found_vhost.is_some(), "list_vhosts did not include the created vhost: {}", name);
 
         let vhost = found_vhost.unwrap();
         prop_assert_eq!(&vhost.name, &name);
 
-        let get_result = client.get_vhost(&name);
-        prop_assert!(get_result.is_ok(), "Failed to get virtual host info: {get_result:?}");
+        let result3 = client.get_vhost(&name);
+        prop_assert!(result3.is_ok(), "Failed to get virtual host info: {result3:?}");
 
-        let vhost_info = get_result.unwrap();
+        let vhost_info = result3.unwrap();
         prop_assert_eq!(&vhost_info.name, &name);
 
         if let Some(ref desc) = description {
             prop_assert_eq!(vhost_info.description.as_ref(), Some(desc));
         }
 
-        let delete_result = client.delete_vhost(&name, false);
-        prop_assert!(delete_result.is_ok(), "Failed to delete a virtual host: {delete_result:?}");
+        let result4 = client.delete_vhost(&name, false);
+        prop_assert!(result4.is_ok(), "Failed to delete a virtual host: {result4:?}");
     }
 
     #[test]

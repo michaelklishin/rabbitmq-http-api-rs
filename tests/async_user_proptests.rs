@@ -67,14 +67,14 @@ proptest! {
                 tags: &tags,
             };
 
-            let create_result = client.create_user(&params).await;
-            prop_assert!(create_result.is_ok(), "Failed to create user: {create_result:?}");
+            let result1 = client.create_user(&params).await;
+            prop_assert!(result1.is_ok(), "Failed to create user: {result1:?}");
 
 
-            let list_result = client.list_users().await;
-            prop_assert!(list_result.is_ok(), "Failed to list users: {list_result:?}");
+            let result2 = client.list_users().await;
+            prop_assert!(result2.is_ok(), "Failed to list users: {result2:?}");
 
-            let users = list_result.unwrap();
+            let users = result2.unwrap();
             let found_user = users.iter().find(|u| u.name == username);
             prop_assert!(found_user.is_some(), "list_users did not include the created user: {}", username);
 
@@ -82,15 +82,15 @@ proptest! {
             prop_assert_eq!(&user.name, &username);
             prop_assert_eq!(&user.password_hash, &password_hash);
 
-            let get_result = client.get_user(&username).await;
-            prop_assert!(get_result.is_ok(), "Failed to get user info: {get_result:?}");
+            let result3 = client.get_user(&username).await;
+            prop_assert!(result3.is_ok(), "Failed to get user info: {result3:?}");
 
-            let user_info = get_result.unwrap();
+            let user_info = result3.unwrap();
             prop_assert_eq!(&user_info.name, &username);
             prop_assert_eq!(&user_info.password_hash, &password_hash);
 
-            let delete_result = client.delete_user(&username, false).await;
-            prop_assert!(delete_result.is_ok(), "Failed to delete user: {delete_result:?}");
+            let result4 = client.delete_user(&username, false).await;
+            prop_assert!(result4.is_ok(), "Failed to delete user: {result4:?}");
 
             Ok(())
         })?;
@@ -115,14 +115,14 @@ proptest! {
                 tags: "",
             };
 
-            let create_result = client.create_user(&params).await;
-            prop_assert!(create_result.is_ok(), "Failed to create user without permissions: {create_result:?}");
+            let result1 = client.create_user(&params).await;
+            prop_assert!(result1.is_ok(), "Failed to create user without permissions: {result1:?}");
 
 
-            let list_without_permissions_result = client.list_users_without_permissions().await;
-            prop_assert!(list_without_permissions_result.is_ok(), "Failed to list users without permissions: {list_without_permissions_result:?}");
+            let result2 = client.list_users_without_permissions().await;
+            prop_assert!(result2.is_ok(), "Failed to list users without permissions: {result2:?}");
 
-            let users_without_permissions = list_without_permissions_result.unwrap();
+            let users_without_permissions = result2.unwrap();
             let found_user = users_without_permissions.iter().find(|u| u.name == username);
             prop_assert!(found_user.is_some(), "list_users_without_permissions did not include the user: {}", username);
 
@@ -141,8 +141,8 @@ proptest! {
             let endpoint = endpoint();
             let client = Client::new(&endpoint, USERNAME, PASSWORD);
 
-            let delete_nonexistent_result = client.delete_user(&username, true).await;
-            prop_assert!(delete_nonexistent_result.is_ok(), "Idempotent delete of non-existent user should succeed: {delete_nonexistent_result:?}");
+            let result1 = client.delete_user(&username, true).await;
+            prop_assert!(result1.is_ok(), "Idempotent delete of non-existent user should succeed: {result1:?}");
 
             let salt = password_hashing::salt();
             let password_hash = password_hashing::base64_encoded_salted_password_hash_sha256(&salt, "testpassword");
@@ -152,15 +152,15 @@ proptest! {
                 tags: "monitoring",
             };
 
-            let create_result = client.create_user(&params).await;
-            prop_assert!(create_result.is_ok(), "Failed to create user: {create_result:?}");
+            let result2 = client.create_user(&params).await;
+            prop_assert!(result2.is_ok(), "Failed to create user: {result2:?}");
 
 
-            let delete_existing_result = client.delete_user(&username, true).await;
-            prop_assert!(delete_existing_result.is_ok(), "Failed to delete existing user: {delete_existing_result:?}");
+            let result3 = client.delete_user(&username, true).await;
+            prop_assert!(result3.is_ok(), "Failed to delete existing user: {result3:?}");
 
-            let delete_again_result = client.delete_user(&username, true).await;
-            prop_assert!(delete_again_result.is_ok(), "Second idempotent delete should succeed: {delete_again_result:?}");
+            let result4 = client.delete_user(&username, true).await;
+            prop_assert!(result4.is_ok(), "Second idempotent delete should succeed: {result4:?}");
 
             Ok(())
         })?;
@@ -188,29 +188,29 @@ proptest! {
                     tags: "monitoring",
                 };
 
-                let create_result = client.create_user(&params).await;
-                prop_assert!(create_result.is_ok(), "Failed to create user {}: {create_result:?}", username);
+                let result1 = client.create_user(&params).await;
+                prop_assert!(result1.is_ok(), "Failed to create user {}: {result1:?}", username);
             }
 
 
-            let list_result = client.list_users().await;
-            prop_assert!(list_result.is_ok(), "Failed to list users: {list_result:?}");
+            let result2 = client.list_users().await;
+            prop_assert!(result2.is_ok(), "Failed to list users: {result2:?}");
 
-            let users = list_result.unwrap();
+            let users = result2.unwrap();
             for username in &usernames {
                 let found_user = users.iter().any(|u| u.name == *username);
                 prop_assert!(found_user, "list_users did not include the created user {}", username);
             }
 
             let usernames_ref: Vec<&str> = usernames.iter().map(|s| s.as_str()).collect();
-            let bulk_delete_result = client.delete_users(usernames_ref).await;
-            prop_assert!(bulk_delete_result.is_ok(), "Failed to bulk delete users: {bulk_delete_result:?}");
+            let result3 = client.delete_users(usernames_ref).await;
+            prop_assert!(result3.is_ok(), "Failed to bulk delete users: {result3:?}");
 
 
-            let list_after_delete_result = client.list_users().await;
-            prop_assert!(list_after_delete_result.is_ok(), "Failed to list users after bulk delete: {list_after_delete_result:?}");
+            let result4 = client.list_users().await;
+            prop_assert!(result4.is_ok(), "Failed to list users after bulk delete: {result4:?}");
 
-            let users_after_delete = list_after_delete_result.unwrap();
+            let users_after_delete = result4.unwrap();
             for username in &usernames {
                 let found_user = users_after_delete.iter().any(|u| u.name == *username);
                 prop_assert!(!found_user, "list_users still includes deleted user {}", username);
@@ -242,15 +242,15 @@ proptest! {
                     tags: "administrator",
                 };
 
-                let create_result = client.create_user(&params).await;
-                prop_assert!(create_result.is_ok(), "Failed to create user {}: {create_result:?}", username);
+                let result1 = client.create_user(&params).await;
+                prop_assert!(result1.is_ok(), "Failed to create user {}: {result1:?}", username);
             }
 
 
-            let list_result = client.list_users().await;
-            prop_assert!(list_result.is_ok(), "Failed to list users: {list_result:?}");
+            let result2 = client.list_users().await;
+            prop_assert!(result2.is_ok(), "Failed to list users: {result2:?}");
 
-            let users = list_result.unwrap();
+            let users = result2.unwrap();
 
             for username in &usernames {
                 let found_user = users.iter().any(|u| u.name == *username);
@@ -274,10 +274,10 @@ proptest! {
             let endpoint = endpoint();
             let client = Client::new(&endpoint, USERNAME, PASSWORD);
 
-            let current_user_result = client.current_user().await;
-            prop_assert!(current_user_result.is_ok(), "Failed to get current user info: {current_user_result:?}");
+            let result1 = client.current_user().await;
+            prop_assert!(result1.is_ok(), "Failed to get current user info: {result1:?}");
 
-            let current_user = current_user_result.unwrap();
+            let current_user = result1.unwrap();
             prop_assert_eq!(current_user.name, USERNAME.to_string());
 
             Ok(())
