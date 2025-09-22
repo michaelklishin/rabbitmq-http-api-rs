@@ -676,6 +676,63 @@ proptest! {
             assert_eq!(params.len(), 3);
         }
     }
+
+    #[test]
+    fn prop_multiple_peer_verification_updates_final_disabled(
+        host in arb_host(),
+        path in arb_path()
+    ) {
+        let base_uri = format!("amqps://user:pass@{}:5671{}", host, path);
+        if let Ok(builder) = UriBuilder::new(&base_uri) {
+            let result = builder
+                .with_tls_peer_verification(TlsPeerVerificationMode::Enabled)
+                .with_tls_peer_verification(TlsPeerVerificationMode::Disabled)
+                .with_tls_peer_verification(TlsPeerVerificationMode::Enabled)
+                .with_tls_peer_verification(TlsPeerVerificationMode::Disabled)
+                .build()
+                .unwrap();
+
+            let url = Url::parse(&result).unwrap();
+            let params: HashMap<_, _> = url.query_pairs().into_owned().collect();
+            assert_eq!(
+                params.get(UriBuilder::PEER_VERIFICATION_MODE_KEY),
+                Some(&TlsPeerVerificationMode::Disabled.as_ref().to_string())
+            );
+            assert!(result.contains("verify=verify_none"));
+
+            // Verify that the verify key appears exactly once in the query string
+            let verify_count = result.matches("verify=").count();
+            assert_eq!(verify_count, 1, "verify parameter should appear exactly once in query string");
+        }
+    }
+
+    #[test]
+    fn prop_multiple_peer_verification_updates_final_enabled(
+        host in arb_host(),
+        path in arb_path()
+    ) {
+        let base_uri = format!("amqps://user:pass@{}:5671{}", host, path);
+        if let Ok(builder) = UriBuilder::new(&base_uri) {
+            let result = builder
+                .with_tls_peer_verification(TlsPeerVerificationMode::Disabled)
+                .with_tls_peer_verification(TlsPeerVerificationMode::Enabled)
+                .with_tls_peer_verification(TlsPeerVerificationMode::Disabled)
+                .with_tls_peer_verification(TlsPeerVerificationMode::Enabled)
+                .build()
+                .unwrap();
+
+            let url = Url::parse(&result).unwrap();
+            let params: HashMap<_, _> = url.query_pairs().into_owned().collect();
+            assert_eq!(
+                params.get(UriBuilder::PEER_VERIFICATION_MODE_KEY),
+                Some(&TlsPeerVerificationMode::Enabled.as_ref().to_string())
+            );
+            assert!(result.contains("verify=verify_peer"));
+
+            let verify_count = result.matches("verify=").count();
+            assert_eq!(verify_count, 1, "verify parameter should appear exactly once in query string");
+        }
+    }
 }
 
 #[test]
