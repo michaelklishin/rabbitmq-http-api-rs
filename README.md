@@ -6,7 +6,9 @@ This is not an AMQP 0-9-1 client (see [amqprs](https://github.com/gftea/amqprs))
 
 ## Project Maturity
 
-This library is relatively young, breaking API changes are possible.
+This library is reasonably mature.
+
+Before `1.0.0`, breaking API changes are can and will be introduced.
 
 ## Supported RabbitMQ Series
 
