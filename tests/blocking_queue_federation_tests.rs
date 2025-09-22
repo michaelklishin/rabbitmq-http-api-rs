@@ -66,11 +66,9 @@ fn test_blocking_federation_upstream_fetch_and_update_workflow() {
         queue_params,
     );
 
-    // Step 1: Declare the original upstream
     let result2 = rc.declare_federation_upstream(original_upstream_params);
     assert!(result2.is_ok());
 
-    // Step 2: Fetch the upstream back as FederationUpstream
     let upstreams = rc.list_federation_upstreams();
     assert!(upstreams.is_ok());
     let upstreams_list = upstreams.unwrap();
@@ -79,10 +77,8 @@ fn test_blocking_federation_upstream_fetch_and_update_workflow() {
         .find(|u| u.name == upstream_name && u.vhost == vh)
         .expect("Recently reated upstream was not found");
 
-    // Step 3: Convert to OwnedFederationUpstreamParams
     let owned_params = OwnedFederationUpstreamParams::from(fetched_upstream.clone());
 
-    // Verify the conversion worked correctly
     assert_eq!(owned_params.name, upstream_name);
     assert_eq!(owned_params.vhost, vh);
     assert_eq!(owned_params.uri, amqp_endpoint);
@@ -91,25 +87,21 @@ fn test_blocking_federation_upstream_fetch_and_update_workflow() {
         MessageTransferAcknowledgementMode::WhenConfirmed
     );
 
-    // Step 4: Modify some parameters
     let mut modified_params = owned_params;
     modified_params.ack_mode = MessageTransferAcknowledgementMode::WhenPublished;
     modified_params.trust_user_id = true;
     modified_params.reconnect_delay = 15;
     modified_params.prefetch_count = 2000;
 
-    // Modify queue federation params
     if let Some(ref mut queue_fed) = modified_params.queue_federation {
         queue_fed.queue = Some("updated-queue".to_string());
         queue_fed.consumer_tag = Some("updated-consumer-tag".to_string());
     }
 
-    // Step 5: Convert back to FederationUpstreamParams and update
     let updated_upstream_params = FederationUpstreamParams::from(&modified_params);
     let result3 = rc.declare_federation_upstream(updated_upstream_params);
     assert!(result3.is_ok());
 
-    // Step 6: Fetch again to verify the update
     let updated_upstreams = rc.list_federation_upstreams();
     assert!(updated_upstreams.is_ok());
     let updated_upstreams_list = updated_upstreams.unwrap();
@@ -117,8 +109,6 @@ fn test_blocking_federation_upstream_fetch_and_update_workflow() {
         .iter()
         .find(|u| u.name == upstream_name && u.vhost == vh)
         .expect("Should find the updated upstream");
-
-    // Verify the updates were applied
     assert_eq!(
         updated_upstream.ack_mode,
         MessageTransferAcknowledgementMode::WhenPublished
@@ -155,11 +145,9 @@ fn test_blocking_exchange_federation_upstream_fetch_and_update_workflow() {
         exchange_params,
     );
 
-    // Step 1: Declare the original upstream
     let result2 = rc.declare_federation_upstream(original_upstream_params);
     assert!(result2.is_ok());
 
-    // Step 2: Fetch the upstream back as FederationUpstream
     let upstreams = rc.list_federation_upstreams();
     assert!(upstreams.is_ok());
     let upstreams_list = upstreams.unwrap();
@@ -168,33 +156,27 @@ fn test_blocking_exchange_federation_upstream_fetch_and_update_workflow() {
         .find(|u| u.name == upstream_name && u.vhost == vh)
         .expect("Recently reated upstream was not found");
 
-    // Step 3: Convert to OwnedFederationUpstreamParams
     let owned_params = OwnedFederationUpstreamParams::from(fetched_upstream.clone());
 
-    // Verify the conversion worked correctly
     assert_eq!(owned_params.name, upstream_name);
     assert_eq!(owned_params.vhost, vh);
     assert_eq!(owned_params.uri, amqp_endpoint);
 
-    // Step 4: Modify some parameters
     let mut modified_params = owned_params;
     modified_params.ack_mode = MessageTransferAcknowledgementMode::Immediate;
     modified_params.trust_user_id = false;
     modified_params.reconnect_delay = 20;
 
-    // Modify exchange federation params
     if let Some(ref mut exchange_fed) = modified_params.exchange_federation {
         exchange_fed.exchange = Some("updated-exchange".to_string());
         exchange_fed.max_hops = Some(3);
         exchange_fed.queue_type = QueueType::Classic;
     }
 
-    // Step 5: Convert back to FederationUpstreamParams and update
     let updated_upstream_params = FederationUpstreamParams::from(&modified_params);
     let result3 = rc.declare_federation_upstream(updated_upstream_params);
     assert!(result3.is_ok());
 
-    // Step 6: Fetch again to verify the update
     let updated_upstreams = rc.list_federation_upstreams();
     assert!(updated_upstreams.is_ok());
     let updated_upstreams_list = updated_upstreams.unwrap();
@@ -202,8 +184,6 @@ fn test_blocking_exchange_federation_upstream_fetch_and_update_workflow() {
         .iter()
         .find(|u| u.name == upstream_name && u.vhost == vh)
         .expect("Should find the updated upstream");
-
-    // Verify the updates were applied
     assert_eq!(
         updated_upstream.ack_mode,
         MessageTransferAcknowledgementMode::Immediate

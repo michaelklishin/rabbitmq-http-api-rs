@@ -31,7 +31,6 @@ fn test_blocking_declare_and_redeclare_a_classic_queue() {
 
     let mut map = Map::<String, Value>::new();
     map.insert("x-max-length".to_owned(), json!(10_000));
-    // note: x-queue-type will be injected by QueueParams::new_durable_classic_queue
     let optional_args = Some(map);
     let params = QueueParams::new_durable_classic_queue(name, optional_args.clone());
     let result2 = rc.declare_queue(vhost, &params);
@@ -173,7 +172,6 @@ pub fn test_blocking_list_queues_with_details() {
         "Expected at least one queue in detailed list"
     );
 
-    // Find our test queue in the results
     let test_queue = detailed_queues.iter().find(|q| q.name == params.name);
     assert!(
         test_queue.is_some(),
@@ -181,12 +179,9 @@ pub fn test_blocking_list_queues_with_details() {
     );
 
     let queue = test_queue.unwrap();
-    // Verify basic queue properties are present
     assert_eq!(queue.name, params.name);
     assert_eq!(queue.vhost, vh_name);
     assert_eq!(queue.durable, true);
-
-    // More fields
     if let Some(gc) = &queue.garbage_collection {
         assert!(gc.fullsweep_after > 1000);
     }

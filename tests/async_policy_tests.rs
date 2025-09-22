@@ -221,48 +221,40 @@ async fn test_async_multiple_operator_policies_case1() {
 //
 
 async fn test_a_policy(rc: &Client<&str, &str, &str>, policy: &PolicyParams<'_>) {
-    // initially, there should be no such policy
     let policies = rc.list_policies_in(policy.vhost).await.unwrap();
     assert!(!policies.iter().any(|p| p.name == policy.name));
 
     let result = rc.declare_policy(policy).await;
     assert!(result.is_ok(), "declare_policy returned {result:?}");
 
-    // validate it was created as expected
     let fetched_policy = rc.get_policy(policy.vhost, policy.name).await.unwrap();
     assert_eq!(fetched_policy.definition.0.unwrap(), policy.definition);
 
-    // delete it
     assert!(rc.delete_policy(policy.vhost, policy.name).await.is_ok());
 
-    // there should be no such policy anymore
     let policies = rc.list_policies().await.unwrap();
     assert!(!policies.iter().any(|p| p.name == policy.name));
 }
 
 async fn test_an_operator_policy(rc: &Client<&str, &str, &str>, policy: &PolicyParams<'_>) {
-    // initially, there should be no such policy
     let policies = rc.list_operator_policies_in(policy.vhost).await.unwrap();
     assert!(!policies.iter().any(|p| p.name == policy.name));
 
     let result = rc.declare_operator_policy(policy).await;
     assert!(result.is_ok(), "declare_policy returned {result:?}");
 
-    // validate it was created as expected
     let fetched_policy = rc
         .get_operator_policy(policy.vhost, policy.name)
         .await
         .unwrap();
     assert_eq!(fetched_policy.definition.0.unwrap(), policy.definition);
 
-    // delete it
     assert!(
         rc.delete_operator_policy(policy.vhost, policy.name)
             .await
             .is_ok()
     );
 
-    // there should be no such policy anymore
     let policies = rc.list_operator_policies().await.unwrap();
     assert!(!policies.iter().any(|p| p.name == policy.name));
 }

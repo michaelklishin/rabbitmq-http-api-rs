@@ -300,7 +300,6 @@ fn test_blocking_declare_topic_permissions() {
         "declare_topic_permissions returned {result:?}"
     );
 
-    // Verify that the topic permissions are set
     let topic_permissions = rc.list_topic_permissions_of("guest").unwrap();
     assert!(topic_permissions.iter().any(|p| p.vhost == vh_params.name
         && p.exchange == "amq.topic"
@@ -333,7 +332,6 @@ fn test_blocking_clear_topic_permissions() {
         "declare_topic_permissions returned {result:?}"
     );
 
-    // Verify that the topic permissions are set
     let topic_permissions = rc.list_topic_permissions_of("guest").unwrap();
     assert!(topic_permissions.iter().any(|p| p.vhost == vh_params.name
         && p.exchange == "amq.topic"
@@ -346,7 +344,6 @@ fn test_blocking_clear_topic_permissions() {
         "clear_topic_permissions returned {result2:?}"
     );
 
-    // Verify that the topic permissions are cleared
     let topic_permissions_after_clear = rc.list_topic_permissions_of("guest").unwrap();
     assert!(
         !topic_permissions_after_clear

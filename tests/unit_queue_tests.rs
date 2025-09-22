@@ -357,7 +357,6 @@ fn test_unit_queue_info_policy_matching_case2() {
     }"#;
     let cq = serde_json::from_str::<QueueInfo>(input).unwrap();
 
-    // names do not match
     assert!(!cq.does_match(&p));
     assert!(!p.does_match_object(&cq));
 }
@@ -371,7 +370,6 @@ fn test_unit_queue_info_policy_matching_case3() {
         name: "policy.2".to_owned(),
         vhost: "/".to_owned(),
         pattern: r"^events\.".to_owned(),
-        // won't match a classic queue
         apply_to: PolicyTarget::QuorumQueues,
         priority: 11,
         definition: defs.clone(),
@@ -425,7 +423,6 @@ fn test_unit_queue_info_policy_matching_case3() {
     }"#;
     let cq = serde_json::from_str::<QueueInfo>(input).unwrap();
 
-    // policy target does not match
     assert!(!cq.does_match(&p));
     assert!(!p.does_match_object(&cq));
 }
@@ -439,7 +436,6 @@ fn test_unit_queue_info_policy_matching_case4() {
         name: "policy.3".to_owned(),
         vhost: "vh-1".to_owned(),
         pattern: r"^events\.".to_owned(),
-        // won't match a classic queue
         apply_to: PolicyTarget::QuorumQueues,
         priority: 11,
         definition: defs.clone(),
@@ -493,7 +489,6 @@ fn test_unit_queue_info_policy_matching_case4() {
     }"#;
     let cq = serde_json::from_str::<QueueInfo>(input).unwrap();
 
-    // virtual hosts do not match
     assert!(!cq.does_match(&p));
     assert!(!p.does_match_object(&cq));
 }
