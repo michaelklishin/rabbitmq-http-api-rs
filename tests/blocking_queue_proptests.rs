@@ -14,38 +14,32 @@
 
 mod test_helpers;
 
+use crate::test_helpers::{PASSWORD, USERNAME, endpoint};
 use proptest::prelude::*;
 use proptest::test_runner::Config as ProptestConfig;
 use rabbitmq_http_client::{blocking_api::Client, commons::QueueType, requests::QueueParams};
 use serde_json::{Map, Value, json};
-use crate::test_helpers::{PASSWORD, USERNAME, endpoint};
 
 fn arb_queue_name() -> impl Strategy<Value = String> {
-    prop::string::string_regex(r"rust\.tests\.blocking\.proptest\.[a-zA-Z0-9_-]{8,20}")
-        .unwrap()
+    prop::string::string_regex(r"rust\.tests\.blocking\.proptest\.[a-zA-Z0-9_-]{8,20}").unwrap()
 }
 
-fn arb_classic_queue_params() -> impl Strategy<Value = (String, bool, bool, Option<Map<String, Value>>)> {
+fn arb_classic_queue_params()
+-> impl Strategy<Value = (String, bool, bool, Option<Map<String, Value>>)> {
     (
         arb_queue_name(),
         any::<bool>(), // durable
         any::<bool>(), // auto_delete
-        arb_optional_args()
+        arb_optional_args(),
     )
 }
 
 fn arb_quorum_queue_params() -> impl Strategy<Value = (String, Option<Map<String, Value>>)> {
-    (
-        arb_queue_name(),
-        arb_optional_args()
-    )
+    (arb_queue_name(), arb_optional_args())
 }
 
 fn arb_stream_params() -> impl Strategy<Value = (String, u64)> {
-    (
-        arb_queue_name(),
-        arb_max_length_bytes()
-    )
+    (arb_queue_name(), arb_max_length_bytes())
 }
 
 fn arb_message_ttl() -> impl Strategy<Value = u64> {
