@@ -45,6 +45,13 @@ They have very similar APIs except that all functions of the async client are, w
  * `tests/*proptests.rs` are property-based tests
  * `tests/test_helpers.rs` contains helper functions shared by multiple test modules
 
+### Property-based Tests
+
+Property-based tests are written using [proptest](https://docs.rs/proptest/latest/proptest/) and
+use a naming convention: they begin with `prop_`.
+
+To run the property-based tests specifically, use `cargo nextest run --all-features -- --show-output`.
+
 ## Source of Domain Knowledge
 
  * [RabbitMQ HTTP API](https://www.rabbitmq.com/docs/http-api-reference)
