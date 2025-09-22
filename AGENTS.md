@@ -29,19 +29,20 @@ They have very similar APIs except that all functions of the async client are, w
 
 ## Key Files
 
- * Async client: `src/api.rs`
- * Blocking client: `src/blocking_api.rs`
+ * Async client: `src/api/*.rs`
+ * Blocking client: `src/blocking_api/*.rs`
  * Error types: `src/error.rs` 
- * HTTP API request types: `src/requests.rs`, `src/requests/*.rs`
- * HTTP API response types: `src/responses.rs`
+ * HTTP API request types: `src/requests/*.rs`
+ * HTTP API response types: `src/responses/*.rs`
  * Types shared between requests and responses: `src/commons.rs`
  * Definition transformations: `src/transformers.rs`
 
 ## Test Suite Layout
 
- * `tests/async*.rs` test modules test the async client
- * `tests/blocking*.rs` test modules test the blocking client
+ * `tests/async*.rs` test modules test the async client, use a Tokio runtime and `async` functions
+ * `tests/blocking*.rs` test modules test the blocking client and regular (non-`async`) functions
  * `tests/unit*.rs` modules are for unit tests
+ * `tests/*proptests.rs` are property-based tests
  * `tests/test_helpers.rs` contains helper functions shared by multiple test modules
 
 ## Source of Domain Knowledge
