@@ -13,7 +13,6 @@
 // limitations under the License.
 
 use crate::commons::{Username, VirtualHostName};
-use crate::formatting::*;
 use serde::Deserialize;
 
 #[cfg(feature = "tabled")]

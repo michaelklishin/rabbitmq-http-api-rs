@@ -21,7 +21,6 @@ use crate::commons::{
     ChannelUseMode, MessageTransferAcknowledgementMode, QueueType, VirtualHostName,
 };
 use crate::error::ConversionError;
-use crate::formatting::*;
 use crate::requests::federation::FederationResourceCleanupMode;
 use crate::responses::RuntimeParameter;
 

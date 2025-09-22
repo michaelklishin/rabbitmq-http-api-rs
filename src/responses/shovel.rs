@@ -17,7 +17,6 @@ use std::fmt;
 #[cfg(feature = "tabled")]
 use tabled::Tabled;
 
-use crate::formatting::*;
 use crate::responses::MessagingProtocol;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]

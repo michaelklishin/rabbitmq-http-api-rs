@@ -15,7 +15,6 @@
 use std::fmt;
 
 use crate::commons::{PolicyTarget, QueueType, VirtualHostName};
-use crate::formatting::*;
 use crate::responses::{
     ConnectionDetails, NodeList, Rate,
     cluster::GarbageCollectionDetails,
