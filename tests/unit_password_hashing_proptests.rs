@@ -16,8 +16,8 @@ use proptest::prelude::*;
 use proptest::test_runner::Config as ProptestConfig;
 use rabbitmq_http_client::password_hashing::{
     HashingAlgorithm, base64_encoded_salted_password_hash,
-    base64_encoded_salted_password_hash_sha256, base64_encoded_salted_password_hash_sha512,
-    salted_password_hash_sha256, salted_password_hash_sha512, salt,
+    base64_encoded_salted_password_hash_sha256, base64_encoded_salted_password_hash_sha512, salt,
+    salted_password_hash_sha256, salted_password_hash_sha512,
 };
 
 fn arb_password() -> impl Strategy<Value = String> {
