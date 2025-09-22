@@ -2,3 +2,6 @@
 default-filter = "all()"
 retries = 2
 test-threads = 1
+
+failure-output = "final"
+fail-fast = false
