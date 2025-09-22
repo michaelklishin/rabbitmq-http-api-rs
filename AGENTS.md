@@ -45,6 +45,9 @@ They have very similar APIs except that all functions of the async client are, w
  * `tests/*proptests.rs` are property-based tests
  * `tests/test_helpers.rs` contains helper functions shared by multiple test modules
 
+Use `cargo nextest run --profile default --all-features '--' --exact [test module name]` to run
+all tests in a specific module.
+
 ### Property-based Tests
 
 Property-based tests are written using [proptest](https://docs.rs/proptest/latest/proptest/) and
