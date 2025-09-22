@@ -15,6 +15,8 @@
 use std::fmt;
 
 use crate::commons::{PolicyTarget, QueueType, VirtualHostName};
+#[cfg(feature = "tabled")]
+use crate::formatting::{display_arg_table, display_option};
 use crate::responses::{
     ConnectionDetails, NodeList, Rate,
     cluster::GarbageCollectionDetails,

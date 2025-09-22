@@ -13,6 +13,8 @@
 // limitations under the License.
 
 use crate::commons::{Username, VirtualHostName};
+#[cfg(feature = "tabled")]
+use crate::formatting::display_option;
 use serde::{Deserialize, Serialize};
 use serde_json::Map;
 

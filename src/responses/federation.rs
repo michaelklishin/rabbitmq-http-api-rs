@@ -21,6 +21,8 @@ use crate::commons::{
     ChannelUseMode, MessageTransferAcknowledgementMode, QueueType, VirtualHostName,
 };
 use crate::error::ConversionError;
+#[cfg(feature = "tabled")]
+use crate::formatting::display_option;
 use crate::requests::federation::FederationResourceCleanupMode;
 use crate::responses::RuntimeParameter;
 
