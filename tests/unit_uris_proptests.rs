@@ -440,4 +440,352 @@ proptest! {
             assert_eq!(params_map.get(&key), Some(&value));
         }
     }
+
+    #[test]
+    fn test_tls_peer_verification_disabled_on_no_query_uri_proptest(
+        host in arb_host(),
+        port in 1024u16..65535u16
+    ) {
+        let base_uri = format!("amqps://{}:{}", host, port);
+        if let Ok(builder) = UriBuilder::new(&base_uri) {
+            let result = builder
+                .with_tls_peer_verification(TlsPeerVerificationMode::Disabled)
+                .build()
+                .unwrap();
+
+            assert!(result.contains("?"));
+            assert!(result.contains("verify=verify_none"));
+
+            let url = Url::parse(&result).unwrap();
+            let params: HashMap<_, _> = url.query_pairs().into_owned().collect();
+            assert_eq!(params.get("verify"), Some(&TlsPeerVerificationMode::Disabled.as_ref().to_string()));
+        }
+    }
+
+    #[test]
+    fn test_tls_peer_verification_enabled_on_no_query_uri_proptest(
+        host in arb_host(),
+        port in 1024u16..65535u16
+    ) {
+        let base_uri = format!("amqps://{}:{}", host, port);
+        if let Ok(builder) = UriBuilder::new(&base_uri) {
+            let result = builder
+                .with_tls_peer_verification(TlsPeerVerificationMode::Enabled)
+                .build()
+                .unwrap();
+
+            assert!(result.contains("?"));
+            assert!(result.contains("verify=verify_peer"));
+
+            let url = Url::parse(&result).unwrap();
+            let params: HashMap<_, _> = url.query_pairs().into_owned().collect();
+            assert_eq!(params.get("verify"), Some(&TlsPeerVerificationMode::Enabled.as_ref().to_string()));
+        }
+    }
+
+    #[test]
+    fn test_tls_ca_cert_only_on_no_query_uri_proptest(
+        host in arb_host(),
+        port in 1024u16..65535u16,
+        ca_path in arb_abs_path()
+    ) {
+        let base_uri = format!("amqps://{}:{}", host, port);
+        if let Ok(builder) = UriBuilder::new(&base_uri) {
+            let result = builder
+                .with_ca_cert_file(&ca_path)
+                .build()
+                .unwrap();
+
+            assert!(result.contains("?"));
+            assert!(result.contains(&format!("cacertfile={}", ca_path)));
+
+            let url = Url::parse(&result).unwrap();
+            let params: HashMap<_, _> = url.query_pairs().into_owned().collect();
+            assert_eq!(params.get("cacertfile"), Some(&ca_path));
+            assert_eq!(params.len(), 1);
+        }
+    }
+
+    #[test]
+    fn test_tls_client_cert_and_key_on_no_query_uri_proptest(
+        host in arb_host(),
+        port in 1024u16..65535u16,
+        cert_path in arb_abs_path(),
+        key_path in arb_abs_path()
+    ) {
+        let base_uri = format!("amqps://{}:{}", host, port);
+        if let Ok(builder) = UriBuilder::new(&base_uri) {
+            let result = builder
+                .with_client_cert_file(&cert_path)
+                .with_client_key_file(&key_path)
+                .build()
+                .unwrap();
+
+            assert!(result.contains("?"));
+            assert!(result.contains(&format!("certfile={}", cert_path)));
+            assert!(result.contains(&format!("keyfile={}", key_path)));
+
+            let url = Url::parse(&result).unwrap();
+            let params: HashMap<_, _> = url.query_pairs().into_owned().collect();
+            assert_eq!(params.get("certfile"), Some(&cert_path));
+            assert_eq!(params.get("keyfile"), Some(&key_path));
+            assert_eq!(params.len(), 2);
+        }
+    }
+
+    #[test]
+    fn test_adding_tls_params_to_no_query_uri_proptest(
+        host in arb_host(),
+        port in 1024u16..65535u16,
+        ca_path in arb_abs_path(),
+        cert_path in arb_abs_path(),
+        key_path in arb_abs_path(),
+        sni in arb_hostname()
+    ) {
+        let base_uri = format!("amqps://{}:{}", host, port);
+        if let Ok(builder) = UriBuilder::new(&base_uri) {
+            let result = builder
+                .with_tls_peer_verification(TlsPeerVerificationMode::Enabled)
+                .with_ca_cert_file(&ca_path)
+                .with_client_cert_file(&cert_path)
+                .with_client_key_file(&key_path)
+                .with_server_name_indication(&sni)
+                .build()
+                .unwrap();
+
+            assert!(result.contains("?"));
+            assert!(result.contains("verify=verify_peer"));
+            assert!(result.contains(&format!("cacertfile={}", ca_path)));
+            assert!(result.contains(&format!("certfile={}", cert_path)));
+            assert!(result.contains(&format!("keyfile={}", key_path)));
+            assert!(result.contains(&format!("server_name_indication={}", sni)));
+
+            let url = Url::parse(&result).unwrap();
+            let params: HashMap<_, _> = url.query_pairs().into_owned().collect();
+            assert_eq!(params.get("verify"), Some(&TlsPeerVerificationMode::Enabled.as_ref().to_string()));
+            assert_eq!(params.get("cacertfile"), Some(&ca_path));
+            assert_eq!(params.get("certfile"), Some(&cert_path));
+            assert_eq!(params.get("keyfile"), Some(&key_path));
+            assert_eq!(params.get("server_name_indication"), Some(&sni));
+        }
+    }
+
+    #[test]
+    fn test_tls_settings_merge_with_disabled_verification_on_no_query_uri_proptest(
+        host in arb_host(),
+        port in 1024u16..65535u16,
+        ca_path in arb_abs_path()
+    ) {
+        let base_uri = format!("amqps://{}:{}", host, port);
+        if let Ok(builder) = UriBuilder::new(&base_uri) {
+            let settings = TlsClientSettings::new()
+                .peer_verification(TlsPeerVerificationMode::Disabled)
+                .ca_cert_file(&ca_path);
+
+            let result = builder.merge(settings).build().unwrap();
+
+            assert!(result.contains("?"));
+            assert!(result.contains("verify=verify_none"));
+            assert!(result.contains(&format!("cacertfile={}", ca_path)));
+
+            let url = Url::parse(&result).unwrap();
+            let params: HashMap<_, _> = url.query_pairs().into_owned().collect();
+            assert_eq!(params.get("verify"), Some(&TlsPeerVerificationMode::Disabled.as_ref().to_string()));
+            assert_eq!(params.get("cacertfile"), Some(&ca_path));
+            assert_eq!(params.len(), 2);
+        }
+    }
+
+    #[test]
+    fn test_tls_settings_replace_with_enabled_verification_on_no_query_uri_proptest(
+        host in arb_host(),
+        port in 1024u16..65535u16,
+        cert_path in arb_abs_path(),
+        key_path in arb_abs_path()
+    ) {
+        let base_uri = format!("amqps://{}:{}", host, port);
+        if let Ok(builder) = UriBuilder::new(&base_uri) {
+            let settings = TlsClientSettings::with_verification()
+                .client_cert_file(&cert_path)
+                .client_key_file(&key_path);
+
+            let result = builder.replace(settings).build().unwrap();
+
+            assert!(result.contains("?"));
+            assert!(result.contains("verify=verify_peer"));
+            assert!(result.contains(&format!("certfile={}", cert_path)));
+            assert!(result.contains(&format!("keyfile={}", key_path)));
+
+            let url = Url::parse(&result).unwrap();
+            let params: HashMap<_, _> = url.query_pairs().into_owned().collect();
+            assert_eq!(params.get("verify"), Some(&TlsPeerVerificationMode::Enabled.as_ref().to_string()));
+            assert_eq!(params.get("certfile"), Some(&cert_path));
+            assert_eq!(params.get("keyfile"), Some(&key_path));
+            assert_eq!(params.len(), 3);
+        }
+    }
+
+    #[test]
+    fn test_tls_sni_hostname_on_no_query_uri_proptest(
+        host in arb_host(),
+        port in 1024u16..65535u16,
+        sni in arb_hostname()
+    ) {
+        let base_uri = format!("amqps://{}:{}", host, port);
+        if let Ok(builder) = UriBuilder::new(&base_uri) {
+            let result = builder
+                .with_server_name_indication(&sni)
+                .build()
+                .unwrap();
+
+            assert!(result.contains("?"));
+            assert!(result.contains(&format!("server_name_indication={}", sni)));
+
+            let url = Url::parse(&result).unwrap();
+            let params: HashMap<_, _> = url.query_pairs().into_owned().collect();
+            assert_eq!(params.get("server_name_indication"), Some(&sni));
+            assert_eq!(params.len(), 1);
+        }
+    }
+
+    #[test]
+    fn test_tls_settings_without_verification_on_no_query_uri_proptest(
+        host in arb_host(),
+        port in 1024u16..65535u16,
+        ca_path in arb_abs_path(),
+        sni in arb_hostname()
+    ) {
+        let base_uri = format!("amqps://{}:{}", host, port);
+        if let Ok(builder) = UriBuilder::new(&base_uri) {
+            let settings = TlsClientSettings::without_verification()
+                .ca_cert_file(&ca_path)
+                .server_name_indication(&sni);
+
+            let result = builder.replace(settings).build().unwrap();
+
+            assert!(result.contains("?"));
+            assert!(result.contains("verify=verify_none"));
+            assert!(result.contains(&format!("cacertfile={}", ca_path)));
+            assert!(result.contains(&format!("server_name_indication={}", sni)));
+
+            let url = Url::parse(&result).unwrap();
+            let params: HashMap<_, _> = url.query_pairs().into_owned().collect();
+            assert_eq!(params.get("verify"), Some(&TlsPeerVerificationMode::Disabled.as_ref().to_string()));
+            assert_eq!(params.get("cacertfile"), Some(&ca_path));
+            assert_eq!(params.get("server_name_indication"), Some(&sni));
+            assert_eq!(params.len(), 3);
+        }
+    }
+}
+
+#[test]
+fn test_tls_peer_verification_disabled_on_no_query_uri() {
+    let base_uri = "amqps://localhost:5671";
+    let uri = UriBuilder::new(base_uri)
+        .unwrap()
+        .with_tls_peer_verification(TlsPeerVerificationMode::Disabled)
+        .build()
+        .unwrap();
+
+    assert!(uri.contains("verify=verify_none"));
+    assert!(uri.contains("?"));
+    assert_eq!(uri, "amqps://localhost:5671?verify=verify_none");
+}
+
+#[test]
+fn test_tls_peer_verification_enabled_on_no_query_uri() {
+    let base_uri = "amqps://localhost:5671";
+    let uri = UriBuilder::new(base_uri)
+        .unwrap()
+        .with_tls_peer_verification(TlsPeerVerificationMode::Enabled)
+        .build()
+        .unwrap();
+
+    assert!(uri.contains("verify=verify_peer"));
+    assert!(uri.contains("?"));
+    assert_eq!(uri, "amqps://localhost:5671?verify=verify_peer");
+}
+
+#[test]
+fn test_tls_ca_cert_file_on_no_query_uri() {
+    let base_uri = "amqps://user:pass@localhost:5671/vhost";
+    let uri = UriBuilder::new(base_uri)
+        .unwrap()
+        .with_ca_cert_file("/path/to/ca.pem")
+        .build()
+        .unwrap();
+
+    assert!(uri.contains("cacertfile=/path/to/ca.pem"));
+    assert!(uri.contains("?"));
+    assert_eq!(
+        uri,
+        "amqps://user:pass@localhost:5671/vhost?cacertfile=/path/to/ca.pem"
+    );
+}
+
+#[test]
+fn test_tls_client_cert_and_key_on_no_query_uri() {
+    let base_uri = "amqps://localhost:5671";
+    let uri = UriBuilder::new(base_uri)
+        .unwrap()
+        .with_client_cert_file("/path/to/client.pem")
+        .with_client_key_file("/path/to/key.pem")
+        .build()
+        .unwrap();
+
+    assert!(uri.contains("certfile=/path/to/client.pem"));
+    assert!(uri.contains("keyfile=/path/to/key.pem"));
+    assert!(uri.contains("?"));
+}
+
+#[test]
+fn test_tls_sni_on_no_query_uri() {
+    let base_uri = "amqps://localhost:5671";
+    let uri = UriBuilder::new(base_uri)
+        .unwrap()
+        .with_server_name_indication("example.com")
+        .build()
+        .unwrap();
+
+    assert!(uri.contains("server_name_indication=example.com"));
+    assert!(uri.contains("?"));
+    assert_eq!(
+        uri,
+        "amqps://localhost:5671?server_name_indication=example.com"
+    );
+}
+
+#[test]
+fn test_tls_settings_without_verification_on_no_query_uri() {
+    let base_uri = "amqps://localhost:5671";
+    let settings = TlsClientSettings::without_verification().ca_cert_file("/path/to/ca.pem");
+
+    let uri = UriBuilder::new(base_uri)
+        .unwrap()
+        .replace(settings)
+        .build()
+        .unwrap();
+
+    assert!(uri.contains("verify=verify_none"));
+    assert!(uri.contains("cacertfile=/path/to/ca.pem"));
+    assert!(uri.contains("?"));
+}
+
+#[test]
+fn test_tls_settings_with_verification_on_no_query_uri() {
+    let base_uri = "amqps://localhost:5671";
+    let settings = TlsClientSettings::with_verification()
+        .client_cert_file("/path/to/client.pem")
+        .client_key_file("/path/to/key.pem");
+
+    let uri = UriBuilder::new(base_uri)
+        .unwrap()
+        .merge(settings)
+        .build()
+        .unwrap();
+
+    assert!(uri.contains("verify=verify_peer"));
+    assert!(uri.contains("certfile=/path/to/client.pem"));
+    assert!(uri.contains("keyfile=/path/to/key.pem"));
+    assert!(uri.contains("?"));
 }
