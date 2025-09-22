@@ -13,7 +13,9 @@
 // limitations under the License.
 
 use crate::commons::MessageTransferAcknowledgementMode;
+use crate::error::ConversionError;
 use crate::requests::parameters::RuntimeParameterDefinition;
+use crate::responses::{RuntimeParameter, Shovel};
 use serde::Serialize;
 use serde_json::{Map, Value, json};
 
@@ -368,3 +370,234 @@ impl<'a> Amqp10ShovelDestinationParams<'a> {
 /// Used to specify custom properties that should be applied to messages
 /// when they are re-published by shovels.
 pub type MessageProperties = Map<String, Value>;
+
+/// A helper type used for conversion between shovels and runtime parameters
+/// (the end goal is usually modifying a shovel).
+#[derive(Default, Debug, Serialize, Clone, PartialEq, Eq)]
+pub struct OwnedShovelParams {
+    pub name: String,
+    pub vhost: String,
+    pub source_protocol: String,
+    pub destination_protocol: String,
+    pub acknowledgement_mode: MessageTransferAcknowledgementMode,
+    pub reconnect_delay: Option<u32>,
+
+    pub source_uri: String,
+    pub source_queue: Option<String>,
+    pub source_exchange: Option<String>,
+    pub source_exchange_routing_key: Option<String>,
+    pub source_address: Option<String>,
+    pub source_predeclared: Option<bool>,
+
+    pub destination_uri: String,
+    pub destination_queue: Option<String>,
+    pub destination_exchange: Option<String>,
+    pub destination_exchange_routing_key: Option<String>,
+    pub destination_address: Option<String>,
+    pub destination_predeclared: Option<bool>,
+}
+
+impl TryFrom<RuntimeParameter> for OwnedShovelParams {
+    type Error = ConversionError;
+
+    fn try_from(param: RuntimeParameter) -> Result<Self, Self::Error> {
+        let values = &param.value.0;
+
+        let source_protocol = values
+            .get("src-protocol")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| ConversionError::MissingProperty {
+                argument: "src-protocol".to_string(),
+            })?
+            .to_string();
+
+        let destination_protocol = values
+            .get("dest-protocol")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| ConversionError::MissingProperty {
+                argument: "dest-protocol".to_string(),
+            })?
+            .to_string();
+
+        let source_uri = values
+            .get("src-uri")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| ConversionError::MissingProperty {
+                argument: "src-uri".to_string(),
+            })?
+            .to_string();
+
+        let destination_uri = values
+            .get("dest-uri")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| ConversionError::MissingProperty {
+                argument: "dest-uri".to_string(),
+            })?
+            .to_string();
+
+        let acknowledgement_mode = values
+            .get("ack-mode")
+            .and_then(|v| v.as_str())
+            .map(MessageTransferAcknowledgementMode::from)
+            .unwrap_or_default();
+
+        let reconnect_delay = values
+            .get("reconnect-delay")
+            .and_then(|v| v.as_u64())
+            .map(|v| v as u32);
+
+        let source_queue = values
+            .get("src-queue")
+            .and_then(|v| v.as_str())
+            .map(String::from);
+
+        let source_exchange = values
+            .get("src-exchange")
+            .and_then(|v| v.as_str())
+            .map(String::from);
+
+        let source_exchange_routing_key = values
+            .get("src-exchange-key")
+            .and_then(|v| v.as_str())
+            .map(String::from);
+
+        let source_address = values
+            .get("src-address")
+            .and_then(|v| v.as_str())
+            .map(String::from);
+
+        let source_predeclared = values.get("src-predeclared").and_then(|v| v.as_bool());
+
+        let destination_queue = values
+            .get("dest-queue")
+            .and_then(|v| v.as_str())
+            .map(String::from);
+
+        let destination_exchange = values
+            .get("dest-exchange")
+            .and_then(|v| v.as_str())
+            .map(String::from);
+
+        let destination_exchange_routing_key = values
+            .get("dest-exchange-key")
+            .and_then(|v| v.as_str())
+            .map(String::from);
+
+        let destination_address = values
+            .get("dest-address")
+            .and_then(|v| v.as_str())
+            .map(String::from);
+
+        let destination_predeclared = values.get("dest-predeclared").and_then(|v| v.as_bool());
+
+        Ok(OwnedShovelParams {
+            name: param.name,
+            vhost: param.vhost.to_string(),
+            source_protocol,
+            destination_protocol,
+            acknowledgement_mode,
+            reconnect_delay,
+            source_uri,
+            source_queue,
+            source_exchange,
+            source_exchange_routing_key,
+            source_address,
+            source_predeclared,
+            destination_uri,
+            destination_queue,
+            destination_exchange,
+            destination_exchange_routing_key,
+            destination_address,
+            destination_predeclared,
+        })
+    }
+}
+
+impl<'a> From<&'a OwnedShovelParams> for RuntimeParameterDefinition<'a> {
+    fn from(params: &'a OwnedShovelParams) -> Self {
+        let mut value = Map::new();
+
+        value.insert("src-protocol".to_owned(), json!(params.source_protocol));
+        value.insert(
+            "dest-protocol".to_owned(),
+            json!(params.destination_protocol),
+        );
+        value.insert("src-uri".to_owned(), json!(params.source_uri));
+        value.insert("dest-uri".to_owned(), json!(params.destination_uri));
+        value.insert("ack-mode".to_owned(), json!(params.acknowledgement_mode));
+
+        if let Some(delay) = params.reconnect_delay {
+            value.insert("reconnect-delay".to_owned(), json!(delay));
+        }
+
+        if let Some(queue) = &params.source_queue {
+            value.insert("src-queue".to_owned(), json!(queue));
+        }
+        if let Some(exchange) = &params.source_exchange {
+            value.insert("src-exchange".to_owned(), json!(exchange));
+        }
+        if let Some(key) = &params.source_exchange_routing_key {
+            value.insert("src-exchange-key".to_owned(), json!(key));
+        }
+        if let Some(address) = &params.source_address {
+            value.insert("src-address".to_owned(), json!(address));
+        }
+        if let Some(predeclared) = params.source_predeclared {
+            value.insert("src-predeclared".to_owned(), json!(predeclared));
+        }
+
+        if let Some(queue) = &params.destination_queue {
+            value.insert("dest-queue".to_owned(), json!(queue));
+        }
+        if let Some(exchange) = &params.destination_exchange {
+            value.insert("dest-exchange".to_owned(), json!(exchange));
+        }
+        if let Some(key) = &params.destination_exchange_routing_key {
+            value.insert("dest-exchange-key".to_owned(), json!(key));
+        }
+        if let Some(address) = &params.destination_address {
+            value.insert("dest-address".to_owned(), json!(address));
+        }
+        if let Some(predeclared) = params.destination_predeclared {
+            value.insert("dest-predeclared".to_owned(), json!(predeclared));
+        }
+
+        Self {
+            name: &params.name,
+            vhost: &params.vhost,
+            component: SHOVEL_COMPONENT,
+            value,
+        }
+    }
+}
+
+impl From<Shovel> for OwnedShovelParams {
+    fn from(shovel: Shovel) -> Self {
+        Self {
+            name: shovel.name,
+            vhost: shovel.vhost.unwrap_or_default(),
+            source_protocol: shovel
+                .source_protocol
+                .map(|p| p.to_string())
+                .unwrap_or_default(),
+            destination_protocol: shovel
+                .destination_protocol
+                .map(|p| p.to_string())
+                .unwrap_or_default(),
+            acknowledgement_mode: MessageTransferAcknowledgementMode::default(),
+            reconnect_delay: None,
+            source_uri: shovel.source_uri.unwrap_or_default(),
+            source_queue: shovel.source,
+            source_exchange: None,
+            source_exchange_routing_key: None,
+            source_address: shovel.source_address,
+            source_predeclared: None,
+            destination_uri: shovel.destination_uri.unwrap_or_default(),
+            destination_queue: shovel.destination,
+            destination_exchange: None,
+            destination_exchange_routing_key: None,
+            destination_address: shovel.destination_address,
+            destination_predeclared: None,
+        }
+    }
+}
