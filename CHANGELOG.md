@@ -2,7 +2,10 @@
 
 ## v0.57.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * `responses::Shovel` now can be converted to `requests::RuntimeParameterDefinition`, for example, when a shovel
+   needs to be updated
 
 ## v0.56.0 (Sep 21, 2025)
 
