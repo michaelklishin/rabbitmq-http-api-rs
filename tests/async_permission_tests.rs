@@ -163,8 +163,16 @@ async fn test_async_grant_permissions() {
         }
     );
 
-    let result4 = rc.clear_permissions(vh_params.name, "guest", false).await;
-    assert!(result4.is_ok(), "clear_permissions returned {result4:?}");
+    let result = rc.clear_permissions(vh_params.name, "guest", false).await;
+    assert!(result.is_ok());
+
+    // idempotent delete should succeed
+    let result = rc.clear_permissions(vh_params.name, "guest", true).await;
+    assert!(result.is_ok());
+
+    // non-idempotent delete should fail
+    let result = rc.clear_permissions(vh_params.name, "guest", false).await;
+    assert!(result.is_err());
 
     let result5 = rc.get_permissions(vh_params.name, "guest").await;
     assert!(result5.is_err(), "permissions found after deletion");
@@ -386,13 +394,22 @@ async fn test_async_clear_topic_permissions() {
         && p.read == ".*"
         && p.write == ".*"));
 
-    let result2 = rc
+    let result = rc
         .clear_topic_permissions(vh_params.name, "guest", false)
         .await;
-    assert!(
-        result2.is_ok(),
-        "clear_topic_permissions returned {result2:?}"
-    );
+    assert!(result.is_ok());
+
+    // idempotent delete should succeed
+    let result = rc
+        .clear_topic_permissions(vh_params.name, "guest", true)
+        .await;
+    assert!(result.is_ok());
+
+    // non-idempotent delete should fail
+    let result = rc
+        .clear_topic_permissions(vh_params.name, "guest", false)
+        .await;
+    assert!(result.is_err());
 
     // Verify that the topic permissions are cleared
     let topic_permissions_after_clear = rc.list_topic_permissions_of("guest").await.unwrap();

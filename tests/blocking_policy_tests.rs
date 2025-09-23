@@ -229,7 +229,13 @@ fn test_a_policy(rc: &Client<&str, &str, &str>, policy: &PolicyParams) {
     assert_eq!(fetched_policy.definition.0.unwrap(), policy.definition);
 
     // delete it
-    assert!(rc.delete_policy(policy.vhost, policy.name).is_ok());
+    assert!(rc.delete_policy(policy.vhost, policy.name, true).is_ok());
+
+    // idempotent delete should succeed
+    assert!(rc.delete_policy(policy.vhost, policy.name, true).is_ok());
+
+    // non-idempotent delete should fail
+    assert!(rc.delete_policy(policy.vhost, policy.name, false).is_err());
 
     // there should be no such policy anymore
     let policies = rc.list_policies().unwrap();
@@ -249,7 +255,22 @@ fn test_an_operator_policy(rc: &Client<&str, &str, &str>, policy: &PolicyParams)
     assert_eq!(fetched_policy.definition.0.unwrap(), policy.definition);
 
     // delete it
-    assert!(rc.delete_operator_policy(policy.vhost, policy.name).is_ok());
+    assert!(
+        rc.delete_operator_policy(policy.vhost, policy.name, true)
+            .is_ok()
+    );
+
+    // idempotent delete should succeed
+    assert!(
+        rc.delete_operator_policy(policy.vhost, policy.name, true)
+            .is_ok()
+    );
+
+    // non-idempotent delete should fail
+    assert!(
+        rc.delete_operator_policy(policy.vhost, policy.name, false)
+            .is_err()
+    );
 
     // there should be no such policy anymore
     let policies = rc.list_operator_policies().unwrap();

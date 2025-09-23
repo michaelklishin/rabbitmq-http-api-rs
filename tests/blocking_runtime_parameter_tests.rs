@@ -47,7 +47,7 @@ fn test_blocking_upsert_runtime_parameter() {
             .unwrap()
     );
 
-    let _ = rc.clear_runtime_parameter(rpf.component, rpf.vhost, rpf.name);
+    let _ = rc.clear_runtime_parameter(rpf.component, rpf.vhost, rpf.name, false);
     let _ = rc.delete_vhost(vh_params.name, false);
 }
 
@@ -76,8 +76,7 @@ fn test_blocking_list_all_runtime_parameters() {
             .map(|rp| rp.value.get("max-connections").unwrap().as_u64().unwrap())
             .any(|n| n == 9988)
     );
-
-    let _ = rc.clear_runtime_parameter(rpf.component, rpf.vhost, rpf.name);
+    let _ = rc.clear_runtime_parameter(rpf.component, rpf.vhost, rpf.name, false);
     let _ = rc.delete_vhost(vh_params.name, false);
 }
 
@@ -107,7 +106,7 @@ fn test_blocking_list_runtime_parameters_of_component_in_a_vhost() {
             .any(|n| n == 9988)
     );
 
-    let _ = rc.clear_runtime_parameter(rpf.component, rpf.vhost, rpf.name);
+    let _ = rc.clear_runtime_parameter(rpf.component, rpf.vhost, rpf.name, false);
     let _ = rc.delete_vhost(vh_params.name, false);
 }
 
@@ -126,7 +125,7 @@ fn test_blocking_clear_runtime_parameter() {
     assert!(result2.is_ok());
     await_metric_emission(700);
 
-    let result3 = rc.clear_runtime_parameter("vhost-limits", vh_params.name, "limits");
+    let result3 = rc.clear_runtime_parameter("vhost-limits", vh_params.name, "limits", false);
     assert!(result3.is_ok());
 
     let result4 = rc.list_runtime_parameters();

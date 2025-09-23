@@ -13,7 +13,6 @@
 // limitations under the License.
 
 use crate::{path, requests::PolicyParams, responses};
-use reqwest::StatusCode;
 
 use super::client::{Client, Result};
 
@@ -72,13 +71,11 @@ where
 
     /// Deletes a [policy](https://www.rabbitmq.com/docs/policies).
     /// This function is idempotent: deleting a non-existent policy is considered a success.
-    pub fn delete_policy(&self, vhost: &str, name: &str) -> Result<()> {
-        let _response = self.http_delete(
+    pub fn delete_policy(&self, vhost: &str, name: &str, idempotently: bool) -> Result<()> {
+        self.delete_api_request_with_optional_not_found(
             path!("policies", vhost, name),
-            Some(StatusCode::NOT_FOUND),
-            None,
-        )?;
-        Ok(())
+            idempotently,
+        )
     }
 
     /// Deletes multiple [policies](https://www.rabbitmq.com/docs/policies).
@@ -89,7 +86,7 @@ where
     /// This function is idempotent: deleting a non-existent policy is considered a success.
     pub fn delete_policies_in(&self, vhost: &str, names: Vec<&str>) -> Result<()> {
         for name in names {
-            self.delete_policy(vhost, name)?;
+            self.delete_policy(vhost, name, true)?;
         }
         Ok(())
     }
@@ -129,18 +126,21 @@ where
         Ok(())
     }
 
-    pub fn delete_operator_policy(&self, vhost: &str, name: &str) -> Result<()> {
-        let _response = self.http_delete(
+    pub fn delete_operator_policy(
+        &self,
+        vhost: &str,
+        name: &str,
+        idempotently: bool,
+    ) -> Result<()> {
+        self.delete_api_request_with_optional_not_found(
             path!("operator-policies", vhost, name),
-            Some(StatusCode::NOT_FOUND),
-            None,
-        )?;
-        Ok(())
+            idempotently,
+        )
     }
 
     pub fn delete_operator_policies_in(&self, vhost: &str, names: Vec<&str>) -> Result<()> {
         for name in names {
-            self.delete_operator_policy(vhost, name)?;
+            self.delete_operator_policy(vhost, name, true)?;
         }
         Ok(())
     }

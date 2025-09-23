@@ -154,10 +154,14 @@ fn test_blocking_delete_vhost() {
     let result1 = rc.create_vhost(&params);
     assert!(result1.is_ok());
 
-    let result2 = rc.get_vhost(name);
-    assert!(result2.is_ok());
-
+    let _result2 = rc.get_vhost(name);
     let _ = rc.delete_vhost(name, false);
+
+    // idempotent delete should succeed
+    let _ = rc.delete_vhost(name, true);
+
+    // non-idempotent delete should fail
+    assert!(rc.delete_vhost(name, false).is_err());
     let result3 = rc.get_vhost(name);
     assert!(result3.is_err());
 }

@@ -104,6 +104,12 @@ fn test_blocking_delete_queue() {
     assert!(result2.is_ok(), "declare_queue returned {result2:?}");
 
     rc.delete_queue(vhost, name, false).unwrap();
+
+    // idempotent delete should succeed
+    rc.delete_queue(vhost, name, true).unwrap();
+
+    // non-idempotent delete should fail
+    assert!(rc.delete_queue(vhost, name, false).is_err());
     let result3 = rc.get_queue_info(vhost, name);
     assert!(result3.is_err());
 }

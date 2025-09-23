@@ -66,6 +66,12 @@ fn test_blocking_delete_stream() {
     assert!(result2.is_ok(), "declare_stream returned {result2:?}");
 
     rc.delete_stream(vhost, name, false).unwrap();
+
+    // idempotent delete should succeed
+    rc.delete_stream(vhost, name, true).unwrap();
+
+    // non-idempotent delete should fail
+    assert!(rc.delete_stream(vhost, name, false).is_err());
     let result3 = rc.get_stream_info(vhost, name);
     assert!(result3.is_err());
 }

@@ -109,7 +109,8 @@ async fn test_async_delete_exchange() {
     let vhost = "/";
     let name = "rust.tests.cq.10";
 
-    let _ = rc.delete_exchange(vhost, name, false).await;
+    // delete it in case it exists from a previous failed run
+    let _ = rc.delete_exchange(vhost, name, true).await;
 
     let result1 = rc.get_exchange_info(vhost, name).await;
     assert!(result1.is_err());
@@ -118,7 +119,15 @@ async fn test_async_delete_exchange() {
     let result2 = rc.declare_exchange(vhost, &params).await;
     assert!(result2.is_ok());
 
+    // now delete it for real
     let _ = rc.delete_exchange(vhost, name, false).await;
+
+    // idempotent delete should succeed
+    let _ = rc.delete_exchange(vhost, name, true).await;
+
+    // non-idempotent delete should fail
+    assert!(rc.delete_exchange(vhost, name, false).await.is_err());
+
     let result3 = rc.get_exchange_info(vhost, name).await;
     assert!(result3.is_err());
     assert!(matches!(result3.unwrap_err(), APIClientError::NotFound));

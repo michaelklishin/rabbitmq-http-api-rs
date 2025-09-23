@@ -56,24 +56,27 @@ where
     /// Closes a connection with an optional reason.
     ///
     /// The reason will be passed on in the connection error to the client and will be logged on the RabbitMQ end.
-    pub async fn close_connection(&self, name: &str, reason: Option<&str>) -> Result<()> {
-        match reason {
-            None => {
-                self.http_delete(
-                    path!("connections", name),
-                    Some(StatusCode::NOT_FOUND),
-                    None,
-                )
-                .await?
-            }
-            Some(value) => {
-                let mut headers = HeaderMap::new();
-                let hdr = HeaderValue::from_str(value)?;
-                headers.insert("X-Reason", hdr);
-                self.http_delete_with_headers(path!("connections", name), headers, None, None)
-                    .await?
-            }
+    pub async fn close_connection(
+        &self,
+        name: &str,
+        reason: Option<&str>,
+        idempotently: bool,
+    ) -> Result<()> {
+        let excludes = if idempotently {
+            Some(StatusCode::NOT_FOUND)
+        } else {
+            None
         };
+
+        let mut headers = HeaderMap::new();
+        if let Some(value) = reason {
+            let hdr = HeaderValue::from_str(value)?;
+            headers.insert("X-Reason", hdr);
+        }
+
+        self.http_delete_with_headers(path!("connections", name), headers, excludes, None)
+            .await?;
+
         Ok(())
     }
 
@@ -83,29 +86,32 @@ where
     ///
     /// This is en equivalent of listing all connections of a user with `Client#list_user_connections` and then
     /// closing them one by one.
-    pub async fn close_user_connections(&self, username: &str, reason: Option<&str>) -> Result<()> {
-        match reason {
-            None => {
-                self.http_delete(
-                    path!("connections", "username", username),
-                    Some(StatusCode::NOT_FOUND),
-                    None,
-                )
-                .await?
-            }
-            Some(value) => {
-                let mut headers = HeaderMap::new();
-                let hdr = HeaderValue::from_str(value)?;
-                headers.insert("X-Reason", hdr);
-                self.http_delete_with_headers(
-                    path!("connections", "username", username),
-                    headers,
-                    None,
-                    None,
-                )
-                .await?
-            }
+    pub async fn close_user_connections(
+        &self,
+        username: &str,
+        reason: Option<&str>,
+        idempotently: bool,
+    ) -> Result<()> {
+        let excludes = if idempotently {
+            Some(StatusCode::NOT_FOUND)
+        } else {
+            None
         };
+
+        let mut headers = HeaderMap::new();
+        if let Some(value) = reason {
+            let hdr = HeaderValue::from_str(value)?;
+            headers.insert("X-Reason", hdr);
+        }
+
+        self.http_delete_with_headers(
+            path!("connections", "username", username),
+            headers,
+            excludes,
+            None,
+        )
+        .await?;
+
         Ok(())
     }
 

@@ -230,7 +230,25 @@ async fn test_a_policy(rc: &Client<&str, &str, &str>, policy: &PolicyParams<'_>)
     let fetched_policy = rc.get_policy(policy.vhost, policy.name).await.unwrap();
     assert_eq!(fetched_policy.definition.0.unwrap(), policy.definition);
 
-    assert!(rc.delete_policy(policy.vhost, policy.name).await.is_ok());
+    assert!(
+        rc.delete_policy(policy.vhost, policy.name, true)
+            .await
+            .is_ok()
+    );
+
+    // idempotent delete should succeed
+    assert!(
+        rc.delete_policy(policy.vhost, policy.name, true)
+            .await
+            .is_ok()
+    );
+
+    // non-idempotent delete should fail
+    assert!(
+        rc.delete_policy(policy.vhost, policy.name, false)
+            .await
+            .is_err()
+    );
 
     let policies = rc.list_policies().await.unwrap();
     assert!(!policies.iter().any(|p| p.name == policy.name));
@@ -250,9 +268,23 @@ async fn test_an_operator_policy(rc: &Client<&str, &str, &str>, policy: &PolicyP
     assert_eq!(fetched_policy.definition.0.unwrap(), policy.definition);
 
     assert!(
-        rc.delete_operator_policy(policy.vhost, policy.name)
+        rc.delete_operator_policy(policy.vhost, policy.name, true)
             .await
             .is_ok()
+    );
+
+    // idempotent delete should succeed
+    assert!(
+        rc.delete_operator_policy(policy.vhost, policy.name, true)
+            .await
+            .is_ok()
+    );
+
+    // non-idempotent delete should fail
+    assert!(
+        rc.delete_operator_policy(policy.vhost, policy.name, false)
+            .await
+            .is_err()
     );
 
     let policies = rc.list_operator_policies().await.unwrap();

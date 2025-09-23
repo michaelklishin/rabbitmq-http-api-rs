@@ -60,6 +60,9 @@ pub use permissions::{Permissions, TopicPermissions};
 pub mod vhosts;
 pub use vhosts::VirtualHostParams;
 
+pub mod bindings;
+pub use bindings::BindingDeletionParams;
+
 pub mod limits;
 pub use limits::EnforcedLimitParams;
 

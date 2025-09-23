@@ -74,16 +74,23 @@ where
         Ok(())
     }
 
-    pub fn clear_runtime_parameter(&self, component: &str, vhost: &str, name: &str) -> Result<()> {
-        let _response =
-            self.http_delete(path!("parameters", component, vhost, name), None, None)?;
-        Ok(())
+    pub fn clear_runtime_parameter(
+        &self,
+        component: &str,
+        vhost: &str,
+        name: &str,
+        idempotently: bool,
+    ) -> Result<()> {
+        self.delete_api_request_with_optional_not_found(
+            path!("parameters", component, vhost, name),
+            idempotently,
+        )
     }
 
     pub fn clear_all_runtime_parameters(&self) -> Result<()> {
         let params = self.list_runtime_parameters()?;
         for rp in params {
-            self.clear_runtime_parameter(&rp.component, &rp.vhost, &rp.name)?
+            self.clear_runtime_parameter(&rp.component, &rp.vhost, &rp.name, false)?
         }
         Ok(())
     }
@@ -91,7 +98,7 @@ where
     pub fn clear_all_runtime_parameters_of_component(&self, component: &str) -> Result<()> {
         let params = self.list_runtime_parameters_of_component(component)?;
         for rp in params {
-            self.clear_runtime_parameter(&rp.component, &rp.vhost, &rp.name)?
+            self.clear_runtime_parameter(&rp.component, &rp.vhost, &rp.name, false)?
         }
         Ok(())
     }

@@ -344,6 +344,14 @@ fn test_blocking_clear_topic_permissions() {
         "clear_topic_permissions returned {result2:?}"
     );
 
+    // idempotent delete should succeed
+    let result = rc.clear_topic_permissions(vh_params.name, "guest", true);
+    assert!(result.is_ok());
+
+    // non-idempotent delete should fail
+    let result = rc.clear_topic_permissions(vh_params.name, "guest", false);
+    assert!(result.is_err());
+
     let topic_permissions_after_clear = rc.list_topic_permissions_of("guest").unwrap();
     assert!(
         !topic_permissions_after_clear
@@ -394,6 +402,14 @@ fn test_blocking_grant_permissions() {
 
     let result4 = rc.clear_permissions(vh_params.name, "guest", false);
     assert!(result4.is_ok(), "clear_permissions returned {result4:?}");
+
+    // idempotent delete should succeed
+    let result = rc.clear_permissions(vh_params.name, "guest", true);
+    assert!(result.is_ok());
+
+    // non-idempotent delete should fail
+    let result = rc.clear_permissions(vh_params.name, "guest", false);
+    assert!(result.is_err());
 
     let result5 = rc.get_permissions(vh_params.name, "guest");
     assert!(result5.is_err(), "permissions found after deletion");

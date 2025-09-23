@@ -16,12 +16,13 @@ use crate::{
     commons::{BindingDestinationType, BindingVertex},
     error::Error,
     path,
+    requests::BindingDeletionParams,
     requests::XArguments,
     responses::{self, BindingInfo},
 };
 use serde_json::{Map, Value, json};
 
-use super::client::{Client, HttpClientResponse, Result};
+use super::client::{Client, Result};
 
 impl<E, U, P> Client<E, U, P>
 where
@@ -163,45 +164,53 @@ where
         Ok(())
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn delete_binding(
         &self,
-        virtual_host: &str,
-        source: &str,
-        destination: &str,
-        destination_type: BindingDestinationType,
-        routing_key: &str,
-        arguments: XArguments,
-    ) -> Result<HttpClientResponse> {
-        let args = arguments.unwrap_or_default();
+        params: &BindingDeletionParams<'_>,
+        idempotently: bool,
+    ) -> Result<()> {
+        let args = params.arguments.clone().unwrap_or_default();
 
         // to delete a binding, we need properties, that we can get from the server
         // so we search for the binding before deleting it
-        let bindings = match destination_type {
-            BindingDestinationType::Queue => self.list_queue_bindings(virtual_host, destination)?,
-            BindingDestinationType::Exchange => {
-                self.list_exchange_bindings_with_destination(virtual_host, destination)?
+        let bindings = match params.destination_type {
+            BindingDestinationType::Queue => {
+                self.list_queue_bindings(params.virtual_host, params.destination)?
             }
+            BindingDestinationType::Exchange => self
+                .list_exchange_bindings_with_destination(params.virtual_host, params.destination)?,
         };
 
         let bs: Vec<&BindingInfo> = bindings
             .iter()
-            .filter(|b| b.source == source && b.routing_key == routing_key && b.arguments.0 == args)
+            .filter(|b| {
+                b.source == params.source
+                    && b.routing_key == params.routing_key
+                    && b.arguments.0 == args
+            })
             .collect();
         match bs.len() {
-            0 => Err(Error::NotFound),
+            0 => {
+                if idempotently {
+                    Ok(())
+                } else {
+                    Err(Error::NotFound)
+                }
+            }
             1 => {
                 let first_key = bs.first().unwrap().properties_key.clone();
-                let path_appreviation = destination_type.path_appreviation();
+                let path_appreviation = params.destination_type.path_appreviation();
                 let path = match first_key {
                     Some(pk) => {
                         path!(
                             // /api/bindings/vhost/e/exchange/[eq]/destination/props
                             "bindings",
-                            virtual_host,
+                            params.virtual_host,
                             "e",
-                            source,
+                            params.source,
                             path_appreviation,
-                            destination,
+                            params.destination,
                             pk.as_str()
                         )
                     }
@@ -209,16 +218,16 @@ where
                         path!(
                             // /api/bindings/vhost/e/exchange/[eq]/destination/
                             "bindings",
-                            virtual_host,
+                            params.virtual_host,
                             "e",
-                            source,
+                            params.source,
                             path_appreviation,
-                            destination
+                            params.destination
                         )
                     }
                 };
-                let response = self.http_delete(&path, None, None)?;
-                Ok(response)
+                self.http_delete(&path, None, None)?;
+                Ok(())
             }
             _ => Err(Error::MultipleMatchingBindings),
         }

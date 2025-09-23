@@ -123,7 +123,11 @@ async fn test_async_export_cluster_wide_definitions_as_data() {
     );
 
     rc.delete_exchange(vh, x_name, false).await.unwrap();
-    rc.delete_policy(vh, qq_pol_name).await.unwrap();
+    rc.delete_policy(vh, qq_pol_name, false).await.unwrap();
+    // idempotent delete should succeed
+    rc.delete_policy(vh, qq_pol_name, true).await.unwrap();
+    // non-idempotent delete should fail
+    assert!(rc.delete_policy(vh, qq_pol_name, false).await.is_err());
     rc.delete_vhost(vh, true).await.unwrap();
 }
 
@@ -206,7 +210,11 @@ async fn test_async_export_vhost_definitions_as_data() {
     );
 
     rc.delete_exchange(vh, x_name, false).await.unwrap();
-    rc.delete_policy(vh, qq_pol_name).await.unwrap();
+    rc.delete_policy(vh, qq_pol_name, false).await.unwrap();
+    // idempotent delete should succeed
+    rc.delete_policy(vh, qq_pol_name, true).await.unwrap();
+    // non-idempotent delete should fail
+    assert!(rc.delete_policy(vh, qq_pol_name, false).await.is_err());
     rc.delete_vhost(vh, true).await.unwrap();
 }
 

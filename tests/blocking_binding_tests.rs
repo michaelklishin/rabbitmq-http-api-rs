@@ -14,6 +14,7 @@
 use rabbitmq_http_client::{
     blocking_api::Client,
     commons::BindingDestinationType,
+    requests::BindingDeletionParams,
     requests::{ExchangeParams, QueueParams},
 };
 
@@ -175,15 +176,24 @@ fn test_blocking_delete_queue_bindings() {
     );
 
     let m: serde_json::Map<String, serde_json::Value> = serde_json::Map::new();
-    let result4 = rc.delete_binding(
-        vh_name,
-        fanout,
-        cq,
-        BindingDestinationType::Queue,
-        "foo",
-        Some(m),
-    );
+    let bd_params = BindingDeletionParams {
+        virtual_host: vh_name,
+        source: fanout,
+        destination: cq,
+        destination_type: BindingDestinationType::Queue,
+        routing_key: "foo",
+        arguments: Some(m.clone()),
+    };
+    let result4 = rc.delete_binding(&bd_params, false);
     assert!(result4.is_ok(), "delete_binding returned {result4:?}");
+
+    // idempotent delete should succeed
+    let result = rc.delete_binding(&bd_params, true);
+    assert!(result.is_ok());
+
+    // non-idempotent delete should fail
+    let result = rc.delete_binding(&bd_params, false);
+    assert!(result.is_err());
 
     let result5 = rc.list_queue_bindings(vh_name, cq);
     assert!(result5.is_ok(), "list_queue_bindings returned {result5:?}");
@@ -226,15 +236,24 @@ fn test_blocking_delete_exchange_bindings() {
     );
 
     let m: serde_json::Map<String, serde_json::Value> = serde_json::Map::new();
-    let result4 = rc.delete_binding(
-        vh_name,
-        fanout,
-        direct,
-        BindingDestinationType::Exchange,
-        "foo",
-        Some(m),
-    );
+    let bd_params = BindingDeletionParams {
+        virtual_host: vh_name,
+        source: fanout,
+        destination: direct,
+        destination_type: BindingDestinationType::Exchange,
+        routing_key: "foo",
+        arguments: Some(m.clone()),
+    };
+    let result4 = rc.delete_binding(&bd_params, false);
     assert!(result4.is_ok(), "delete_binding returned {result4:?}");
+
+    // idempotent delete should succeed
+    let result = rc.delete_binding(&bd_params, true);
+    assert!(result.is_ok());
+
+    // non-idempotent delete should fail
+    let result = rc.delete_binding(&bd_params, false);
+    assert!(result.is_err());
 
     let result5 = rc.list_exchange_bindings_with_destination(vh_name, direct);
     assert!(

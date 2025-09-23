@@ -158,6 +158,12 @@ async fn test_async_delete_vhost() {
     assert!(result2.is_ok());
 
     let _ = rc.delete_vhost(name, false).await;
+
+    // idempotent delete should succeed
+    let _ = rc.delete_vhost(name, true).await;
+
+    // non-idempotent delete should fail
+    assert!(rc.delete_vhost(name, false).await.is_err());
     let result3 = rc.get_vhost(name).await;
     assert!(result3.is_err());
 }

@@ -116,7 +116,11 @@ fn test_blocking_export_cluster_wide_definitions_as_data() {
     );
 
     rc.delete_exchange(vh, x_name, false).unwrap();
-    rc.delete_policy(vh, qq_pol_name).unwrap();
+    rc.delete_policy(vh, qq_pol_name, false).unwrap();
+    // idempotent delete should succeed
+    rc.delete_policy(vh, qq_pol_name, true).unwrap();
+    // non-idempotent delete should fail
+    assert!(rc.delete_policy(vh, qq_pol_name, false).is_err());
     rc.delete_vhost(vh, true).unwrap();
 }
 
@@ -193,7 +197,11 @@ fn test_blocking_export_vhost_definitions_as_data() {
     );
 
     rc.delete_exchange(vh, x_name, false).unwrap();
-    rc.delete_policy(vh, qq_pol_name).unwrap();
+    rc.delete_policy(vh, qq_pol_name, false).unwrap();
+    // idempotent delete should succeed
+    rc.delete_policy(vh, qq_pol_name, true).unwrap();
+    // non-idempotent delete should fail
+    assert!(rc.delete_policy(vh, qq_pol_name, false).is_err());
     rc.delete_vhost(vh, true).unwrap();
 }
 

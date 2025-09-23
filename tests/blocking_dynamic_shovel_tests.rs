@@ -355,5 +355,8 @@ fn test_blocking_delete_a_dynamic_amqp091_shovel() {
     let result4 = rc.delete_shovel(vh, sh, true);
     assert!(result4.is_ok());
 
+    let result5 = rc.delete_shovel(vh, sh, false);
+    assert!(result5.is_err());
+
     let _ = rc.delete_vhost(vh_params.name, false);
 }

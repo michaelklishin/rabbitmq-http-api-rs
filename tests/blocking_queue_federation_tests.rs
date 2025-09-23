@@ -202,3 +202,41 @@ fn test_blocking_exchange_federation_upstream_fetch_and_update_workflow() {
 
     let _ = rc.delete_vhost(vh_params.name, false);
 }
+
+#[test]
+fn test_blocking_delete_federation_upstream() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let vh = "rust.http.api.blocking.test_delete_federation_upstream";
+    let upstream_name = "test-delete-upstream";
+
+    let vh_params = VirtualHostParams::named(vh);
+    let result1 = rc.create_vhost(&vh_params);
+    assert!(result1.is_ok());
+
+    let amqp_endpoint = amqp_endpoint_with_vhost(vh);
+    let queue_params = QueueFederationParams::new("test-queue");
+    let upstream_params = FederationUpstreamParams::new_queue_federation_upstream(
+        vh,
+        upstream_name,
+        &amqp_endpoint,
+        queue_params,
+    );
+
+    let result2 = rc.declare_federation_upstream(upstream_params);
+    assert!(result2.is_ok());
+
+    let result3 = rc.delete_federation_upstream(vh, upstream_name, false);
+    assert!(result3.is_ok());
+
+    // idempotent delete should succeed
+    let result4 = rc.delete_federation_upstream(vh, upstream_name, true);
+    assert!(result4.is_ok());
+
+    // non-idempotent delete should fail
+    let result5 = rc.delete_federation_upstream(vh, upstream_name, false);
+    assert!(result5.is_err());
+
+    let _ = rc.delete_vhost(vh_params.name, false);
+}

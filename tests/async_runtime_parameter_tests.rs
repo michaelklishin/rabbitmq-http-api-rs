@@ -53,7 +53,7 @@ async fn test_async_upsert_runtime_parameter() {
     );
 
     let _ = rc
-        .clear_runtime_parameter(rpf.component, rpf.vhost, rpf.name)
+        .clear_runtime_parameter(rpf.component, rpf.vhost, rpf.name, false)
         .await;
     let _ = rc.delete_vhost(vh_params.name, false).await;
 }
@@ -85,7 +85,7 @@ async fn test_async_list_all_runtime_parameters() {
     );
 
     let _ = rc
-        .clear_runtime_parameter(rpf.component, rpf.vhost, rpf.name)
+        .clear_runtime_parameter(rpf.component, rpf.vhost, rpf.name, false)
         .await;
     let _ = rc.delete_vhost(vh_params.name, false).await;
 }
@@ -119,7 +119,7 @@ async fn test_async_list_runtime_parameters_of_component_in_a_vhost() {
     );
 
     let _ = rc
-        .clear_runtime_parameter(rpf.component, rpf.vhost, rpf.name)
+        .clear_runtime_parameter(rpf.component, rpf.vhost, rpf.name, false)
         .await;
     let _ = rc.delete_vhost(vh_params.name, false).await;
 }
@@ -140,7 +140,7 @@ async fn test_async_clear_runtime_parameter() {
     async_await_metric_emission(700).await;
 
     let result3 = rc
-        .clear_runtime_parameter("vhost-limits", vh_params.name, "limits")
+        .clear_runtime_parameter("vhost-limits", vh_params.name, "limits", false)
         .await;
     assert!(result3.is_ok());
 

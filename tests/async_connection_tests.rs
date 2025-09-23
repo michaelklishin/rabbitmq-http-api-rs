@@ -101,12 +101,33 @@ async fn test_async_close_user_connections() {
         .close_user_connections(
             USERNAME,
             Some("closed in test_async_close_user_connections"),
+            false,
         )
         .await;
     assert!(
         result1.is_ok(),
         "close_user_connections returned {result1:?}"
     );
+
+    // idempotent delete should succeed
+    let result = rc
+        .close_user_connections(
+            USERNAME,
+            Some("closed in test_async_close_user_connections"),
+            true,
+        )
+        .await;
+    assert!(result.is_ok());
+
+    // non-idempotent delete should also succeed in this case
+    let result = rc
+        .close_user_connections(
+            USERNAME,
+            Some("closed in test_async_close_user_connections"),
+            false,
+        )
+        .await;
+    assert!(result.is_ok());
 
     tokio::time::sleep(Duration::from_millis(50)).await;
     assert!(!conn.is_open());

@@ -2,7 +2,28 @@
 
 ## v0.58.0 (in development)
 
-No changes yet.
+### Breaking Changes
+
+ * All `delete_*` and `clear_*` functions now accept an `idempotently` boolean argument,
+   making it possible to issue idempotent deletion requests that would not fail
+   with a `404 Not Found` response.
+
+   This affects the following functions:
+   * `delete_federation_upstream`
+   * `delete_policy`
+   * `delete_operator_policy`
+   * `close_connection`
+   * `close_user_connections`
+   * `delete_binding`
+   * `clear_topic_permissions`
+   * `delete_shovel`
+   * `clear_runtime_parameter`
+
+ * `delete_binding` now accepts a `requests::BindingDeletionParams` struct instead of a long list of arguments.
+
+### Enhancements
+
+ * All `delete_*` functions now support idempotent operations.
 
 ## v0.57.0 (Sep 22, 2025)
 

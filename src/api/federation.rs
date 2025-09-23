@@ -73,8 +73,13 @@ where
 
     /// Deletes a [federation](https://www.rabbitmq.com/docs/federation) upstream.
     /// Deleting an upstream will stop any links connected to it.
-    pub async fn delete_federation_upstream(&self, vhost: &str, name: &str) -> Result<()> {
-        self.clear_runtime_parameter(FEDERATION_UPSTREAM_COMPONENT, vhost, name)
+    pub async fn delete_federation_upstream(
+        &self,
+        vhost: &str,
+        name: &str,
+        idempotently: bool,
+    ) -> Result<()> {
+        self.clear_runtime_parameter(FEDERATION_UPSTREAM_COMPONENT, vhost, name, idempotently)
             .await
     }
 }

@@ -66,6 +66,12 @@ async fn test_async_delete_stream() {
     assert!(result2.is_ok(), "declare_stream returned {result2:?}");
 
     rc.delete_stream(vhost, name, false).await.unwrap();
+
+    // idempotent delete should succeed
+    rc.delete_stream(vhost, name, true).await.unwrap();
+
+    // non-idempotent delete should fail
+    assert!(rc.delete_stream(vhost, name, false).await.is_err());
     let result3 = rc.get_stream_info(vhost, name).await;
     assert!(result3.is_err());
 }

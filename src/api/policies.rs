@@ -13,7 +13,6 @@
 // limitations under the License.
 
 use crate::{path, requests::PolicyParams, responses};
-use reqwest::StatusCode;
 
 use super::client::{Client, Result};
 
@@ -76,15 +75,12 @@ where
 
     /// Deletes a [policy](https://www.rabbitmq.com/docs/policies).
     /// This function is idempotent: deleting a non-existent policy is considered a success.
-    pub async fn delete_policy(&self, vhost: &str, name: &str) -> Result<()> {
-        let _response = self
-            .http_delete(
-                path!("policies", vhost, name),
-                Some(StatusCode::NOT_FOUND),
-                None,
-            )
-            .await?;
-        Ok(())
+    pub async fn delete_policy(&self, vhost: &str, name: &str, idempotently: bool) -> Result<()> {
+        self.delete_api_request_with_optional_not_found(
+            path!("policies", vhost, name),
+            idempotently,
+        )
+        .await
     }
 
     /// Deletes multiple [policies](https://www.rabbitmq.com/docs/policies).
@@ -95,7 +91,7 @@ where
     /// This function is idempotent: deleting a non-existent policy is considered a success.
     pub async fn delete_policies_in(&self, vhost: &str, names: Vec<&str>) -> Result<()> {
         for name in names {
-            self.delete_policy(vhost, name).await?;
+            self.delete_policy(vhost, name, true).await?;
         }
         Ok(())
     }
@@ -141,20 +137,22 @@ where
         Ok(())
     }
 
-    pub async fn delete_operator_policy(&self, vhost: &str, name: &str) -> Result<()> {
-        let _response = self
-            .http_delete(
-                path!("operator-policies", vhost, name),
-                Some(StatusCode::NOT_FOUND),
-                None,
-            )
-            .await?;
-        Ok(())
+    pub async fn delete_operator_policy(
+        &self,
+        vhost: &str,
+        name: &str,
+        idempotently: bool,
+    ) -> Result<()> {
+        self.delete_api_request_with_optional_not_found(
+            path!("operator-policies", vhost, name),
+            idempotently,
+        )
+        .await
     }
 
     pub async fn delete_operator_policies_in(&self, vhost: &str, names: Vec<&str>) -> Result<()> {
         for name in names {
-            self.delete_operator_policy(vhost, name).await?;
+            self.delete_operator_policy(vhost, name, true).await?;
         }
         Ok(())
     }

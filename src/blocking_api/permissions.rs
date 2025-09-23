@@ -13,7 +13,6 @@
 // limitations under the License.
 
 use crate::{error::Error, path, requests, responses};
-use reqwest::StatusCode;
 
 use super::client::{Client, Result};
 
@@ -122,13 +121,9 @@ where
         user: &str,
         idempotently: bool,
     ) -> Result<()> {
-        let excludes = if idempotently {
-            Some(StatusCode::NOT_FOUND)
-        } else {
-            None
-        };
-        let _response =
-            self.http_delete(path!("topic-permissions", vhost, user), excludes, None)?;
-        Ok(())
+        self.delete_api_request_with_optional_not_found(
+            path!("topic-permissions", vhost, user),
+            idempotently,
+        )
     }
 }

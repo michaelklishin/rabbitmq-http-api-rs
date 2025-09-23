@@ -112,6 +112,14 @@ async fn test_async_user_deletion() {
 
     let result2 = rc.delete_user(name, false).await;
     assert!(result2.is_ok());
+
+    // idempotent delete should succeed
+    let result = rc.delete_user(name, true).await;
+    assert!(result.is_ok());
+
+    // non-idempotent delete should fail
+    let result = rc.delete_user(name, false).await;
+    assert!(result.is_err());
 }
 
 #[tokio::test]
