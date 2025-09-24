@@ -33,7 +33,7 @@ rabbitmq_http_client = { version = "0.57.0", features = ["core", "async"] }
 ### Blocking Client with Tabled Support
 
 ```toml
-rabbitmq_http_client = { version = "0.57.0", features = ["core", "blocking", "tabled"] }
+rabbitmq_http_client = { version = "0.58.0", features = ["core", "blocking", "tabled"] }
 ```
 
 ### Async Client with Tabled Support
