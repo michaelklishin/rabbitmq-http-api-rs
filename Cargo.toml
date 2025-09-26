@@ -1,6 +1,6 @@
 [package]
 name = "rabbitmq_http_client"
-version = "0.59.0"
+version = "0.60.0"
 edition = "2024"
 
 description = "RabbitMQ HTTP API client"
