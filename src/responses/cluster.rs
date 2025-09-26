@@ -19,12 +19,32 @@ use crate::commons::SupportedProtocol;
 use crate::formatting::*;
 use crate::responses::{PluginList, parameters::GlobalRuntimeParameterValue, permissions::TagMap};
 use crate::utils::{percentage, percentage_as_text};
-use serde::Deserialize;
+use serde::{Deserialize, Deserializer};
 use serde_aux::prelude::*;
 use serde_json::Map;
 
 #[cfg(feature = "tabled")]
 use tabled::Tabled;
+
+fn deserialize_memory_breakdown<'de, D>(
+    deserializer: D,
+) -> Result<Option<NodeMemoryBreakdown>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    use serde::de::Error;
+    use serde_json::Value;
+
+    let value = Value::deserialize(deserializer)?;
+
+    match value {
+        Value::String(s) if s == "not_available" => Ok(None),
+        _ => {
+            let breakdown = NodeMemoryBreakdown::deserialize(value).map_err(D::Error::custom)?;
+            Ok(Some(breakdown))
+        }
+    }
+}
 
 #[derive(Debug, Deserialize, Clone, PartialEq, Eq, Hash)]
 pub struct NodeList(Vec<String>);
@@ -84,8 +104,9 @@ impl IntoIterator for NodeList {
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct NodeMemoryFootprint {
-    #[serde(rename = "memory")]
-    pub breakdown: NodeMemoryBreakdown,
+    #[serde(rename = "memory", deserialize_with = "deserialize_memory_breakdown")]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub breakdown: Option<NodeMemoryBreakdown>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -102,7 +123,10 @@ impl NodeMemoryTotals {
     /// Returns the greatest value between the totals computed
     /// using different mechanisms (RSS, runtime allocator metrics)
     pub fn max(&self) -> u64 {
-        std::cmp::max(std::cmp::max(self.used_by_runtime, self.rss), self.rss)
+        std::cmp::max(
+            std::cmp::max(self.used_by_runtime, self.rss),
+            self.allocated,
+        )
     }
 }
 

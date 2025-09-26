@@ -39,3 +39,28 @@ async fn test_async_get_node_info() {
     assert!(node.uptime >= 1);
     assert!(node.total_erlang_processes >= 1);
 }
+
+#[tokio::test]
+async fn test_async_get_node_memory_footprint() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+    let nodes = rc.list_nodes().await.unwrap();
+    let name = nodes.first().unwrap().name.clone();
+    let result = rc.get_node_memory_footprint(&name).await;
+
+    assert!(result.is_ok());
+    let footprint = result.unwrap();
+
+    // In some cases (e.g. early in node boot), these metrics won't yet be available.
+    match footprint.breakdown {
+        Some(breakdown) => {
+            assert!(breakdown.total.rss > 0);
+            assert!(breakdown.total.allocated > 0);
+            assert!(breakdown.total.used_by_runtime > 0);
+            assert!(!breakdown.calculation_strategy.is_empty());
+        }
+        None => {
+            // OK
+        }
+    }
+}

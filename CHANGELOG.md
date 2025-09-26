@@ -2,7 +2,14 @@
 
 ## v0.59.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * `NodeMemoryFootprint#breakdown` is now an `Option<NodeMemoryBreakdown>` to handle cases
+   where the node memory breakdown stats are not yet available.
+
+### Bug Fixes
+
+ * `NodeMemoryTotals#max` now correctly compares all three memory totals (RSS, allocated, and used by runtime) instead of comparing RSS twice.
 
 ## v0.58.0 (Sep 23, 2025)
 
