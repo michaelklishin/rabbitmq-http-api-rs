@@ -16,6 +16,29 @@ use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
 
+/// Configuration for HTTP request retry behavior.
+///
+/// This controls how many times HTTP requests will be retried and the delay between attempts.
+/// By default, no retries are performed to maintain backward compatibility.
+#[derive(Debug, Clone, PartialEq)]
+pub struct RetrySettings {
+    /// Maximum number of retry attempts (not including the initial request).
+    /// A value of 0 means "no retries will be performed", 1 means one retry attempt, etc.
+    pub max_attempts: u32,
+    /// A fixed delay between retry attempts in milliseconds.
+    pub delay_ms: u64,
+}
+
+impl Default for RetrySettings {
+    fn default() -> Self {
+        Self {
+            // No retries by default for backward compatibility
+            max_attempts: 0,
+            delay_ms: 1000,
+        }
+    }
+}
+
 pub type Username = String;
 pub type VirtualHostName = String;
 pub type PermissionPattern = String;
@@ -26,7 +49,7 @@ pub type ChannelId = u32;
 #[serde(rename_all(serialize = "lowercase", deserialize = "PascalCase"))]
 pub enum SupportedProtocol {
     /// Represents the inter-node and CLI tool communication protocol
-    /// (a.k.a. the Erlang distributions protocol)
+    /// (a.k.a. the Erlang distribution protocol)
     Clustering,
     /// Represents both AMQP 1.0 and AMQP 0-9-1 because they share a listener
     #[serde(rename = "amqp")]

@@ -42,4 +42,5 @@ mod users;
 mod vhosts;
 
 // Re-export for backwards compatibility.
+pub use crate::commons::RetrySettings;
 pub use client::{Client, ClientBuilder, HttpClientError, HttpClientResponse, Result};

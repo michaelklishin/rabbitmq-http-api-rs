@@ -2,7 +2,25 @@
 
 ## v0.60.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * HTTP request retry support. Both `ClientBuilder` implementations now allow for minimalistic retry behavior configuration:
+   the number of retry attempts and the fixed delay between them.
+
+   ```rust
+   use rabbitmq_http_client::api::{ClientBuilder, RetrySettings};
+
+   let client = ClientBuilder::new()
+       .with_endpoint("http://localhost:15672/api")
+       .with_basic_auth_credentials("user", "pass")
+       .with_retry_settings(RetrySettings {
+           // 2 retry attempts (+ 1 initial = 3 total attempts)
+           max_attempts: 2,
+           // a fixed wait of 500 ms between retries
+           delay_ms: 500,
+       })
+       .build();
+   ```
 
 ## v0.59.0 (Sep 26, 2025)
 

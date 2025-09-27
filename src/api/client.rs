@@ -13,11 +13,15 @@
 // limitations under the License.
 #![allow(clippy::result_large_err)]
 
+use crate::commons::RetrySettings;
 use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
 use backtrace::Backtrace;
 use reqwest::{Client as HttpClient, StatusCode, header::HeaderMap};
 use serde::Serialize;
 use std::fmt;
+use std::future::Future;
+use std::time::Duration;
+use tokio::time::sleep;
 
 pub type HttpClientResponse = reqwest::Response;
 pub type HttpClientError = crate::error::HttpClientError;
@@ -46,6 +50,7 @@ pub struct ClientBuilder<E = &'static str, U = &'static str, P = &'static str> {
     username: U,
     password: P,
     client: HttpClient,
+    retry_settings: RetrySettings,
 }
 
 impl Default for ClientBuilder {
@@ -69,6 +74,7 @@ impl ClientBuilder {
             username: "guest",
             password: "guest",
             client,
+            retry_settings: RetrySettings::default(),
         }
     }
 }
@@ -94,6 +100,7 @@ where
             username,
             password,
             client: self.client,
+            retry_settings: self.retry_settings,
         }
     }
 
@@ -110,6 +117,7 @@ where
             username: self.username,
             password: self.password,
             client: self.client,
+            retry_settings: self.retry_settings,
         }
     }
 
@@ -120,11 +128,27 @@ where
         ClientBuilder { client, ..self }
     }
 
+    /// Sets retry settings for HTTP requests. See [`RetrySettings`].
+    ///
+    /// By default, no retries are performed.
+    pub fn with_retry_settings(self, retry_settings: RetrySettings) -> Self {
+        ClientBuilder {
+            retry_settings,
+            ..self
+        }
+    }
+
     /// Builds and returns a configured `Client`.
     ///
     /// This consumes the `ClientBuilder`.
     pub fn build(self) -> Client<E, U, P> {
-        Client::from_http_client(self.client, self.endpoint, self.username, self.password)
+        Client::from_http_client_with_retry(
+            self.client,
+            self.endpoint,
+            self.username,
+            self.password,
+            self.retry_settings,
+        )
     }
 }
 
@@ -147,17 +171,18 @@ where
 /// let password = "password";
 /// let rc = Client::new(&endpoint, &username, &password);
 /// // list cluster nodes
-/// let _ = rc.list_nodes().await?;
+/// rc.list_nodes().await;
 /// // list user connections
-/// let _ = rc.list_connections().await?;
+/// rc.list_connections().await;
 /// // fetch information and metrics of a specific queue
-/// let _ = rc.get_queue_info("/", "qq.1").await;
+/// rc.get_queue_info("/", "qq.1").await;
 /// ```
 pub struct Client<E, U, P> {
     endpoint: E,
     username: U,
     password: P,
     client: HttpClient,
+    retry_settings: RetrySettings,
 }
 
 impl<E, U, P> Client<E, U, P>
@@ -191,6 +216,7 @@ where
             username,
             password,
             client,
+            retry_settings: RetrySettings::default(),
         }
     }
 
@@ -214,6 +240,25 @@ where
             username,
             password,
             client,
+            retry_settings: RetrySettings::default(),
+        }
+    }
+
+    /// Instantiates a client for the specified endpoint with user credentials,
+    /// a pre-built HttpClient, and retry settings.
+    pub fn from_http_client_with_retry(
+        client: HttpClient,
+        endpoint: E,
+        username: U,
+        password: P,
+        retry_settings: RetrySettings,
+    ) -> Self {
+        Self {
+            endpoint,
+            username,
+            password,
+            client,
+            retry_settings,
         }
     }
 
@@ -227,6 +272,30 @@ where
     //
     // Implementation
     //
+
+    async fn with_retry<F, Fut>(&self, operation: F) -> Result<HttpClientResponse>
+    where
+        F: Fn() -> Fut,
+        Fut: Future<Output = Result<HttpClientResponse>>,
+    {
+        let mut last_error = None;
+        let n = self.retry_settings.max_attempts;
+        for attempt in 0..=n {
+            match operation().await {
+                Ok(response) => return Ok(response),
+                Err(e) => {
+                    last_error = Some(e);
+
+                    // Don't sleep after the last attempt
+                    if attempt < n {
+                        sleep(Duration::from_millis(self.retry_settings.delay_ms)).await;
+                    }
+                }
+            }
+        }
+
+        Err(last_error.unwrap())
+    }
 
     pub(crate) async fn get_api_request<T, S>(&self, path: S) -> Result<T>
     where
@@ -273,20 +342,25 @@ where
     where
         S: AsRef<str>,
     {
-        let response = self
-            .client
-            .get(self.rooted_path(path))
-            .basic_auth(&self.username, Some(&self.password))
-            .send()
-            .await?;
-        let response = self
-            .ok_or_status_code_error(
+        let rooted_path = self.rooted_path(path);
+        let username = self.username.to_string();
+        let password = self.password.to_string();
+
+        self.with_retry(|| async {
+            let response = self
+                .client
+                .get(&rooted_path)
+                .basic_auth(&username, Some(&password))
+                .send()
+                .await?;
+            self.ok_or_status_code_error(
                 response,
                 client_code_to_accept_or_ignore,
                 server_code_to_accept_or_ignore,
             )
-            .await?;
-        Ok(response)
+            .await
+        })
+        .await
     }
 
     pub(crate) async fn http_put<S, T>(
@@ -300,21 +374,26 @@ where
         S: AsRef<str>,
         T: Serialize,
     {
-        let response = self
-            .client
-            .put(self.rooted_path(path))
-            .json(&payload)
-            .basic_auth(&self.username, Some(&self.password))
-            .send()
-            .await?;
-        let response = self
-            .ok_or_status_code_error(
+        let rooted_path = self.rooted_path(path);
+        let username = self.username.to_string();
+        let password = self.password.to_string();
+
+        self.with_retry(|| async {
+            let response = self
+                .client
+                .put(&rooted_path)
+                .json(payload)
+                .basic_auth(&username, Some(&password))
+                .send()
+                .await?;
+            self.ok_or_status_code_error(
                 response,
                 client_code_to_accept_or_ignore,
                 server_code_to_accept_or_ignore,
             )
-            .await?;
-        Ok(response)
+            .await
+        })
+        .await
     }
 
     pub(crate) async fn http_post<S, T>(
@@ -328,21 +407,26 @@ where
         S: AsRef<str>,
         T: Serialize,
     {
-        let response = self
-            .client
-            .post(self.rooted_path(path))
-            .json(&payload)
-            .basic_auth(&self.username, Some(&self.password))
-            .send()
-            .await?;
-        let response = self
-            .ok_or_status_code_error(
+        let rooted_path = self.rooted_path(path);
+        let username = self.username.to_string();
+        let password = self.password.to_string();
+
+        self.with_retry(|| async {
+            let response = self
+                .client
+                .post(&rooted_path)
+                .json(payload)
+                .basic_auth(&username, Some(&password))
+                .send()
+                .await?;
+            self.ok_or_status_code_error(
                 response,
                 client_code_to_accept_or_ignore,
                 server_code_to_accept_or_ignore,
             )
-            .await?;
-        Ok(response)
+            .await
+        })
+        .await
     }
 
     pub(crate) async fn http_post_without_body<S>(
@@ -354,20 +438,25 @@ where
     where
         S: AsRef<str>,
     {
-        let response = self
-            .client
-            .post(self.rooted_path(path))
-            .basic_auth(&self.username, Some(&self.password))
-            .send()
-            .await?;
-        let response = self
-            .ok_or_status_code_error(
+        let rooted_path = self.rooted_path(path);
+        let username = self.username.to_string();
+        let password = self.password.to_string();
+
+        self.with_retry(|| async {
+            let response = self
+                .client
+                .post(&rooted_path)
+                .basic_auth(&username, Some(&password))
+                .send()
+                .await?;
+            self.ok_or_status_code_error(
                 response,
                 client_code_to_accept_or_ignore,
                 server_code_to_accept_or_ignore,
             )
-            .await?;
-        Ok(response)
+            .await
+        })
+        .await
     }
 
     pub(crate) async fn http_delete<S>(
@@ -379,20 +468,25 @@ where
     where
         S: AsRef<str>,
     {
-        let response = self
-            .client
-            .delete(self.rooted_path(path))
-            .basic_auth(&self.username, Some(&self.password))
-            .send()
-            .await?;
-        let response = self
-            .ok_or_status_code_error(
+        let rooted_path = self.rooted_path(path);
+        let username = self.username.to_string();
+        let password = self.password.to_string();
+
+        self.with_retry(|| async {
+            let response = self
+                .client
+                .delete(&rooted_path)
+                .basic_auth(&username, Some(&password))
+                .send()
+                .await?;
+            self.ok_or_status_code_error(
                 response,
                 client_code_to_accept_or_ignore,
                 server_code_to_accept_or_ignore,
             )
-            .await?;
-        Ok(response)
+            .await
+        })
+        .await
     }
 
     pub(crate) async fn http_delete_with_headers<S>(
@@ -405,21 +499,26 @@ where
     where
         S: AsRef<str>,
     {
-        let response = self
-            .client
-            .delete(self.rooted_path(path))
-            .basic_auth(&self.username, Some(&self.password))
-            .headers(headers)
-            .send()
-            .await?;
-        let response = self
-            .ok_or_status_code_error(
+        let rooted_path = self.rooted_path(path);
+        let username = self.username.to_string();
+        let password = self.password.to_string();
+
+        self.with_retry(|| async {
+            let response = self
+                .client
+                .delete(&rooted_path)
+                .basic_auth(&username, Some(&password))
+                .headers(headers.clone())
+                .send()
+                .await?;
+            self.ok_or_status_code_error(
                 response,
                 client_code_to_accept_or_ignore,
                 server_code_to_accept_or_ignore,
             )
-            .await?;
-        Ok(response)
+            .await
+        })
+        .await
     }
 
     pub(crate) async fn ok_or_status_code_error(
