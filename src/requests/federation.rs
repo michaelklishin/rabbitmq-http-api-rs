@@ -79,7 +79,7 @@ impl<'a> QueueFederationParams<'a> {
     pub fn new(queue: &'a str) -> Self {
         Self {
             queue: Some(queue),
-            consumer_tag: None,
+            ..Default::default()
         }
     }
 
@@ -119,12 +119,8 @@ impl ExchangeFederationParams<'_> {
     /// for the federation link. Use quorum queues for durability or classic for simplicity.
     pub fn new(queue_type: QueueType) -> Self {
         Self {
-            exchange: None,
-            max_hops: None,
             queue_type,
-            ttl: None,
-            message_ttl: None,
-            resource_cleanup_mode: FederationResourceCleanupMode::default(),
+            ..Default::default()
         }
     }
 }
