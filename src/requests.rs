@@ -99,6 +99,6 @@ pub struct EmptyPayload;
 impl EmptyPayload {
     /// Returns a new empty payload instance.
     pub fn new() -> Self {
-        Self::default()
+        Self
     }
 }
