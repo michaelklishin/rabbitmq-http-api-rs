@@ -16,6 +16,7 @@
 use crate::commons::RetrySettings;
 use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
 use backtrace::Backtrace;
+use log::trace;
 use reqwest::{StatusCode, blocking::Client as HttpClient, header::HeaderMap};
 use serde::Serialize;
 use std::fmt;
@@ -210,6 +211,11 @@ where
     pub fn new(endpoint: E, username: U, password: P) -> Self {
         let client = HttpClient::builder().build().unwrap();
 
+        trace!(
+            "Created new blocking RabbitMQ HTTP API client for endpoint: {}",
+            endpoint
+        );
+
         Self {
             endpoint,
             username,
@@ -280,8 +286,24 @@ where
         let n = self.retry_settings.max_attempts;
         for attempt in 0..=n {
             match operation() {
-                Ok(response) => return Ok(response),
+                Ok(response) => {
+                    if attempt > 0 {
+                        trace!("Request succeeded after {} retry attempt(s)", attempt);
+                    }
+                    return Ok(response);
+                }
                 Err(e) => {
+                    if attempt < n {
+                        trace!(
+                            "Request failed on attempt {}/{}, retrying in {}ms: {}",
+                            attempt + 1,
+                            n + 1,
+                            self.retry_settings.delay_ms,
+                            e
+                        );
+                    } else {
+                        trace!("Request failed after {} attempt(s): {}", n + 1, e);
+                    }
                     last_error = Some(e);
 
                     // Don't sleep after the last attempt
@@ -348,6 +370,8 @@ where
         let username = self.username.to_string();
         let password = self.password.to_string();
 
+        trace!("HTTP GET: {}", rooted_path);
+
         self.with_retry(|| {
             let response = self
                 .client
@@ -376,6 +400,12 @@ where
         let rooted_path = self.rooted_path(path);
         let username = self.username.to_string();
         let password = self.password.to_string();
+
+        if let Ok(body) = serde_json::to_string_pretty(payload) {
+            trace!("HTTP PUT: {}\nRequest body:\n{}", rooted_path, body);
+        } else {
+            trace!("HTTP PUT: {}", rooted_path);
+        }
 
         self.with_retry(|| {
             let response = self
@@ -406,6 +436,12 @@ where
         let rooted_path = self.rooted_path(path);
         let username = self.username.to_string();
         let password = self.password.to_string();
+
+        if let Ok(body) = serde_json::to_string_pretty(payload) {
+            trace!("HTTP POST: {}\nRequest body:\n{}", rooted_path, body);
+        } else {
+            trace!("HTTP POST: {}", rooted_path);
+        }
 
         self.with_retry(|| {
             let response = self
@@ -462,6 +498,8 @@ where
         let username = self.username.to_string();
         let password = self.password.to_string();
 
+        trace!("HTTP DELETE: {}", rooted_path);
+
         self.with_retry(|| {
             let response = self
                 .client
@@ -517,6 +555,7 @@ where
             Some(status_code) if status_code == StatusCode::NOT_FOUND => {}
             _ => {
                 if status == StatusCode::NOT_FOUND {
+                    trace!("Resource not found (404) at {}", response.url());
                     return Err(NotFound);
                 }
             }
@@ -531,6 +570,7 @@ where
                     // this consumes `self` and makes the response largely useless to the caller,
                     // so we copy the key parts into the error first
                     let body = response.text()?;
+                    trace!("Client error response: {} from {}: {}", status, url, body);
                     return Err(ClientErrorResponse {
                         url: Some(url),
                         body: Some(body),
@@ -551,6 +591,7 @@ where
                     // this consumes `self` and makes the response largely useless to the caller,
                     // so we copy the key parts into the error first
                     let body = response.text()?;
+                    trace!("Server error response: {} from {}: {}", status, url, body);
                     return Err(ServerErrorResponse {
                         url: Some(url),
                         body: Some(body),

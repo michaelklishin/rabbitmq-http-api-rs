@@ -2,7 +2,9 @@
 
 ## v0.61.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * Integrated logging with the `log` crate. Both clients now emit trace-level logs for HTTP operations, including request/response details and retry attempts.
 
 ## v0.60.0 (Sep 28, 2025)
 
