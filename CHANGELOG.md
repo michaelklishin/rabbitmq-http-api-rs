@@ -4,7 +4,7 @@
 
 ### Enhancements
 
- * Integrated logging with the `log` crate. Both clients now emit trace-level logs for HTTP operations, including request/response details and retry attempts.
+ * Logging via the `log` crate. Both clients now emit trace-level logs for HTTP operations, including request/response details and retry attempts.
 
 ## v0.60.0 (Sep 28, 2025)
 
@@ -133,7 +133,7 @@
    let settings = TlsClientSettings::new()
         .peer_verification(TlsPeerVerificationMode::Enabled)
         .ca_cert_file("/path/to/ca_bundle.pem");
-   
+
    let uri = UriBuilder::new("amqps://user:pass@localhost:5671/vhost?verify=verify_none")
        .unwrap()
        .replace(settings)
@@ -158,7 +158,7 @@
 
 ### Enhancements
 
- * `responses::TagList`, `responses::PluginList`, `responses::XArguments`, `responses::NodeList`, `responses::MessageList`,`responses::FeatureFlagList`,  
+ * `responses::TagList`, `responses::PluginList`, `responses::XArguments`, `responses::NodeList`, `responses::MessageList`,`responses::FeatureFlagList`,
    `responses::DeprecatedFeatureList` now all implement `Deref` and `DerefMut`
  * `responses::Channel#state` now uses an enum, `responses::ChannelState`, instead of a string.
  * `Client#enable_vhost_deletion_protection` [protects](https://www.rabbitmq.com/docs/vhosts#deletion-protection) a virtual host from deletion (using the `POST /api/vhosts/{vhost}/deletion/protection` endpoint).
@@ -173,7 +173,7 @@
 
 ### Bug Fixes
 
- * `Client#delete_binding` could panic if the optional `x-arguments` value was passed in as `None` 
+ * `Client#delete_binding` could panic if the optional `x-arguments` value was passed in as `None`
  * `api::Client#enable_schema_definition_sync_on_node` was unintentionally named `enable_schema_definition_sync_one_node`
 
 ## v0.50.0 (Sep 13, 2025)
