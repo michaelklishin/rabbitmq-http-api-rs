@@ -6,6 +6,26 @@
 
  * Logging via the `log` crate. Both clients now emit trace-level logs for HTTP operations, including request/response details and retry attempts.
 
+ * HTTP request timeout support. Both `ClientBuilder` implementations now provide a `with_request_timeout` method
+   for configuring request timeouts:
+
+   ```rust
+   use std::time::Duration;
+   use rabbitmq_http_client::api::ClientBuilder;
+
+   let client = ClientBuilder::new()
+       .with_endpoint("http://localhost:15672/api")
+       .with_basic_auth_credentials("user", "pass")
+       .with_request_timeout(Duration::from_secs(30))
+       .build();
+   ```
+
+   The timeout applies to the entire request/response cycle.
+   If a request takes longer than the configured duration, it will be aborted and return a timeout error.
+
+   Note that this new setting is ignored if a custom HTTP client is provided via `ClientBuilder#with_client`.
+   In that case, configure the timeout directly on the custom client instead.
+
 ## v0.60.0 (Sep 28, 2025)
 
 ### Enhancements

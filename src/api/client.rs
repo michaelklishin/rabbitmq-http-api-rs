@@ -50,8 +50,9 @@ pub struct ClientBuilder<E = &'static str, U = &'static str, P = &'static str> {
     endpoint: E,
     username: U,
     password: P,
-    client: HttpClient,
+    client: Option<HttpClient>,
     retry_settings: RetrySettings,
+    request_timeout: Option<Duration>,
 }
 
 impl Default for ClientBuilder {
@@ -69,13 +70,13 @@ impl ClientBuilder {
     /// Note that the default credentials are [limited to local connections](https://www.rabbitmq.com/docs/access-control)
     /// for security reasons.
     pub fn new() -> Self {
-        let client = HttpClient::new();
         Self {
             endpoint: "http://localhost:15672/api",
             username: "guest",
             password: "guest",
-            client,
+            client: None,
             retry_settings: RetrySettings::default(),
+            request_timeout: None,
         }
     }
 }
@@ -102,6 +103,7 @@ where
             password,
             client: self.client,
             retry_settings: self.retry_settings,
+            request_timeout: self.request_timeout,
         }
     }
 
@@ -119,14 +121,48 @@ where
             password: self.password,
             client: self.client,
             retry_settings: self.retry_settings,
+            request_timeout: self.request_timeout,
         }
     }
 
     /// Sets a custom HTTP client.
     ///
     /// Use a custom HTTP client to configure custom timeouts, proxy settings, TLS configuration.
+    ///
+    /// Note: If you provide a custom client, the timeout set via [`with_request_timeout`]
+    /// will be ignored. Configure timeouts directly on your custom client instead.
     pub fn with_client(self, client: HttpClient) -> Self {
-        ClientBuilder { client, ..self }
+        ClientBuilder {
+            client: Some(client),
+            ..self
+        }
+    }
+
+    /// Sets the request timeout for HTTP operations.
+    ///
+    /// This timeout applies to the entire request/response cycle, including connection establishment,
+    /// request transmission, and response receipt. If a request takes longer than this duration,
+    /// it will be aborted and return a timeout error.
+    ///
+    /// **Important**: this setting is ignored if a custom HTTP client is used via [`with_client`].
+    /// In that case, configure the timeout on the custom client instead.
+    ///
+    /// # Example
+    /// ```rust
+    /// use std::time::Duration;
+    /// use rabbitmq_http_client::api::ClientBuilder;
+    ///
+    /// let client = ClientBuilder::new()
+    ///     .with_endpoint("http://localhost:15672/api")
+    ///     .with_basic_auth_credentials("user", "password")
+    ///     .with_request_timeout(Duration::from_secs(30))
+    ///     .build();
+    /// ```
+    pub fn with_request_timeout(self, timeout: Duration) -> Self {
+        ClientBuilder {
+            request_timeout: Some(timeout),
+            ..self
+        }
     }
 
     /// Sets retry settings for HTTP requests. See [`RetrySettings`].
@@ -143,8 +179,19 @@ where
     ///
     /// This consumes the `ClientBuilder`.
     pub fn build(self) -> Client<E, U, P> {
+        let client = match self.client {
+            Some(c) => c,
+            None => {
+                let mut builder = HttpClient::builder();
+                if let Some(timeout) = self.request_timeout {
+                    builder = builder.timeout(timeout);
+                }
+                builder.build().unwrap()
+            }
+        };
+
         Client::from_http_client_with_retry(
-            self.client,
+            client,
             self.endpoint,
             self.username,
             self.password,
