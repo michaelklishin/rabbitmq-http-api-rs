@@ -38,6 +38,13 @@ pub trait QueueOps {
 
     /// Returns the x-arguments of this object.
     fn x_arguments(&self) -> &XArguments;
+
+    /// Returns true if the queue is server-named.
+    /// See the [Queues guide](https://www.rabbitmq.com/docs/queues#server-named-queues) to learn more.
+    fn is_server_named(&self) -> bool {
+        let name = self.name();
+        name.is_empty() || name.starts_with("amq.")
+    }
 }
 
 pub trait OptionalArgumentSourceOps {

@@ -1,8 +1,14 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.63.0 (in development)
+## v0.64.0 (in development)
 
 No changes yet.
+
+## v0.63.0 (Oct 9, 2025)
+
+### Bug Fixes
+
+ * Reintroduced `QueueOps#is_server_named`, which was unintentionally lost during a refactoring
 
 ## v0.62.0 (Oct 9, 2025)
 
