@@ -2,7 +2,10 @@
 
 ## v0.62.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * `Client#list_all_cluster_plugins` is a new function that returns a combined set of plugins enabled across all cluster nodes
+ * `Client#list_node_plugins` is a new function that returns the list of plugins enabled on a specific node
 
 ## v0.61.0 (Oct 8, 2025)
 

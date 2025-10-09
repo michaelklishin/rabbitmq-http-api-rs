@@ -41,4 +41,28 @@ where
         let response = response.json()?;
         Ok(response)
     }
+
+    /// Returns a unique set of plugins enabled on all cluster nodes.
+    /// See [RabbitMQ Plugins Guide](https://www.rabbitmq.com/docs/plugins) to learn more.
+    pub fn list_all_cluster_plugins(&self) -> Result<responses::PluginList> {
+        let nodes = self.list_nodes()?;
+
+        let mut aggregated_set: Vec<String> = nodes
+            .into_iter()
+            .flat_map(|node| node.enabled_plugins.into_iter())
+            .collect::<std::collections::HashSet<_>>()
+            .into_iter()
+            .collect();
+
+        aggregated_set.sort();
+        Ok(responses::PluginList(aggregated_set))
+    }
+
+    /// Returns the list of plugins enabled on a specific cluster node.
+    /// This is a convenience method equivalent to `get_node_info(name).enabled_plugins`.
+    /// See [RabbitMQ Plugins Guide](https://www.rabbitmq.com/docs/plugins) to learn more.
+    pub fn list_node_plugins(&self, name: &str) -> Result<responses::PluginList> {
+        let node = self.get_node_info(name)?;
+        Ok(node.enabled_plugins)
+    }
 }

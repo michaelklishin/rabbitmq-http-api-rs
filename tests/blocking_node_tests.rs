@@ -64,3 +64,31 @@ fn test_blocking_get_node_memory_footprint() {
         }
     }
 }
+
+#[test]
+fn test_blocking_list_all_cluster_plugins() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+    let result = rc.list_all_cluster_plugins();
+
+    assert!(result.is_ok());
+    let plugins = result.unwrap();
+    assert!(!plugins.is_empty());
+    // The management plugin should be enabled since we're using the HTTP API
+    assert!(plugins.contains("rabbitmq_management"));
+}
+
+#[test]
+fn test_blocking_list_node_plugins() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+    let nodes = rc.list_nodes().unwrap();
+    let name = nodes.first().unwrap().name.clone();
+    let result = rc.list_node_plugins(&name);
+
+    assert!(result.is_ok());
+    let plugins = result.unwrap();
+    assert!(!plugins.is_empty());
+    // The management plugin should be enabled since we're using the HTTP API
+    assert!(plugins.contains("rabbitmq_management"));
+}
