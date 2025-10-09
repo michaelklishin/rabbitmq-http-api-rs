@@ -45,6 +45,12 @@ pub trait QueueOps {
         let name = self.name();
         name.is_empty() || name.starts_with("amq.")
     }
+
+    /// Returns true if the queue has a queue TTL (expiration) x-argument.
+    /// See the [TTL guide](https://www.rabbitmq.com/docs/ttl) to learn more.
+    fn has_queue_ttl_arg(&self) -> bool {
+        self.x_arguments().contains_key(XArguments::X_EXPIRES_KEY)
+    }
 }
 
 pub trait OptionalArgumentSourceOps {
