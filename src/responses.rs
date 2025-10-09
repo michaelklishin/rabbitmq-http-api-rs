@@ -15,6 +15,7 @@
 //! Types in this module are used to represent API responses, such as [`QueueDefinition`], [`PolicyDefinition`],
 //! [`User`], [`VirtualHost`], [`Shovel`] or [`FederationLink`].
 
+use std::collections::HashSet;
 use std::fmt;
 use std::ops::{Deref, DerefMut};
 
@@ -152,7 +153,10 @@ impl IntoIterator for TagList {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
+/// A set of RabbitMQ plugin names.
+///
+/// When constructed (deserialized), all values are sorted alphabetically.
+#[derive(Debug, Serialize, Clone, PartialEq, Eq, Hash)]
 pub struct PluginList(pub Vec<String>);
 
 impl PluginList {
@@ -197,6 +201,19 @@ impl IntoIterator for PluginList {
 
     fn into_iter(self) -> Self::IntoIter {
         self.0.into_iter()
+    }
+}
+
+impl<'de> Deserialize<'de> for PluginList {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let vec = Vec::<String>::deserialize(deserializer)?;
+        let unique: HashSet<_> = vec.into_iter().collect();
+        let mut sorted: Vec<_> = unique.into_iter().collect();
+        sorted.sort();
+        Ok(PluginList(sorted))
     }
 }
 
