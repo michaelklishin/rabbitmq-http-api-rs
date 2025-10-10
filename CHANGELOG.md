@@ -2,7 +2,9 @@
 
 ## v0.65.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * `Overview#has_jit_enabled` is a new method that returns `true` if the Erlang runtime has the JIT enabled
 
 ## v0.64.0 (Oct 9, 2025)
 

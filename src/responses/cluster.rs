@@ -504,6 +504,12 @@ pub struct Overview {
     pub message_stats: MessageStats,
 }
 
+impl Overview {
+    pub fn has_jit_enabled(&self) -> bool {
+        self.erlang_full_version.contains("[jit]")
+    }
+}
+
 /// Garbage collection details for queue processes
 #[derive(Debug, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]

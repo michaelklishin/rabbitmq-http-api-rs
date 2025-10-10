@@ -27,3 +27,18 @@ fn test_blocking_overview() {
     let ov = result1.unwrap();
     assert!(ov.object_totals.exchanges > 0);
 }
+
+#[test]
+fn test_blocking_overview_jit_detection() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let result = rc.overview();
+    assert!(result.is_ok(), "overview returned {result:?}");
+
+    let ov = result.unwrap();
+
+    // The method should return true if [jit] is in erlang_full_version, false otherwise
+    let has_jit = ov.erlang_full_version.contains("[jit]");
+    assert_eq!(ov.has_jit_enabled(), has_jit);
+}
