@@ -14,14 +14,16 @@
 
 use crate::{commons::SupportedProtocol, error::Error, path, responses};
 use reqwest::StatusCode;
+use std::fmt::Display;
+use std::result::Result as StdResult;
 
 use super::client::{Client, HttpClientError, Result};
 
 impl<E, U, P> Client<E, U, P>
 where
-    E: std::fmt::Display,
-    U: std::fmt::Display,
-    P: std::fmt::Display,
+    E: Display,
+    U: Display,
+    P: Display,
 {
     /// Performs a cluster-wide health check for any active resource alarms in the cluster.
     /// See [Monitoring and Health Checks Guide](https://www.rabbitmq.com/docs/monitoring#health-checks) to learn more.
@@ -60,10 +62,7 @@ where
         self.boolean_health_check(&path).await
     }
 
-    pub(crate) async fn boolean_health_check(
-        &self,
-        path: &str,
-    ) -> std::result::Result<(), HttpClientError> {
+    pub(crate) async fn boolean_health_check(&self, path: &str) -> StdResult<(), HttpClientError> {
         // we expect that StatusCode::SERVICE_UNAVAILABLE may be return and ignore
         // it here to provide a custom error type later
         let response = self

@@ -20,12 +20,13 @@ use crate::{
 use serde_json::{Map, Value, json};
 
 use super::client::{Client, Result};
+use std::fmt::Display;
 
 impl<E, U, P> Client<E, U, P>
 where
-    E: std::fmt::Display,
-    U: std::fmt::Display,
-    P: std::fmt::Display,
+    E: Display,
+    U: Display,
+    P: Display,
 {
     /// Lists all queues and streams across the cluster.
     /// See [Queues Guide](https://www.rabbitmq.com/docs/queues) and [RabbitMQ Streams Guide](https://www.rabbitmq.com/docs/streams) to learn more.

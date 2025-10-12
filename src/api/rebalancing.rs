@@ -15,12 +15,13 @@
 use serde_json::json;
 
 use super::client::{Client, Result};
+use std::fmt::Display;
 
 impl<E, U, P> Client<E, U, P>
 where
-    E: std::fmt::Display,
-    U: std::fmt::Display,
-    P: std::fmt::Display,
+    E: Display,
+    U: Display,
+    P: Display,
 {
     pub async fn rebalance_queue_leaders(&self) -> Result<()> {
         self.http_post("rebalance/queues", &json!({}), None, None)

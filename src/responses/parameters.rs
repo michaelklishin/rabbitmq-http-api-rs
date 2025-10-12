@@ -18,6 +18,7 @@ use std::ops::Deref;
 
 use crate::commons::VirtualHostName;
 use crate::formatting::*;
+use serde::de::{MapAccess, SeqAccess, Visitor, value::MapAccessDeserializer};
 use serde::{Deserialize, Serialize};
 use serde_json::Map;
 
@@ -89,8 +90,6 @@ fn deserialize_runtime_parameter_value<'de, D>(
 where
     D: serde::Deserializer<'de>,
 {
-    use serde::de::{MapAccess, Visitor};
-
     struct MapVisitor<T> {
         default: T,
     }
@@ -104,7 +103,7 @@ where
 
         fn visit_seq<A>(self, _seq: A) -> Result<Self::Value, A::Error>
         where
-            A: serde::de::SeqAccess<'de>,
+            A: SeqAccess<'de>,
         {
             Ok(self.default)
         }
@@ -113,8 +112,8 @@ where
         where
             A: MapAccess<'de>,
         {
-            let deserializer = serde::de::value::MapAccessDeserializer::new(map);
-            let m = serde::Deserialize::deserialize(deserializer)?;
+            let deserializer = MapAccessDeserializer::new(map);
+            let m = Deserialize::deserialize(deserializer)?;
             Ok(m)
         }
     }

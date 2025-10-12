@@ -15,12 +15,13 @@
 use crate::{error::Error, path, requests, responses};
 
 use super::client::{Client, Result};
+use std::fmt::Display;
 
 impl<E, U, P> Client<E, U, P>
 where
-    E: std::fmt::Display,
-    U: std::fmt::Display,
-    P: std::fmt::Display,
+    E: Display,
+    U: Display,
+    P: Display,
 {
     /// Lists all permissions in the cluster.
     /// See [Access Control Guide](https://www.rabbitmq.com/docs/access-control) to learn more.

@@ -13,14 +13,16 @@
 // limitations under the License.
 
 use crate::{path, responses};
+use std::collections::HashSet;
+use std::fmt::Display;
 
 use super::client::{Client, Result};
 
 impl<E, U, P> Client<E, U, P>
 where
-    E: std::fmt::Display,
-    U: std::fmt::Display,
-    P: std::fmt::Display,
+    E: Display,
+    U: Display,
+    P: Display,
 {
     /// Lists cluster nodes.
     /// See [RabbitMQ Clustering Guide](https://www.rabbitmq.com/docs/clustering) to learn more.
@@ -50,7 +52,7 @@ where
         let mut aggregated_set: Vec<String> = nodes
             .into_iter()
             .flat_map(|node| node.enabled_plugins.into_iter())
-            .collect::<std::collections::HashSet<_>>()
+            .collect::<HashSet<_>>()
             .into_iter()
             .collect();
 

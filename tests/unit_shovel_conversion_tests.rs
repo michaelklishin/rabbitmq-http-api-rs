@@ -13,6 +13,8 @@
 // limitations under the License.
 mod test_helpers;
 
+use std::error::Error;
+
 use rabbitmq_http_client::{
     commons::{MessageTransferAcknowledgementMode, TlsPeerVerificationMode},
     requests::{RuntimeParameterDefinition, shovels::OwnedShovelParams},
@@ -416,7 +418,7 @@ fn test_shovel_disable_tls_peer_verification_scenario() {
     );
 
     // 2. Function to disable TLS peer verification in a URI
-    let disable_tls_peer_verification = |uri: &str| -> Result<String, Box<dyn std::error::Error>> {
+    let disable_tls_peer_verification = |uri: &str| -> Result<String, Box<dyn Error>> {
         let updated_uri = UriBuilder::new(uri)?
             .with_tls_peer_verification(TlsPeerVerificationMode::Disabled)
             .build()?;
@@ -543,7 +545,7 @@ fn test_shovel_add_tls_peer_verification_to_plain_uri() {
     assert!(!owned_params.destination_uri.contains("verify="));
 
     // Function to add comprehensive TLS settings
-    let add_tls_settings = |uri: &str| -> Result<String, Box<dyn std::error::Error>> {
+    let add_tls_settings = |uri: &str| -> Result<String, Box<dyn Error>> {
         let updated_uri = UriBuilder::new(uri)?
             .with_tls_peer_verification(TlsPeerVerificationMode::Enabled)
             .with_ca_cert_file("/path/to/ca_bundle.pem")
@@ -581,7 +583,7 @@ fn test_realistic_shovel_tls_bulk_update_scenario() {
     // This simulates what the user's example function would do
 
     // Helper function to simulate the disable_tls_peer_verification function
-    fn disable_tls_peer_verification(uri: &str) -> Result<String, Box<dyn std::error::Error>> {
+    fn disable_tls_peer_verification(uri: &str) -> Result<String, Box<dyn Error>> {
         let updated_uri = UriBuilder::new(uri)?
             .with_tls_peer_verification(TlsPeerVerificationMode::Disabled)
             .build()?;

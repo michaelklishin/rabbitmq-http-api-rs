@@ -17,12 +17,13 @@ use crate::requests::federation::{FEDERATION_UPSTREAM_COMPONENT, FederationUpstr
 use crate::responses::{FederationLink, FederationUpstream};
 
 use super::client::{Client, Result};
+use std::fmt::Display;
 
 impl<E, U, P> Client<E, U, P>
 where
-    E: std::fmt::Display,
-    U: std::fmt::Display,
-    P: std::fmt::Display,
+    E: Display,
+    U: Display,
+    P: Display,
 {
     /// Lists [federation](https://www.rabbitmq.com/docs/federation) upstreams defined in the cluster.
     pub fn list_federation_upstreams(&self) -> Result<Vec<FederationUpstream>> {

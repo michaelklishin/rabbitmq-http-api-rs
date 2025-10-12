@@ -19,12 +19,13 @@ use crate::{
 };
 
 use super::client::{Client, Result};
+use std::fmt::Display;
 
 impl<E, U, P> Client<E, U, P>
 where
-    E: std::fmt::Display,
-    U: std::fmt::Display,
-    P: std::fmt::Display,
+    E: Display,
+    U: Display,
+    P: Display,
 {
     /// Lists all [runtime parameters](https://www.rabbitmq.com/docs/parameters) defined in the cluster.
     pub async fn list_runtime_parameters(&self) -> Result<Vec<responses::RuntimeParameter>> {

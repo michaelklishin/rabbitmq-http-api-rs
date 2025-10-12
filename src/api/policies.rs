@@ -15,12 +15,13 @@
 use crate::{path, requests::PolicyParams, responses};
 
 use super::client::{Client, Result};
+use std::fmt::Display;
 
 impl<E, U, P> Client<E, U, P>
 where
-    E: std::fmt::Display,
-    U: std::fmt::Display,
-    P: std::fmt::Display,
+    E: Display,
+    U: Display,
+    P: Display,
 {
     /// Fetches a [policy](https://www.rabbitmq.com/docs/policies).
     pub async fn get_policy(&self, vhost: &str, name: &str) -> Result<responses::Policy> {

@@ -18,12 +18,13 @@ use crate::{
 };
 
 use super::client::{Client, Result};
+use std::fmt::Display;
 
 impl<E, U, P> Client<E, U, P>
 where
-    E: std::fmt::Display,
-    U: std::fmt::Display,
-    P: std::fmt::Display,
+    E: Display,
+    U: Display,
+    P: Display,
 {
     /// Lists all feature flags and their current states.
     /// See [Feature Flags Guide](https://www.rabbitmq.com/docs/feature-flags) to learn more.

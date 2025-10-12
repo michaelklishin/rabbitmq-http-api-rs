@@ -15,12 +15,13 @@
 use crate::responses;
 
 use super::client::{Client, Result};
+use std::fmt::Display;
 
 impl<E, U, P> Client<E, U, P>
 where
-    E: std::fmt::Display,
-    U: std::fmt::Display,
-    P: std::fmt::Display,
+    E: Display,
+    U: Display,
+    P: Display,
 {
     /// Provides an overview of the most commonly used cluster metrics.
     /// See `crate::responses::Overview`.

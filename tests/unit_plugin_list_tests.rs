@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::collections::HashSet;
+
 use rabbitmq_http_client::responses::PluginList;
 
 #[test]
@@ -25,7 +27,7 @@ fn test_unit_plugin_list_deserialization_with_duplicates() {
     assert!(plugins.contains("rabbitmq_shovel"));
 
     let vec: &Vec<String> = &plugins;
-    let unique_count = vec.iter().collect::<std::collections::HashSet<_>>().len();
+    let unique_count = vec.iter().collect::<HashSet<_>>().len();
     assert_eq!(vec.len(), unique_count);
 }
 

@@ -15,12 +15,13 @@
 use crate::responses::DeprecatedFeatureList;
 
 use super::client::{Client, Result};
+use std::fmt::Display;
 
 impl<E, U, P> Client<E, U, P>
 where
-    E: std::fmt::Display,
-    U: std::fmt::Display,
-    P: std::fmt::Display,
+    E: Display,
+    U: Display,
+    P: Display,
 {
     /// Lists all deprecated features.
     /// See [Deprecated Features](https://www.rabbitmq.com/docs/deprecated) to learn more.

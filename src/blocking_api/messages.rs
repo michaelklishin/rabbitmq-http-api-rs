@@ -16,12 +16,13 @@ use crate::{path, requests, responses};
 use serde_json::json;
 
 use super::client::{Client, Result};
+use std::fmt::Display;
 
 impl<E, U, P> Client<E, U, P>
 where
-    E: std::fmt::Display,
-    U: std::fmt::Display,
-    P: std::fmt::Display,
+    E: Display,
+    U: Display,
+    P: Display,
 {
     /// Only use this function in tests and experiments.
     /// Always use a messaging or streaming protocol client for publishing in production.

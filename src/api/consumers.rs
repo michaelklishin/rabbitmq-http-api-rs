@@ -15,12 +15,13 @@
 use crate::{path, responses};
 
 use super::client::{Client, Result};
+use std::fmt::Display;
 
 impl<E, U, P> Client<E, U, P>
 where
-    E: std::fmt::Display,
-    U: std::fmt::Display,
-    P: std::fmt::Display,
+    E: Display,
+    U: Display,
+    P: Display,
 {
     /// Lists all stream publishers across the cluster.
     pub async fn list_stream_publishers(&self) -> Result<Vec<responses::StreamPublisher>> {

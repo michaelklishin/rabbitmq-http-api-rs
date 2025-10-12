@@ -23,12 +23,13 @@ use crate::{
 use serde_json::{Map, Value, json};
 
 use super::client::{Client, Result};
+use std::fmt::Display;
 
 impl<E, U, P> Client<E, U, P>
 where
-    E: std::fmt::Display,
-    U: std::fmt::Display,
-    P: std::fmt::Display,
+    E: Display,
+    U: Display,
+    P: Display,
 {
     /// Lists all bindings (both queue-to-exchange and exchange-to-exchange ones) across the cluster.
     pub fn list_bindings(&self) -> Result<Vec<responses::BindingInfo>> {

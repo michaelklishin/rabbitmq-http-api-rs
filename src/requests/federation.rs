@@ -16,7 +16,7 @@ use crate::commons::{ChannelUseMode, MessageTransferAcknowledgementMode, QueueTy
 use crate::requests::parameters::RuntimeParameterDefinition;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, json};
-use std::fmt::{Display, Formatter};
+use std::fmt::{Display, Formatter, Result};
 
 /// Controls when federation resources (temporary queues/exchanges) are cleaned up.
 ///
@@ -49,7 +49,7 @@ impl From<String> for FederationResourceCleanupMode {
 }
 
 impl Display for FederationResourceCleanupMode {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         match self {
             FederationResourceCleanupMode::Default => write!(f, "default"),
             FederationResourceCleanupMode::Never => write!(f, "never"),

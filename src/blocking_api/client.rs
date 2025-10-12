@@ -19,14 +19,16 @@ use backtrace::Backtrace;
 use log::trace;
 use reqwest::{StatusCode, blocking::Client as HttpClient, header::HeaderMap};
 use serde::Serialize;
-use std::fmt;
+use serde::de::DeserializeOwned;
+use std::fmt::Display;
+use std::result;
 use std::thread::sleep;
 use std::time::Duration;
 
 pub type HttpClientResponse = reqwest::blocking::Response;
 pub type HttpClientError = crate::error::HttpClientError;
 
-pub type Result<T> = std::result::Result<T, HttpClientError>;
+pub type Result<T> = result::Result<T, HttpClientError>;
 
 /// A `ClientBuilder` can be used to create a `Client` with custom configuration.
 ///
@@ -82,9 +84,9 @@ impl ClientBuilder {
 
 impl<E, U, P> ClientBuilder<E, U, P>
 where
-    E: fmt::Display,
-    U: fmt::Display,
-    P: fmt::Display,
+    E: Display,
+    U: Display,
+    P: Display,
 {
     /// Sets the basic authentication credentials for HTTP requests.
     ///
@@ -97,8 +99,8 @@ where
         password: NewP,
     ) -> ClientBuilder<E, NewU, NewP>
     where
-        NewU: fmt::Display,
-        NewP: fmt::Display,
+        NewU: Display,
+        NewP: Display,
     {
         ClientBuilder {
             endpoint: self.endpoint,
@@ -116,7 +118,7 @@ where
     /// Some examples: `http://localhost:15672/api` or `https://rabbitmq.example.com:15672/api`.
     pub fn with_endpoint<T>(self, endpoint: T) -> ClientBuilder<T, U, P>
     where
-        T: fmt::Display,
+        T: Display,
     {
         ClientBuilder {
             endpoint,
@@ -238,9 +240,9 @@ pub struct Client<E, U, P> {
 
 impl<E, U, P> Client<E, U, P>
 where
-    E: fmt::Display,
-    U: fmt::Display,
-    P: fmt::Display,
+    E: Display,
+    U: Display,
+    P: Display,
 {
     /// Instantiates a client for the specified endpoint with username and password.
     ///
@@ -366,7 +368,7 @@ where
 
     pub(crate) fn get_api_request<T, S>(&self, path: S) -> Result<T>
     where
-        T: serde::de::DeserializeOwned,
+        T: DeserializeOwned,
         S: AsRef<str>,
     {
         let response = self.http_get(path, None, None)?;

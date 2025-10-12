@@ -19,12 +19,13 @@ use reqwest::{
 };
 
 use super::client::{Client, Result};
+use std::fmt::Display;
 
 impl<E, U, P> Client<E, U, P>
 where
-    E: std::fmt::Display,
-    U: std::fmt::Display,
-    P: std::fmt::Display,
+    E: Display,
+    U: Display,
+    P: Display,
 {
     /// Lists all AMQP 1.0 and 0-9-1 client connections across the cluster.
     /// See [Connections Guide](https://www.rabbitmq.com/docs/connections) to learn more.

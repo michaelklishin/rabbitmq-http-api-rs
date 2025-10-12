@@ -849,7 +849,7 @@ impl AsRef<str> for MessageTransferAcknowledgementMode {
 }
 
 impl Display for MessageTransferAcknowledgementMode {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             MessageTransferAcknowledgementMode::Immediate => write!(f, "no-ack"),
             MessageTransferAcknowledgementMode::WhenPublished => write!(f, "on-publish"),
@@ -902,7 +902,7 @@ impl AsRef<str> for ChannelUseMode {
 }
 
 impl Display for ChannelUseMode {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             ChannelUseMode::Multiple => write!(f, "multiple"),
             ChannelUseMode::Single => write!(f, "single"),

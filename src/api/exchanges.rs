@@ -15,12 +15,13 @@
 use crate::{path, requests::ExchangeParams, responses};
 
 use super::client::{Client, Result};
+use std::fmt::Display;
 
 impl<E, U, P> Client<E, U, P>
 where
-    E: std::fmt::Display,
-    U: std::fmt::Display,
-    P: std::fmt::Display,
+    E: Display,
+    U: Display,
+    P: Display,
 {
     /// Lists all exchanges across the cluster.
     /// See [Exchanges Guide](https://www.rabbitmq.com/docs/exchanges) to learn more.

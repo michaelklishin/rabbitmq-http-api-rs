@@ -108,7 +108,7 @@ pub enum HashingAlgorithm {
 }
 
 impl fmt::Display for HashingAlgorithm {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             HashingAlgorithm::SHA256 => write!(f, "SHA-256"),
             HashingAlgorithm::SHA512 => write!(f, "SHA-512"),

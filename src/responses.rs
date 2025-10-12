@@ -21,7 +21,7 @@ use std::ops::{Deref, DerefMut};
 
 use serde::{
     Deserialize, Serialize,
-    de::{MapAccess, Visitor},
+    de::{MapAccess, SeqAccess, Visitor, value::MapAccessDeserializer},
 };
 use serde_json::Map;
 
@@ -312,7 +312,7 @@ where
 
         fn visit_seq<A>(self, _seq: A) -> Result<Self::Value, A::Error>
         where
-            A: serde::de::SeqAccess<'de>,
+            A: SeqAccess<'de>,
         {
             // Treat a sequence as the default for the type.
             Ok(self.default)
@@ -322,7 +322,7 @@ where
         where
             A: MapAccess<'de>,
         {
-            let deserializer = serde::de::value::MapAccessDeserializer::new(map);
+            let deserializer = MapAccessDeserializer::new(map);
             let m = Deserialize::deserialize(deserializer)?;
             Ok(m)
         }
