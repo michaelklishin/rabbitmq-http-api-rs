@@ -14,6 +14,7 @@
 
 use crate::commons::{ChannelUseMode, MessageTransferAcknowledgementMode, QueueType};
 use crate::requests::parameters::RuntimeParameterDefinition;
+use crate::responses::FederationUpstream;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, json};
 use std::fmt::{Display, Formatter, Result};
@@ -288,8 +289,8 @@ pub struct OwnedExchangeFederationParams {
     pub resource_cleanup_mode: FederationResourceCleanupMode,
 }
 
-impl From<crate::responses::FederationUpstream> for OwnedFederationUpstreamParams {
-    fn from(upstream: crate::responses::FederationUpstream) -> Self {
+impl From<FederationUpstream> for OwnedFederationUpstreamParams {
+    fn from(upstream: FederationUpstream) -> Self {
         // Create queue federation parameters if queue-related fields are present
         let queue_federation = if upstream.queue.is_some() || upstream.consumer_tag.is_some() {
             Some(OwnedQueueFederationParams {

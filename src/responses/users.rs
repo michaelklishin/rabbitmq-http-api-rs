@@ -29,7 +29,7 @@ pub struct UserLimits {
     pub limits: EnforcedLimits,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct User {

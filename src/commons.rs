@@ -534,7 +534,7 @@ impl From<BindingDestinationType> for String {
     }
 }
 
-#[derive(Eq, PartialEq, Debug, Deserialize, Serialize, Clone)]
+#[derive(Eq, PartialEq, Debug, Deserialize, Serialize, Clone, Copy)]
 #[serde(rename_all = "snake_case")]
 pub enum PolicyTarget {
     Queues,
@@ -614,7 +614,7 @@ impl PolicyTarget {
 
 impl fmt::Display for PolicyTarget {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", Into::<String>::into(self.clone()))?;
+        write!(f, "{}", Into::<String>::into(*self))?;
 
         Ok(())
     }

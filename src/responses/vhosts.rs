@@ -25,7 +25,7 @@ use super::TagList;
 #[cfg(feature = "tabled")]
 use tabled::Tabled;
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq)]
 #[allow(dead_code)]
 pub struct VirtualHostMetadata {
     /// Optional tags
@@ -38,7 +38,7 @@ pub struct VirtualHostMetadata {
 }
 
 /// Represents a [RabbitMQ virtual host](https://rabbitmq.com/docs/vhosts/).
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct VirtualHost {

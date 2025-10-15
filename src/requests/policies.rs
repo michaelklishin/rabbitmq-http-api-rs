@@ -47,7 +47,7 @@ impl<'a> From<&'a Policy> for PolicyParams<'a> {
             vhost: &policy.vhost,
             name: &policy.name,
             pattern: &policy.pattern,
-            apply_to: policy.apply_to.clone(),
+            apply_to: policy.apply_to,
             priority: policy.priority as i32,
             definition: policy.definition.clone().into(),
         }

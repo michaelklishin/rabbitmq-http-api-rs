@@ -150,7 +150,7 @@ fn test_unit_policy_definition_without_keys_case1() {
     m.insert(k2.clone(), json!(20_000_000));
     m.insert(k3.clone(), json!("lazy"));
     let defs1 = PolicyDefinition(Some(m));
-    let defs2 = defs1.without_keys(vec!["max-length-bytes", "queue-mode"]);
+    let defs2 = defs1.without_keys(&["max-length-bytes", "queue-mode"]);
 
     assert_eq!(3, defs1.len());
     assert_eq!(1, defs2.len());
@@ -190,7 +190,7 @@ fn test_unit_policy_definition_without_keys_case2() {
 
     let m = Map::new();
     let defs1 = PolicyDefinition(Some(m));
-    let defs2 = defs1.without_keys(vec!["max-length-bytes"]);
+    let defs2 = defs1.without_keys(&["max-length-bytes"]);
 
     assert_eq!(0, defs1.len());
     assert_eq!(0, defs2.len());
@@ -209,11 +209,7 @@ fn test_unit_policy_definition_without_keys_case3() {
     m.insert(k1.clone(), json!("1D"));
     m.insert(k2.clone(), json!(20_000_000));
     let defs1 = PolicyDefinition(Some(m));
-    let defs2 = defs1.without_keys(vec![
-        k1.clone().as_str(),
-        k2.clone().as_str(),
-        "non-existent",
-    ]);
+    let defs2 = defs1.without_keys(&[k1.as_str(), k2.as_str(), "non-existent"]);
 
     assert_eq!(2, defs1.len());
     assert_eq!(0, defs2.len());
@@ -229,11 +225,7 @@ fn test_unit_policy_definition_without_keys_case4() {
     let k2 = "max-length-bytes".to_owned();
 
     let defs1 = PolicyDefinition(None);
-    let defs2 = defs1.without_keys(vec![
-        k1.clone().as_str(),
-        k2.clone().as_str(),
-        "non-existent",
-    ]);
+    let defs2 = defs1.without_keys(&[k1.as_str(), k2.as_str(), "non-existent"]);
 
     assert_eq!(0, defs1.len());
     assert_eq!(0, defs2.len());

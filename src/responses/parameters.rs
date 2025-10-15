@@ -25,7 +25,7 @@ use serde_json::Map;
 #[cfg(feature = "tabled")]
 use tabled::Tabled;
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq)]
 #[serde(transparent)]
 pub struct RuntimeParameterValue(pub Map<String, serde_json::Value>);
 
@@ -55,7 +55,7 @@ impl fmt::Display for GlobalRuntimeParameterValue {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct RuntimeParameter {

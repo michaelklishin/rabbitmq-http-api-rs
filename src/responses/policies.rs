@@ -26,7 +26,7 @@ use serde_json::{Map, json};
 #[cfg(feature = "tabled")]
 use tabled::Tabled;
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct PolicyDefinition(pub Option<Map<String, serde_json::Value>>);
 
 impl Deref for PolicyDefinition {
@@ -70,7 +70,7 @@ impl PolicyDefinition {
     }
 
     pub fn is_empty(&self) -> bool {
-        self.len() == 0
+        self.0.as_ref().is_none_or(|m| m.is_empty())
     }
 
     pub fn get(&self, key: &str) -> Option<&serde_json::Value> {
@@ -90,33 +90,23 @@ impl PolicyDefinition {
     }
 
     pub fn contains_key(&self, key: &str) -> bool {
-        match self.0 {
-            Some(ref m) => m.contains_key(key),
-            None => false,
-        }
+        self.0.as_ref().is_some_and(|m| m.contains_key(key))
     }
 
     pub fn remove(&mut self, key: &str) -> Option<serde_json::Value> {
-        match self.0 {
-            Some(ref mut m) => m.remove(key),
-            None => None,
-        }
+        self.0.as_mut()?.remove(key)
     }
 
     pub fn merge(&mut self, other: &PolicyDefinition) {
-        let merged: Option<Map<String, serde_json::Value>> = match (self.0.clone(), other.0.clone())
-        {
-            (Some(a), Some(b)) => {
-                let mut m = a.clone();
-                m.extend(b);
-                Some(m)
+        match (&mut self.0, &other.0) {
+            (Some(m), Some(other_m)) => {
+                m.extend(other_m.clone());
             }
-            (None, Some(b)) => Some(b),
-            (Some(a), None) => Some(a),
-            (None, None) => None,
-        };
-
-        self.0 = merged;
+            (None, Some(other_m)) => {
+                self.0 = Some(other_m.clone());
+            }
+            _ => {}
+        }
     }
 
     pub fn compare_and_swap_string_argument(
@@ -139,32 +129,29 @@ impl PolicyDefinition {
 
 impl OptionalArgumentSourceOps for PolicyDefinition {
     fn has_cmq_keys(&self) -> bool {
-        self.contains_any_keys_of(Self::CMQ_KEYS.to_vec())
+        self.contains_any_keys_of(&Self::CMQ_KEYS)
     }
 
     fn has_quorum_queue_incompatible_keys(&self) -> bool {
-        self.contains_any_keys_of(Self::QUORUM_QUEUE_INCOMPATIBLE_KEYS.to_vec())
+        self.contains_any_keys_of(&Self::QUORUM_QUEUE_INCOMPATIBLE_KEYS)
     }
 
-    fn contains_any_keys_of(&self, keys: Vec<&str>) -> bool {
-        if let Some(ref map) = self.0 {
-            map.keys().any(|key| keys.contains(&key.as_str()))
-        } else {
-            false
-        }
+    fn contains_any_keys_of(&self, keys: &[&str]) -> bool {
+        self.0
+            .as_ref()
+            .is_some_and(|map| map.keys().any(|key| keys.contains(&key.as_str())))
     }
 
     fn is_empty(&self) -> bool {
-        self.len() == 0
+        PolicyDefinition::is_empty(self)
     }
 
-    fn without_keys(&self, keys: Vec<&str>) -> Self {
+    fn without_keys(&self, keys: &[&str]) -> Self {
         match &self.0 {
             Some(m) => {
                 let mut nm = m.clone();
                 for s in keys {
-                    let k = s.to_owned();
-                    let _ = nm.remove(&k);
+                    let _ = nm.remove(*s);
                 }
 
                 PolicyDefinition(Some(nm))
@@ -174,25 +161,24 @@ impl OptionalArgumentSourceOps for PolicyDefinition {
     }
 
     fn without_cmq_keys(&self) -> Self {
-        self.without_keys(PolicyDefinition::CMQ_KEYS.to_vec())
+        self.without_keys(&PolicyDefinition::CMQ_KEYS)
     }
 
     fn without_quorum_queue_incompatible_keys(&self) -> Self {
-        self.without_keys(PolicyDefinition::QUORUM_QUEUE_INCOMPATIBLE_KEYS.to_vec())
+        self.without_keys(&PolicyDefinition::QUORUM_QUEUE_INCOMPATIBLE_KEYS)
     }
 }
 
 impl fmt::Display for PolicyDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let maybe_val = self.0.clone();
-        match maybe_val {
-            Some(val) => fmt_map_as_colon_separated_pairs(f, &val),
+        match &self.0 {
+            Some(val) => fmt_map_as_colon_separated_pairs(f, val),
             None => Ok(()),
         }
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct Policy {
@@ -237,10 +223,9 @@ impl Policy {
     where
         T: NamedPolicyTargetObject,
     {
-        let pt = self.apply_to.clone();
         let target = obj.policy_target();
 
-        if !pt.does_apply_to(target) {
+        if !self.apply_to.does_apply_to(target) {
             return false;
         }
 
@@ -281,14 +266,7 @@ impl Policy {
     }
 
     pub fn does_match_name(&self, vhost: &str, name: &str, typ: PolicyTarget) -> bool {
-        Policy::is_a_full_match(
-            &self.vhost,
-            &self.pattern,
-            self.apply_to.clone(),
-            vhost,
-            name,
-            typ,
-        )
+        Policy::is_a_full_match(&self.vhost, &self.pattern, self.apply_to, vhost, name, typ)
     }
 
     pub fn is_a_full_match(
@@ -313,7 +291,7 @@ impl Policy {
         predicate(self)
     }
 
-    pub fn contains_any_keys_of(&self, keys: Vec<&str>) -> bool {
+    pub fn contains_any_keys_of(&self, keys: &[&str]) -> bool {
         self.definition.contains_any_keys_of(keys)
     }
 
@@ -329,7 +307,7 @@ impl Policy {
         self.definition.is_empty()
     }
 
-    pub fn without_keys(&self, keys: Vec<&str>) -> Self {
+    pub fn without_keys(&self, keys: &[&str]) -> Self {
         let defs = self.definition.without_keys(keys);
 
         let mut copy = self.clone();
@@ -339,11 +317,11 @@ impl Policy {
     }
 
     pub fn without_cmq_keys(&self) -> Self {
-        self.without_keys(PolicyDefinition::CMQ_KEYS.to_vec())
+        self.without_keys(&PolicyDefinition::CMQ_KEYS)
     }
 
     pub fn without_quorum_queue_incompatible_keys(&self) -> Self {
-        self.without_keys(XArguments::QUORUM_QUEUE_INCOMPATIBLE_KEYS.to_vec())
+        self.without_keys(&XArguments::QUORUM_QUEUE_INCOMPATIBLE_KEYS)
     }
 }
 
@@ -361,10 +339,10 @@ pub struct PolicyWithoutVirtualHost {
 
 impl PolicyWithoutVirtualHost {
     pub fn does_match(&self, name: &str, typ: PolicyTarget) -> bool {
-        Policy::is_a_name_match(&self.pattern, self.apply_to.clone(), name, typ)
+        Policy::is_a_name_match(&self.pattern, self.apply_to, name, typ)
     }
 
-    pub fn contains_any_keys_of(&self, keys: Vec<&str>) -> bool {
+    pub fn contains_any_keys_of(&self, keys: &[&str]) -> bool {
         self.definition.contains_any_keys_of(keys)
     }
 
@@ -380,7 +358,7 @@ impl PolicyWithoutVirtualHost {
         self.definition.is_empty()
     }
 
-    pub fn without_keys(&self, keys: Vec<&str>) -> Self {
+    pub fn without_keys(&self, keys: &[&str]) -> Self {
         let defs = self.definition.without_keys(keys);
 
         let mut copy = self.clone();
@@ -390,10 +368,10 @@ impl PolicyWithoutVirtualHost {
     }
 
     pub fn without_cmq_keys(&self) -> Self {
-        self.without_keys(PolicyDefinition::CMQ_KEYS.to_vec())
+        self.without_keys(&PolicyDefinition::CMQ_KEYS)
     }
 
     pub fn without_quorum_queue_incompatible_keys(&self) -> Self {
-        self.without_keys(PolicyDefinition::QUORUM_QUEUE_INCOMPATIBLE_KEYS.to_vec())
+        self.without_keys(&PolicyDefinition::QUORUM_QUEUE_INCOMPATIBLE_KEYS)
     }
 }

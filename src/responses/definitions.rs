@@ -19,9 +19,15 @@ use crate::commons::{
 #[cfg(feature = "tabled")]
 use crate::formatting::{display_arg_table, display_option};
 use crate::responses::policies::{Policy, PolicyWithoutVirtualHost};
+use crate::responses::{
+    Permissions, RuntimeParameter, RuntimeParameterWithoutVirtualHost, User, VirtualHost,
+    VirtualHostMetadata,
+};
 use crate::transformers::{TransformerFn, TransformerFnOnce};
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, json};
+use std::collections::HashMap;
+use std::hash::Hash;
 use std::ops::{Deref, DerefMut};
 #[cfg(feature = "tabled")]
 use tabled::Tabled;
@@ -54,7 +60,7 @@ pub trait QueueOps {
 }
 
 pub trait OptionalArgumentSourceOps {
-    fn contains_any_keys_of(&self, keys: Vec<&str>) -> bool;
+    fn contains_any_keys_of(&self, keys: &[&str]) -> bool;
 
     fn has_cmq_keys(&self) -> bool;
 
@@ -62,7 +68,7 @@ pub trait OptionalArgumentSourceOps {
 
     fn is_empty(&self) -> bool;
 
-    fn without_keys(&self, keys: Vec<&str>) -> Self;
+    fn without_keys(&self, keys: &[&str]) -> Self;
 
     fn without_cmq_keys(&self) -> Self;
 
@@ -117,7 +123,7 @@ impl XArguments {
     }
 
     pub fn is_empty(&self) -> bool {
-        self.len() == 0
+        self.0.is_empty()
     }
 
     pub fn insert(&mut self, key: String, value: serde_json::Value) -> Option<serde_json::Value> {
@@ -133,10 +139,7 @@ impl XArguments {
     }
 
     pub fn merge(&mut self, other: &Self) {
-        let mut m: Map<String, serde_json::Value> = self.0.clone();
-        m.extend(other.0.clone());
-
-        self.0 = m;
+        self.0.extend(other.0.clone());
     }
 }
 
@@ -154,7 +157,7 @@ impl DerefMut for XArguments {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct QueueDefinition {
@@ -209,47 +212,44 @@ impl QueueOps for QueueDefinition {
 }
 
 impl OptionalArgumentSourceOps for QueueDefinition {
-    fn contains_any_keys_of(&self, keys: Vec<&str>) -> bool {
+    fn contains_any_keys_of(&self, keys: &[&str]) -> bool {
         self.arguments
+            .0
             .keys()
-            .iter()
             .any(|key| keys.contains(&key.as_str()))
     }
 
     fn has_cmq_keys(&self) -> bool {
-        self.contains_any_keys_of(XArguments::CMQ_KEYS.to_vec())
+        self.contains_any_keys_of(&XArguments::CMQ_KEYS)
     }
 
     fn has_quorum_queue_incompatible_keys(&self) -> bool {
-        self.contains_any_keys_of(XArguments::QUORUM_QUEUE_INCOMPATIBLE_KEYS.to_vec())
+        self.contains_any_keys_of(&XArguments::QUORUM_QUEUE_INCOMPATIBLE_KEYS)
     }
 
     fn is_empty(&self) -> bool {
         self.arguments.is_empty()
     }
 
-    fn without_keys(&self, keys: Vec<&str>) -> Self {
-        let mut new_args = self.arguments.clone();
-        for key in keys {
-            new_args.0.remove(key);
-        }
+    fn without_keys(&self, keys: &[&str]) -> Self {
         let mut copy = self.clone();
-        copy.arguments = new_args;
+        for key in keys {
+            copy.arguments.0.remove(*key);
+        }
         copy
     }
 
     fn without_cmq_keys(&self) -> Self {
-        self.without_keys(XArguments::CMQ_KEYS.to_vec())
+        self.without_keys(&XArguments::CMQ_KEYS)
     }
 
     fn without_quorum_queue_incompatible_keys(&self) -> Self {
-        self.without_keys(XArguments::QUORUM_QUEUE_INCOMPATIBLE_KEYS.to_vec())
+        self.without_keys(&XArguments::QUORUM_QUEUE_INCOMPATIBLE_KEYS)
     }
 }
 
 impl QueueDefinition {
     pub fn update_queue_type(&mut self, typ: QueueType) -> &mut Self {
-        self.arguments.remove(X_ARGUMENT_KEY_X_QUEUE_TYPE);
         self.arguments
             .insert(X_ARGUMENT_KEY_X_QUEUE_TYPE.to_owned(), json!(typ));
 
@@ -301,7 +301,6 @@ pub struct QueueDefinitionWithoutVirtualHost {
 
 impl QueueDefinitionWithoutVirtualHost {
     pub fn update_queue_type(&mut self, typ: QueueType) -> &mut Self {
-        self.arguments.remove(X_ARGUMENT_KEY_X_QUEUE_TYPE);
         self.arguments
             .insert(X_ARGUMENT_KEY_X_QUEUE_TYPE.to_owned(), json!(typ));
 
@@ -427,12 +426,12 @@ pub type BindingDefinitionWithoutVirtualHost = BindingInfoWithoutVirtualHost;
 pub struct ClusterDefinitionSet {
     #[serde(rename(deserialize = "rabbitmq_version"))]
     pub server_version: Option<String>,
-    pub users: Vec<crate::responses::User>,
+    pub users: Vec<User>,
     #[serde(rename(deserialize = "vhosts"))]
-    pub virtual_hosts: Vec<crate::responses::VirtualHost>,
-    pub permissions: Vec<crate::responses::Permissions>,
+    pub virtual_hosts: Vec<VirtualHost>,
+    pub permissions: Vec<Permissions>,
 
-    pub parameters: Vec<crate::responses::RuntimeParameter>,
+    pub parameters: Vec<RuntimeParameter>,
     pub policies: Vec<Policy>,
 
     pub queues: Vec<QueueDefinition>,
@@ -478,20 +477,14 @@ impl ClusterDefinitionSet {
     }
 
     pub fn update_policies(&mut self, f: TransformerFn<Policy>) -> Vec<Policy> {
-        let updated = self
-            .policies
-            .iter()
-            .map(|p| f(p.clone()))
-            .collect::<Vec<_>>();
-        self.policies = updated.clone();
-
-        updated.clone()
+        self.policies = self.policies.iter().map(|p| f(p.clone())).collect();
+        self.policies.clone()
     }
 
     pub fn queues_matching(&self, policy: &Policy) -> Vec<&QueueDefinition> {
         self.queues
             .iter()
-            .filter(|&qd| policy.does_match_object(qd))
+            .filter(|qd| policy.does_match_object(*qd))
             .collect()
     }
 
@@ -499,12 +492,12 @@ impl ClusterDefinitionSet {
         let matches: Vec<(String, String)> = self
             .queues
             .iter()
-            .filter(|&qd| policy.does_match_object(&qd.clone()))
+            .filter(|qd| policy.does_match_object(*qd))
             .map(|qd| (qd.vhost.clone(), qd.name.clone()))
             .collect();
 
-        for (vh, qn) in matches.iter() {
-            self.update_queue_type(&vh.clone(), &qn.clone(), typ.clone());
+        for (vh, qn) in matches {
+            self.update_queue_type(&vh, &qn, typ.clone());
         }
     }
 
@@ -515,11 +508,8 @@ impl ClusterDefinitionSet {
         typ: QueueType,
     ) -> Option<QueueDefinition> {
         if let Some(qd) = self.find_queue_mut(vhost, name) {
-            let mut args = qd.arguments.clone();
-            args.insert(X_ARGUMENT_KEY_X_QUEUE_TYPE.to_owned(), json!(typ.clone()));
-
-            qd.arguments = args;
-
+            qd.arguments
+                .insert(X_ARGUMENT_KEY_X_QUEUE_TYPE.to_owned(), json!(typ));
             Some(qd.clone())
         } else {
             None
@@ -532,25 +522,19 @@ impl ClusterDefinitionSet {
         name: String,
         f: TransformerFnOnce<QueueDefinition>,
     ) -> Option<QueueDefinition> {
-        if let Some(&mut qd) = self
+        let index = self
             .queues
             .iter()
-            .find(|&q| q.name == name && q.vhost == vhost)
-            .as_mut()
-        {
-            let qd = f(qd.clone());
+            .position(|q| q.name == name && q.vhost == vhost)?;
 
-            Some(qd)
-        } else {
-            None
-        }
+        let updated = f(self.queues[index].clone());
+        self.queues[index] = updated.clone();
+        Some(updated)
     }
 
     pub fn update_queues(&mut self, f: TransformerFn<QueueDefinition>) -> Vec<QueueDefinition> {
-        let updated = self.queues.iter().map(|p| f(p.clone())).collect::<Vec<_>>();
-        self.queues = updated.clone();
-
-        updated.clone()
+        self.queues = self.queues.iter().map(|p| f(p.clone())).collect();
+        self.queues.clone()
     }
 }
 
@@ -561,12 +545,221 @@ pub struct VirtualHostDefinitionSet {
     #[serde(rename(deserialize = "rabbitmq_version"))]
     pub server_version: Option<String>,
     /// All virtual host metadata combined
-    pub metadata: Option<crate::responses::VirtualHostMetadata>,
+    pub metadata: Option<VirtualHostMetadata>,
 
-    pub parameters: Vec<crate::responses::RuntimeParameterWithoutVirtualHost>,
+    pub parameters: Vec<RuntimeParameterWithoutVirtualHost>,
     pub policies: Vec<PolicyWithoutVirtualHost>,
 
     pub queues: Vec<QueueDefinitionWithoutVirtualHost>,
     pub exchanges: Vec<ExchangeDefinitionWithoutVirtualHost>,
     pub bindings: Vec<BindingDefinitionWithoutVirtualHost>,
+}
+
+pub trait IdentifiableItem {
+    type Id: Eq + Hash + Clone;
+    fn id(&self) -> Self::Id;
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct VHostResourceId {
+    pub vhost: VirtualHostName,
+    pub name: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct UserPermissionsId {
+    pub user: String,
+    pub vhost: VirtualHostName,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct RuntimeParameterId {
+    pub vhost: VirtualHostName,
+    pub name: String,
+    pub component: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct BindingId {
+    pub vhost: VirtualHostName,
+    pub source: String,
+    pub destination: String,
+    pub routing_key: String,
+    pub properties_key: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+pub struct VecDiff<T> {
+    pub only_in_left: Vec<T>,
+    pub only_in_right: Vec<T>,
+    pub modified: Vec<(T, T)>,
+}
+
+impl<T> VecDiff<T> {
+    pub fn is_empty(&self) -> bool {
+        self.only_in_left.is_empty() && self.only_in_right.is_empty() && self.modified.is_empty()
+    }
+
+    pub fn has_changes(&self) -> bool {
+        !self.is_empty()
+    }
+}
+
+impl<T> VecDiff<T>
+where
+    T: IdentifiableItem + PartialEq + Clone,
+{
+    pub fn new(left: &[T], right: &[T]) -> Self {
+        let left_map: HashMap<T::Id, &T> = left.iter().map(|item| (item.id(), item)).collect();
+        let right_map: HashMap<T::Id, &T> = right.iter().map(|item| (item.id(), item)).collect();
+
+        let mut only_in_left = Vec::new();
+        let mut only_in_right = Vec::new();
+        let mut modified = Vec::new();
+
+        for (id, left_item) in &left_map {
+            match right_map.get(id) {
+                None => only_in_left.push((*left_item).clone()),
+                Some(&right_item) => {
+                    if left_item != &right_item {
+                        modified.push(((*left_item).clone(), right_item.clone()));
+                    }
+                }
+            }
+        }
+
+        for (id, right_item) in &right_map {
+            if !left_map.contains_key(id) {
+                only_in_right.push((*right_item).clone());
+            }
+        }
+
+        VecDiff {
+            only_in_left,
+            only_in_right,
+            modified,
+        }
+    }
+}
+
+impl IdentifiableItem for User {
+    type Id = String;
+    fn id(&self) -> Self::Id {
+        self.name.clone()
+    }
+}
+
+impl IdentifiableItem for VirtualHost {
+    type Id = String;
+    fn id(&self) -> Self::Id {
+        self.name.clone()
+    }
+}
+
+impl IdentifiableItem for Permissions {
+    type Id = UserPermissionsId;
+    fn id(&self) -> Self::Id {
+        UserPermissionsId {
+            user: self.user.clone(),
+            vhost: self.vhost.clone(),
+        }
+    }
+}
+
+impl IdentifiableItem for RuntimeParameter {
+    type Id = RuntimeParameterId;
+    fn id(&self) -> Self::Id {
+        RuntimeParameterId {
+            vhost: self.vhost.clone(),
+            name: self.name.clone(),
+            component: self.component.clone(),
+        }
+    }
+}
+
+impl IdentifiableItem for Policy {
+    type Id = VHostResourceId;
+    fn id(&self) -> Self::Id {
+        VHostResourceId {
+            vhost: self.vhost.clone(),
+            name: self.name.clone(),
+        }
+    }
+}
+
+impl IdentifiableItem for QueueDefinition {
+    type Id = VHostResourceId;
+    fn id(&self) -> Self::Id {
+        VHostResourceId {
+            vhost: self.vhost.clone(),
+            name: self.name.clone(),
+        }
+    }
+}
+
+impl IdentifiableItem for ExchangeDefinition {
+    type Id = VHostResourceId;
+    fn id(&self) -> Self::Id {
+        VHostResourceId {
+            vhost: self.vhost.clone(),
+            name: self.name.clone(),
+        }
+    }
+}
+
+impl IdentifiableItem for BindingDefinition {
+    type Id = BindingId;
+    fn id(&self) -> Self::Id {
+        BindingId {
+            vhost: self.vhost.clone(),
+            source: self.source.clone(),
+            destination: self.destination.clone(),
+            routing_key: self.routing_key.clone(),
+            properties_key: self.properties_key.clone(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct ClusterDefinitionSetDiff {
+    pub users: VecDiff<User>,
+    pub virtual_hosts: VecDiff<VirtualHost>,
+    pub permissions: VecDiff<Permissions>,
+    pub parameters: VecDiff<RuntimeParameter>,
+    pub policies: VecDiff<Policy>,
+    pub queues: VecDiff<QueueDefinition>,
+    pub exchanges: VecDiff<ExchangeDefinition>,
+    pub bindings: VecDiff<BindingDefinition>,
+}
+
+impl ClusterDefinitionSetDiff {
+    pub fn is_empty(&self) -> bool {
+        self.users.is_empty()
+            && self.virtual_hosts.is_empty()
+            && self.permissions.is_empty()
+            && self.parameters.is_empty()
+            && self.policies.is_empty()
+            && self.queues.is_empty()
+            && self.exchanges.is_empty()
+            && self.bindings.is_empty()
+    }
+
+    pub fn has_changes(&self) -> bool {
+        !self.is_empty()
+    }
+}
+
+impl ClusterDefinitionSet {
+    pub fn diff(&self, other: &ClusterDefinitionSet) -> ClusterDefinitionSetDiff {
+        ClusterDefinitionSetDiff {
+            users: VecDiff::new(&self.users, &other.users),
+            virtual_hosts: VecDiff::new(&self.virtual_hosts, &other.virtual_hosts),
+            permissions: VecDiff::new(&self.permissions, &other.permissions),
+            parameters: VecDiff::new(&self.parameters, &other.parameters),
+            policies: VecDiff::new(&self.policies, &other.policies),
+            queues: VecDiff::new(&self.queues, &other.queues),
+            exchanges: VecDiff::new(&self.exchanges, &other.exchanges),
+            bindings: VecDiff::new(&self.bindings, &other.bindings),
+        }
+    }
 }
