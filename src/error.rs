@@ -20,6 +20,7 @@ use reqwest::{
     StatusCode, Url,
     header::{HeaderMap, InvalidHeaderValue},
 };
+use serde::Deserialize;
 
 #[derive(Error, Debug)]
 pub enum ConversionError {
@@ -31,6 +32,26 @@ pub enum ConversionError {
     ParsingError { message: String },
 }
 
+/// The API returns JSON with "error" and "reason" fields in error responses.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+pub struct ErrorDetails {
+    /// Generic error type, e.g., "bad_request"
+    pub error: Option<String>,
+    /// Detailed reason for the error
+    pub reason: Option<String>,
+}
+
+impl ErrorDetails {
+    pub fn from_json(body: &str) -> Option<Self> {
+        serde_json::from_str(body).ok()
+    }
+
+    /// `reason` (typically more detailed) over `error` (generic).
+    pub fn reason(&self) -> Option<&str> {
+        self.reason.as_deref().or(self.error.as_deref())
+    }
+}
+
 #[derive(Error, Debug)]
 pub enum Error<U, S, E, BT> {
     #[error("API responded with a client error: status code of {status_code}")]
@@ -38,6 +59,7 @@ pub enum Error<U, S, E, BT> {
         url: Option<U>,
         status_code: S,
         body: Option<String>,
+        error_details: Option<ErrorDetails>,
         headers: Option<HeaderMap>,
         backtrace: BT,
     },
@@ -46,6 +68,7 @@ pub enum Error<U, S, E, BT> {
         url: Option<U>,
         status_code: S,
         body: Option<String>,
+        error_details: Option<ErrorDetails>,
         headers: Option<HeaderMap>,
         backtrace: BT,
     },
@@ -96,6 +119,7 @@ impl From<reqwest::Error> for HttpClientError {
                         url: req_err.url().cloned(),
                         status_code,
                         body: None,
+                        error_details: None,
                         headers: None,
                         backtrace: Backtrace::new(),
                     };
@@ -106,6 +130,7 @@ impl From<reqwest::Error> for HttpClientError {
                         url: req_err.url().cloned(),
                         status_code,
                         body: None,
+                        error_details: None,
                         headers: None,
                         backtrace: Backtrace::new(),
                     };

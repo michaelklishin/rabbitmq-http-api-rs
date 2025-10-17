@@ -276,3 +276,94 @@ fn test_an_operator_policy(rc: &Client<&str, &str, &str>, policy: &PolicyParams)
     let policies = rc.list_operator_policies().unwrap();
     assert!(!policies.iter().any(|p| p.name == policy.name));
 }
+
+#[test]
+fn test_blocking_policy_validation_error() {
+    let endpoint = endpoint();
+    let rc = Client::new(endpoint.as_str(), USERNAME, PASSWORD);
+
+    let vh_params = VirtualHostParams::named("test_policy_validation_error");
+    let _ = rc.delete_vhost(vh_params.name, false);
+    let result1 = rc.create_vhost(&vh_params);
+    assert!(result1.is_ok());
+
+    // Create a policy with an invalid/unknown property in the definition
+    let mut map = Map::<String, Value>::new();
+    map.insert("foo".to_owned(), json!("bar"));
+    map.insert("invalid-setting".to_owned(), json!(12345));
+    let invalid_definition = map.clone();
+
+    let invalid_policy = PolicyParams {
+        vhost: vh_params.name,
+        name: "invalid_policy",
+        pattern: "^qq$",
+        apply_to: PolicyTarget::Queues,
+        priority: 1,
+        definition: invalid_definition,
+    };
+
+    // Attempting to declare this policy should fail with a validation error
+    let result = rc.declare_policy(&invalid_policy);
+    assert!(
+        result.is_err(),
+        "Expected policy declaration to fail with validation error"
+    );
+
+    // Extract the error and verify it contains structured error details
+    if let Err(err) = result {
+        match err {
+            rabbitmq_http_client::error::Error::ClientErrorResponse {
+                status_code,
+                error_details,
+                ..
+            } => {
+                // Should be a 400 Bad Request
+                assert_eq!(status_code, reqwest::StatusCode::BAD_REQUEST);
+
+                // Should have parsed error details
+                assert!(
+                    error_details.is_some(),
+                    "Expected error_details to be parsed"
+                );
+
+                let details = error_details.unwrap();
+
+                // Should have an error type
+                assert!(
+                    details.error.is_some(),
+                    "Expected error field to be present"
+                );
+                assert_eq!(details.error.as_deref(), Some("bad_request"));
+
+                // Should have a detailed reason
+                assert!(
+                    details.reason.is_some(),
+                    "Expected reason field to be present"
+                );
+                let reason = details.reason.as_ref().unwrap();
+
+                // The reason should mention validation failure
+                assert!(
+                    reason.contains("Validation failed"),
+                    "Expected reason to contain 'Validation failed', got: {}",
+                    reason
+                );
+
+                // The reason should mention unrecognized properties
+                assert!(
+                    reason.contains("not recognised") || reason.contains("not recognized"),
+                    "Expected reason to mention unrecognized properties, got: {}",
+                    reason
+                );
+
+                // Verify reason() returns the reason (more detailed message)
+                let detailed_msg = details.reason();
+                assert!(detailed_msg.is_some());
+                assert_eq!(detailed_msg, details.reason.as_deref());
+            }
+            _ => panic!("Expected ClientErrorResponse, got: {:?}", err),
+        }
+    }
+
+    let _ = rc.delete_vhost(vh_params.name, false);
+}

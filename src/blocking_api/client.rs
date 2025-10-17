@@ -14,7 +14,10 @@
 #![allow(clippy::result_large_err)]
 
 use crate::commons::RetrySettings;
-use crate::error::Error::{ClientErrorResponse, NotFound, ServerErrorResponse};
+use crate::error::{
+    Error::{ClientErrorResponse, NotFound, ServerErrorResponse},
+    ErrorDetails,
+};
 use backtrace::Backtrace;
 use log::trace;
 use reqwest::{StatusCode, blocking::Client as HttpClient, header::HeaderMap};
@@ -620,9 +623,11 @@ where
                     // so we copy the key parts into the error first
                     let body = response.text()?;
                     trace!("Client error response: {} from {}: {}", status, url, body);
+                    let error_details = ErrorDetails::from_json(&body);
                     return Err(ClientErrorResponse {
                         url: Some(url),
                         body: Some(body),
+                        error_details,
                         headers: Some(headers),
                         status_code: status,
                         backtrace: Backtrace::new(),
@@ -641,9 +646,11 @@ where
                     // so we copy the key parts into the error first
                     let body = response.text()?;
                     trace!("Server error response: {} from {}: {}", status, url, body);
+                    let error_details = ErrorDetails::from_json(&body);
                     return Err(ServerErrorResponse {
                         url: Some(url),
                         body: Some(body),
+                        error_details,
                         headers: Some(headers),
                         status_code: status,
                         backtrace: Backtrace::new(),
