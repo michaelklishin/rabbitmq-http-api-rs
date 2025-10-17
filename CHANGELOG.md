@@ -8,8 +8,7 @@ No changes yet.
 
 ### Enhancements
 
- * Error responses now include an `error` field with the error reason if available
- * New function `Error#reason` returns the error reason if available
+ * Request errors now include the `error` and `reason` fields populated if the API response contains them
 
 ## v0.65.0 (Oct 11, 2025)
 
