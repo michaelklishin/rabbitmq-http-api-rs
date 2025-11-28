@@ -51,8 +51,9 @@ pub enum SupportedProtocol {
     /// Represents the inter-node and CLI tool communication protocol
     /// (a.k.a. the Erlang distribution protocol)
     Clustering,
-    /// Represents both AMQP 1.0 and AMQP 0-9-1 because they share a listener
-    #[serde(rename = "amqp")]
+    /// Represents both AMQP 1.0 and AMQP 0-9-1 because they share a listener.
+    /// Some API endpoints (e.g. auth attempts) return "amqp091" or "amqp10" specifically.
+    #[serde(rename = "amqp", alias = "amqp091", alias = "amqp10")]
     AMQP,
     /// Represents both AMQP 1.0 with TLS enabled and AMQP 0-9-1 with TLS enabled
     #[serde(rename = "amqp/ssl")]
