@@ -445,12 +445,16 @@ impl From<GlobalRuntimeParameterValue> for ClusterTags {
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 pub struct AuthenticationAttemptStatistics {
+    #[cfg_attr(feature = "tabled", tabled(rename = "Protocol"))]
     pub protocol: SupportedProtocol,
     #[serde(rename = "auth_attempts")]
+    #[cfg_attr(feature = "tabled", tabled(rename = "Number of attempts"))]
     pub all_attempt_count: u64,
     #[serde(rename = "auth_attempts_failed")]
+    #[cfg_attr(feature = "tabled", tabled(rename = "Failed"))]
     pub failure_count: u64,
     #[serde(rename = "auth_attempts_succeeded")]
+    #[cfg_attr(feature = "tabled", tabled(rename = "Successful"))]
     pub success_count: u64,
 }
 

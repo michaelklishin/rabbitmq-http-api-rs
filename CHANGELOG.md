@@ -1,8 +1,14 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.68.0 (in development)
+## v0.69.0(in development)
 
-No changes.
+No changes yet.
+
+## v0.68.0 (Nov 28, 2025)
+
+### Enhancements
+
+* Improve `tabled` column names for `AuthenticationAttemptStatistics`.
 
 ## v0.67.0 (Nov 28, 2025)
 
