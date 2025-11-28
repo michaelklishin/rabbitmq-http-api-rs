@@ -2,7 +2,10 @@
 
 ## v0.67.0 (in development)
 
-No changes yet.
+### Bug Fixes
+
+ * Add two more aliases to `SupportedProtocol::AMQP` for the authentication attempts
+   statistics endpoint.
 
 ## v0.66.0 (Oct 17, 2025)
 
