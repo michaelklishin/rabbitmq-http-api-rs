@@ -1,8 +1,20 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.70.0 (in development)
+## v0.70.0 (Dec 11, 2025)
 
-No changes yet.
+### Bug Fixes
+
+ * `SupportedProtocol::from` now correctly maps `https/web-amqp` to `AMQPOverWebSocketsWithTLS`
+
+### Enhancements
+
+ * `PaginationParams` now derives `Copy`
+ * `PaginationParams` constructors now clamp values exceeding `MAX_PAGE_SIZE` instead of panicking
+ * New convenience methods for listing queues by type: `Client#list_quorum_queues`, `Client#list_quorum_queues_in`,
+   `Client#list_classic_queues`, `Client#list_classic_queues_in`, `Client#list_streams`, `Client#list_streams_in`
+ * `Client#delete_queues` for batch queue deletion
+ * `VirtualHostParamsBuilder` for fluent virtual host parameter construction
+ * `UserParams#policymaker` convenience constructor
 
 ## v0.69.0 (Dec 11, 2025)
 
