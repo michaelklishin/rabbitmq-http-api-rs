@@ -269,3 +269,56 @@ fn test_blocking_delete_exchange_bindings() {
                 && b.source == fanout)
     );
 }
+
+#[test]
+fn test_blocking_recreate_binding_from_info() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let vh_name = "/";
+    let cq = "rust.cq.recreate_binding_test";
+    let fanout = "amq.fanout";
+
+    let _ = rc.delete_queue(vh_name, cq, true);
+
+    let result1 = rc.declare_queue(vh_name, &QueueParams::new_durable_classic_queue(cq, None));
+    assert!(result1.is_ok(), "declare_queue returned {result1:?}");
+
+    let result2 = rc.bind_queue(vh_name, cq, fanout, Some("test.key"), None);
+    assert!(result2.is_ok(), "bind_queue returned {result2:?}");
+
+    let bindings = rc.list_queue_bindings(vh_name, cq).unwrap();
+    let binding_info = bindings
+        .iter()
+        .find(|b| b.source == fanout && b.routing_key == "test.key")
+        .expect("Binding should exist");
+
+    let bd_params = BindingDeletionParams {
+        virtual_host: vh_name,
+        source: fanout,
+        destination: cq,
+        destination_type: BindingDestinationType::Queue,
+        routing_key: "test.key",
+        arguments: Some(serde_json::Map::new()),
+    };
+    rc.delete_binding(&bd_params, false).unwrap();
+
+    let bindings_after_delete = rc.list_queue_bindings(vh_name, cq).unwrap();
+    assert!(
+        !bindings_after_delete
+            .iter()
+            .any(|b| b.source == fanout && b.routing_key == "test.key")
+    );
+
+    let result3 = rc.recreate_binding(binding_info);
+    assert!(result3.is_ok(), "recreate_binding returned {result3:?}");
+
+    let bindings_recreated = rc.list_queue_bindings(vh_name, cq).unwrap();
+    assert!(
+        bindings_recreated
+            .iter()
+            .any(|b| b.source == fanout && b.routing_key == "test.key")
+    );
+
+    let _ = rc.delete_queue(vh_name, cq, false);
+}

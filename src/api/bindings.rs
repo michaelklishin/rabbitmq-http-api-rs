@@ -33,21 +33,15 @@ where
 {
     /// Lists all bindings (both queue-to-exchange and exchange-to-exchange ones) across the cluster.
     pub async fn list_bindings(&self) -> Result<Vec<responses::BindingInfo>> {
-        let response = self.http_get("bindings", None, None).await?;
-        let response = response.json().await?;
-        Ok(response)
+        self.get_api_request("bindings").await
     }
 
-    /// Lists all bindings (both queue-to-exchange and exchange-to-exchange ones)  in the given virtual host.
+    /// Lists all bindings (both queue-to-exchange and exchange-to-exchange ones) in the given virtual host.
     pub async fn list_bindings_in(
         &self,
         virtual_host: &str,
     ) -> Result<Vec<responses::BindingInfo>> {
-        let response = self
-            .http_get(path!("bindings", virtual_host), None, None)
-            .await?;
-        let response = response.json().await?;
-        Ok(response)
+        self.get_api_request(path!("bindings", virtual_host)).await
     }
 
     /// Lists all bindings of a specific queue.
@@ -179,6 +173,43 @@ where
         Ok(())
     }
 
+    /// Re-creates a binding from a [`BindingInfo`] response.
+    pub async fn recreate_binding(&self, binding: &BindingInfo) -> Result<()> {
+        let args = if binding.arguments.is_empty() {
+            None
+        } else {
+            Some(binding.arguments.0.clone())
+        };
+        let routing_key = if binding.routing_key.is_empty() {
+            None
+        } else {
+            Some(binding.routing_key.as_str())
+        };
+
+        match binding.destination_type {
+            BindingDestinationType::Queue => {
+                self.bind_queue(
+                    &binding.vhost,
+                    &binding.destination,
+                    &binding.source,
+                    routing_key,
+                    args,
+                )
+                .await
+            }
+            BindingDestinationType::Exchange => {
+                self.bind_exchange(
+                    &binding.vhost,
+                    &binding.destination,
+                    &binding.source,
+                    routing_key,
+                    args,
+                )
+                .await
+            }
+        }
+    }
+
     #[allow(clippy::too_many_arguments)]
     pub async fn delete_binding(
         &self,
@@ -221,7 +252,7 @@ where
             }
             1 => {
                 let first_key = bs.first().unwrap().properties_key.clone();
-                let path_appreviation = params.destination_type.path_appreviation();
+                let path_abbreviation = params.destination_type.path_abbreviation();
                 let path = match first_key {
                     Some(pk) => {
                         path!(
@@ -230,7 +261,7 @@ where
                             params.virtual_host,
                             "e",
                             params.source,
-                            path_appreviation,
+                            path_abbreviation,
                             params.destination,
                             pk.as_str()
                         )
@@ -242,7 +273,7 @@ where
                             params.virtual_host,
                             "e",
                             params.source,
-                            path_appreviation,
+                            path_abbreviation,
                             params.destination
                         )
                     }

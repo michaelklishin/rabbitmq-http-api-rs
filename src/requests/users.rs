@@ -29,6 +29,70 @@ pub struct UserParams<'a> {
     pub tags: &'a str,
 }
 
+impl<'a> UserParams<'a> {
+    /// Creates a new user with the specified parameters.
+    pub fn new(name: &'a str, password_hash: &'a str, tags: &'a str) -> Self {
+        Self {
+            name,
+            password_hash,
+            tags,
+        }
+    }
+
+    /// Creates a user with administrator privileges.
+    ///
+    /// The `administrator` tag grants full access to the management interface.
+    pub fn administrator(name: &'a str, password_hash: &'a str) -> Self {
+        Self {
+            name,
+            password_hash,
+            tags: "administrator",
+        }
+    }
+
+    /// Creates a user with monitoring privileges.
+    ///
+    /// The `monitoring` tag grants read-only access to monitoring endpoints.
+    pub fn monitoring(name: &'a str, password_hash: &'a str) -> Self {
+        Self {
+            name,
+            password_hash,
+            tags: "monitoring",
+        }
+    }
+
+    /// Creates a user with management privileges.
+    ///
+    /// The `management` tag grants access to manage this user's own resources.
+    pub fn management(name: &'a str, password_hash: &'a str) -> Self {
+        Self {
+            name,
+            password_hash,
+            tags: "management",
+        }
+    }
+
+    /// Creates a user with policymaker privileges.
+    ///
+    /// Users tagged as policymakers can manage policies.
+    pub fn policymaker(name: &'a str, password_hash: &'a str) -> Self {
+        Self {
+            name,
+            password_hash,
+            tags: "policymaker",
+        }
+    }
+
+    /// Creates a user with no special privileges (no tags).
+    pub fn without_tags(name: &'a str, password_hash: &'a str) -> Self {
+        Self {
+            name,
+            password_hash,
+            tags: "",
+        }
+    }
+}
+
 /// Represents a bulk user delete operation.
 /// Used by [`crate::api::Client`] and [`crate::blocking_api::Client`]'s functions
 /// that delete multiple users in a single operation.

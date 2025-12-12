@@ -34,9 +34,24 @@ fn test_new_at_max_page_size() {
 }
 
 #[test]
-#[should_panic(expected = "exceeds MAX_PAGE_SIZE")]
-fn test_new_exceeds_max_page_size() {
-    let _ = PaginationParams::new(1, MAX_PAGE_SIZE + 1);
+fn test_new_clamps_to_max_page_size() {
+    let params = PaginationParams::new(1, MAX_PAGE_SIZE + 100);
+    assert_eq!(params.page_size, Some(MAX_PAGE_SIZE));
+}
+
+#[test]
+fn test_is_last_page_handles_zero_page_size() {
+    let params = PaginationParams {
+        page: Some(1),
+        page_size: Some(0),
+    };
+    let results: Vec<i32> = vec![1, 2, 3];
+    // With page_size=0, is_last_page should treat it as page_size=1
+    // Since 3 results >= 1, this is not the last page
+    assert!(!params.is_last_page(&results));
+
+    let single: Vec<i32> = vec![];
+    assert!(params.is_last_page(&single));
 }
 
 #[test]
@@ -107,4 +122,106 @@ fn test_debug() {
     assert!(debug.contains("PaginationParams"));
     assert!(debug.contains("page"));
     assert!(debug.contains("page_size"));
+}
+
+#[test]
+fn test_next_page() {
+    let params = PaginationParams::new(1, 50);
+    let next = params.next_page();
+    assert!(next.is_some());
+    let next = next.unwrap();
+    assert_eq!(next.page, Some(2));
+    assert_eq!(next.page_size, Some(50));
+}
+
+#[test]
+fn test_next_page_preserves_size() {
+    let params = PaginationParams::new(5, 200);
+    let next = params.next_page().unwrap();
+    assert_eq!(next.page, Some(6));
+    assert_eq!(next.page_size, Some(200));
+}
+
+#[test]
+fn test_next_page_none_when_uninitialized() {
+    let params = PaginationParams::default();
+    assert!(params.next_page().is_none());
+}
+
+#[test]
+fn test_current_page() {
+    let params = PaginationParams::new(3, 100);
+    assert_eq!(params.current_page(), Some(3));
+}
+
+#[test]
+fn test_current_page_none() {
+    let params = PaginationParams::default();
+    assert_eq!(params.current_page(), None);
+}
+
+#[test]
+fn test_page_size_accessor() {
+    let params = PaginationParams::new(1, 75);
+    assert_eq!(params.page_size(), Some(75));
+}
+
+#[test]
+fn test_page_size_accessor_none() {
+    let params = PaginationParams::default();
+    assert_eq!(params.page_size(), None);
+}
+
+#[test]
+fn test_is_last_page_true_when_fewer_results() {
+    let params = PaginationParams::new(1, 100);
+    let results: Vec<i32> = vec![1, 2, 3];
+    assert!(params.is_last_page(&results));
+}
+
+#[test]
+fn test_is_last_page_false_when_full_page() {
+    let params = PaginationParams::new(1, 100);
+    let results: Vec<i32> = (0..100).collect();
+    assert!(!params.is_last_page(&results));
+}
+
+#[test]
+fn test_is_last_page_true_when_empty() {
+    let params = PaginationParams::new(1, 100);
+    let results: Vec<i32> = vec![];
+    assert!(params.is_last_page(&results));
+}
+
+#[test]
+fn test_is_last_page_uses_default_page_size() {
+    let params = PaginationParams {
+        page: Some(1),
+        page_size: None,
+    };
+    let results: Vec<i32> = (0..99).collect();
+    assert!(params.is_last_page(&results));
+}
+
+#[test]
+fn test_pagination_loop_pattern() {
+    let mut params = PaginationParams::first_page(10);
+    let mut all_items: Vec<i32> = Vec::new();
+
+    for page_num in 1..=4 {
+        let results: Vec<i32> = if page_num < 4 {
+            (0..10).collect()
+        } else {
+            vec![1, 2, 3]
+        };
+
+        all_items.extend(&results);
+
+        if params.is_last_page(&results) {
+            break;
+        }
+        params = params.next_page().unwrap();
+    }
+
+    assert_eq!(all_items.len(), 33);
 }

@@ -58,7 +58,7 @@ pub mod permissions;
 pub use permissions::{Permissions, TopicPermissions};
 
 pub mod vhosts;
-pub use vhosts::VirtualHostParams;
+pub use vhosts::{VirtualHostParams, VirtualHostParamsBuilder};
 
 pub mod bindings;
 pub use bindings::BindingDeletionParams;

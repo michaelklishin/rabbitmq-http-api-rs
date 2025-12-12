@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::{path, responses};
+use crate::{commons::PaginationParams, path, responses};
 
 use super::client::{Client, Result};
 use std::fmt::Display;
@@ -29,10 +29,35 @@ where
         self.get_api_request("channels")
     }
 
+    /// Lists channels with pagination.
+    pub fn list_channels_paged(
+        &self,
+        params: &PaginationParams,
+    ) -> Result<Vec<responses::Channel>> {
+        match params.to_query_string() {
+            Some(query) => self.get_paginated_api_request("channels", &query),
+            None => self.list_channels(),
+        }
+    }
+
     /// Lists all channels in the given virtual host.
     /// See [Channels Guide](https://www.rabbitmq.com/docs/channels) to learn more.
     pub fn list_channels_in(&self, virtual_host: &str) -> Result<Vec<responses::Channel>> {
         self.get_api_request(path!("vhosts", virtual_host, "channels"))
+    }
+
+    /// Lists channels in the given virtual host with pagination.
+    pub fn list_channels_in_paged(
+        &self,
+        virtual_host: &str,
+        params: &PaginationParams,
+    ) -> Result<Vec<responses::Channel>> {
+        match params.to_query_string() {
+            Some(query) => {
+                self.get_paginated_api_request(path!("vhosts", virtual_host, "channels"), &query)
+            }
+            None => self.list_channels_in(virtual_host),
+        }
     }
 
     /// Lists all channels on a given AMQP 0-9-1 connection.

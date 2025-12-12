@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use rabbitmq_http_client::commons::PolicyTarget;
-use rabbitmq_http_client::requests::{PolicyDefinitionBuilder, PolicyParams, XArgumentsBuilder};
+use rabbitmq_http_client::commons::{PolicyTarget, QueueType};
+use rabbitmq_http_client::requests::{
+    PolicyDefinitionBuilder, PolicyParams, UserParams, VirtualHostParams, XArgumentsBuilder,
+};
 use serde_json::json;
 
 #[test]
@@ -351,4 +353,125 @@ fn test_policy_params_chained() {
     assert_eq!(params.pattern, "^test\\.");
     assert_eq!(params.apply_to, PolicyTarget::QuorumQueues);
     assert_eq!(params.priority, 5);
+}
+
+#[test]
+fn test_user_params_new() {
+    let params = UserParams::new("testuser", "hash123", "administrator");
+    assert_eq!(params.name, "testuser");
+    assert_eq!(params.password_hash, "hash123");
+    assert_eq!(params.tags, "administrator");
+}
+
+#[test]
+fn test_user_params_administrator() {
+    let params = UserParams::administrator("admin", "hash123");
+    assert_eq!(params.name, "admin");
+    assert_eq!(params.password_hash, "hash123");
+    assert_eq!(params.tags, "administrator");
+}
+
+#[test]
+fn test_user_params_monitoring() {
+    let params = UserParams::monitoring("monitor", "hash123");
+    assert_eq!(params.name, "monitor");
+    assert_eq!(params.password_hash, "hash123");
+    assert_eq!(params.tags, "monitoring");
+}
+
+#[test]
+fn test_user_params_management() {
+    let params = UserParams::management("mgmt", "hash123");
+    assert_eq!(params.name, "mgmt");
+    assert_eq!(params.password_hash, "hash123");
+    assert_eq!(params.tags, "management");
+}
+
+#[test]
+fn test_user_params_policymaker() {
+    let params = UserParams::policymaker("policy", "hash123");
+    assert_eq!(params.name, "policy");
+    assert_eq!(params.password_hash, "hash123");
+    assert_eq!(params.tags, "policymaker");
+}
+
+#[test]
+fn test_user_params_without_tags() {
+    let params = UserParams::without_tags("basic", "hash123");
+    assert_eq!(params.name, "basic");
+    assert_eq!(params.password_hash, "hash123");
+    assert_eq!(params.tags, "");
+}
+
+#[test]
+fn test_vhost_params_named() {
+    let params = VirtualHostParams::named("test-vhost");
+    assert_eq!(params.name, "test-vhost");
+    assert!(params.description.is_none());
+    assert!(params.tags.is_none());
+    assert!(params.default_queue_type.is_none());
+    assert!(!params.tracing);
+}
+
+#[test]
+fn test_vhost_params_with_description() {
+    let params = VirtualHostParams::named("test-vhost").with_description("Test virtual host");
+    assert_eq!(params.name, "test-vhost");
+    assert_eq!(params.description, Some("Test virtual host"));
+}
+
+#[test]
+fn test_vhost_params_with_tags() {
+    let params = VirtualHostParams::named("test-vhost").with_tags(vec!["prod", "critical"]);
+    assert_eq!(params.tags, Some(vec!["prod", "critical"]));
+}
+
+#[test]
+fn test_vhost_params_with_default_queue_type() {
+    let params = VirtualHostParams::named("test-vhost").with_default_queue_type(QueueType::Quorum);
+    assert_eq!(params.default_queue_type, Some(QueueType::Quorum));
+}
+
+#[test]
+fn test_vhost_params_with_tracing() {
+    let params = VirtualHostParams::named("test-vhost").with_tracing();
+    assert!(params.tracing);
+}
+
+#[test]
+fn test_vhost_params_builder_basic() {
+    let params = VirtualHostParams::builder("test-vhost").build();
+    assert_eq!(params.name, "test-vhost");
+    assert!(params.description.is_none());
+    assert!(params.tags.is_none());
+    assert!(params.default_queue_type.is_none());
+    assert!(!params.tracing);
+}
+
+#[test]
+fn test_vhost_params_builder_full() {
+    let params = VirtualHostParams::builder("production")
+        .description("Production environment")
+        .tags(vec!["production", "critical"])
+        .default_queue_type(QueueType::Quorum)
+        .tracing(true)
+        .build();
+    assert_eq!(params.name, "production");
+    assert_eq!(params.description, Some("Production environment"));
+    assert_eq!(params.tags, Some(vec!["production", "critical"]));
+    assert_eq!(params.default_queue_type, Some(QueueType::Quorum));
+    assert!(params.tracing);
+}
+
+#[test]
+fn test_vhost_params_builder_partial() {
+    let params = VirtualHostParams::builder("staging")
+        .description("Staging environment")
+        .tracing(false)
+        .build();
+    assert_eq!(params.name, "staging");
+    assert_eq!(params.description, Some("Staging environment"));
+    assert!(params.tags.is_none());
+    assert!(params.default_queue_type.is_none());
+    assert!(!params.tracing);
 }

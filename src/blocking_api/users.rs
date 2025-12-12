@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use crate::{
+    commons::PaginationParams,
     path,
     requests::{BulkUserDelete, UserParams},
     responses,
@@ -31,6 +32,14 @@ where
     /// See [Access Control Guide](https://www.rabbitmq.com/docs/access-control) to learn more.
     pub fn list_users(&self) -> Result<Vec<responses::User>> {
         self.get_api_request("users")
+    }
+
+    /// Lists users with pagination.
+    pub fn list_users_paged(&self, params: &PaginationParams) -> Result<Vec<responses::User>> {
+        match params.to_query_string() {
+            Some(query) => self.get_paginated_api_request("users", &query),
+            None => self.list_users(),
+        }
     }
 
     /// Lists users in the internal database that do not have access to any virtual hosts.

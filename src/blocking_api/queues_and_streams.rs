@@ -13,10 +13,10 @@
 // limitations under the License.
 
 use crate::{
-    commons::PaginationParams,
+    commons::{PaginationParams, QueueType},
     path,
     requests::{QueueParams, StreamParams},
-    responses,
+    responses::{self, QueueOps},
 };
 use serde_json::{Map, Value, json};
 
@@ -41,7 +41,7 @@ where
         params: &PaginationParams,
     ) -> Result<Vec<responses::QueueInfo>> {
         match params.to_query_string() {
-            Some(query) => self.get_api_request_with_query("queues", &query),
+            Some(query) => self.get_paginated_api_request("queues", &query),
             None => self.list_queues(),
         }
     }
@@ -59,7 +59,7 @@ where
         params: &PaginationParams,
     ) -> Result<Vec<responses::QueueInfo>> {
         match params.to_query_string() {
-            Some(query) => self.get_api_request_with_query(path!("queues", virtual_host), &query),
+            Some(query) => self.get_paginated_api_request(path!("queues", virtual_host), &query),
             None => self.list_queues_in(virtual_host),
         }
     }
@@ -129,6 +129,17 @@ where
         self.delete_api_request_with_optional_not_found(path!("queues", vhost, name), idempotently)
     }
 
+    /// Deletes multiple queues in a specified virtual host.
+    ///
+    /// When `idempotently` is true, non-existent queues are silently skipped.
+    /// When `idempotently` is false, the operation fails on the first non-existent queue.
+    pub fn delete_queues(&self, vhost: &str, names: &[&str], idempotently: bool) -> Result<()> {
+        for name in names {
+            self.delete_queue(vhost, name, idempotently)?;
+        }
+        Ok(())
+    }
+
     /// Deletes a stream in a specified virtual host.
     ///
     /// Unless `idempotently` is set to `true`, an attempt to delete a non-existent stream
@@ -157,5 +168,92 @@ where
     pub fn declare_classic_queue(&self, vhost: &str, name: &str) -> Result<()> {
         let params = QueueParams::new_durable_classic_queue(name, None);
         self.declare_queue(vhost, &params)
+    }
+
+    /// Lists only quorum queues across the cluster.
+    pub fn list_quorum_queues(&self) -> Result<Vec<responses::QueueInfo>> {
+        let all = self.list_queues()?;
+        Ok(all
+            .into_iter()
+            .filter(|q| q.queue_type() == QueueType::Quorum)
+            .collect())
+    }
+
+    /// Lists only quorum queues in the given virtual host.
+    pub fn list_quorum_queues_in(&self, virtual_host: &str) -> Result<Vec<responses::QueueInfo>> {
+        let all = self.list_queues_in(virtual_host)?;
+        Ok(all
+            .into_iter()
+            .filter(|q| q.queue_type() == QueueType::Quorum)
+            .collect())
+    }
+
+    /// Lists only classic queues across the cluster.
+    pub fn list_classic_queues(&self) -> Result<Vec<responses::QueueInfo>> {
+        let all = self.list_queues()?;
+        Ok(all
+            .into_iter()
+            .filter(|q| q.queue_type() == QueueType::Classic)
+            .collect())
+    }
+
+    /// Lists only classic queues in the given virtual host.
+    pub fn list_classic_queues_in(&self, virtual_host: &str) -> Result<Vec<responses::QueueInfo>> {
+        let all = self.list_queues_in(virtual_host)?;
+        Ok(all
+            .into_iter()
+            .filter(|q| q.queue_type() == QueueType::Classic)
+            .collect())
+    }
+
+    /// Lists only streams across the cluster.
+    pub fn list_streams(&self) -> Result<Vec<responses::QueueInfo>> {
+        let all = self.list_queues()?;
+        Ok(all
+            .into_iter()
+            .filter(|q| q.queue_type() == QueueType::Stream)
+            .collect())
+    }
+
+    /// Lists only streams in the given virtual host.
+    pub fn list_streams_in(&self, virtual_host: &str) -> Result<Vec<responses::QueueInfo>> {
+        let all = self.list_queues_in(virtual_host)?;
+        Ok(all
+            .into_iter()
+            .filter(|q| q.queue_type() == QueueType::Stream)
+            .collect())
+    }
+
+    /// Lists only streams with pagination.
+    ///
+    /// Note: Pagination is applied server-side to all queues, then streams are
+    /// filtered client-side. This means the number of results may be less than
+    /// the page size even on non-final pages.
+    pub fn list_streams_paged(
+        &self,
+        params: &PaginationParams,
+    ) -> Result<Vec<responses::QueueInfo>> {
+        let all = self.list_queues_paged(params)?;
+        Ok(all
+            .into_iter()
+            .filter(|q| q.queue_type() == QueueType::Stream)
+            .collect())
+    }
+
+    /// Lists only streams in the given virtual host with pagination.
+    ///
+    /// Note: Pagination is applied server-side to all queues, then streams are
+    /// filtered client-side. This means the number of results may be less than
+    /// the page size even on non-final pages.
+    pub fn list_streams_in_paged(
+        &self,
+        virtual_host: &str,
+        params: &PaginationParams,
+    ) -> Result<Vec<responses::QueueInfo>> {
+        let all = self.list_queues_in_paged(virtual_host, params)?;
+        Ok(all
+            .into_iter()
+            .filter(|q| q.queue_type() == QueueType::Stream)
+            .collect())
     }
 }

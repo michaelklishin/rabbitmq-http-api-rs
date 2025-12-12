@@ -28,6 +28,28 @@ use serde_json::Map;
 #[cfg(feature = "tabled")]
 use tabled::Tabled;
 
+/// Wrapper type for paginated API responses.
+///
+/// When pagination parameters are provided, RabbitMQ returns results
+/// in this wrapper format instead of a plain array.
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct PaginatedResponse<T> {
+    /// Number of items after filtering
+    pub filtered_count: usize,
+    /// Number of items in this page
+    pub item_count: usize,
+    /// The items in this page
+    pub items: Vec<T>,
+    /// Current page number (1-indexed)
+    pub page: usize,
+    /// Total number of pages
+    pub page_count: usize,
+    /// Number of items per page
+    pub page_size: usize,
+    /// Total number of items
+    pub total_count: usize,
+}
+
 pub mod federation;
 pub use federation::{FederationLink, FederationType, FederationUpstream};
 

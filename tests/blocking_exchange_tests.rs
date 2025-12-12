@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 use rabbitmq_http_client::{
-    blocking_api::Client, error::Error as APIClientError, requests::ExchangeParams,
+    blocking_api::Client, commons::PaginationParams, error::Error as APIClientError,
+    requests::ExchangeParams,
 };
 use serde_json::{Map, Value, json};
 
@@ -143,4 +144,54 @@ fn test_blocking_list_exchanges_in_a_virtual_host() {
 
     let result1 = rc.list_exchanges_in("/");
     assert!(result1.is_ok(), "list_exchanges_in returned {result1:?}");
+}
+
+#[test]
+fn test_blocking_list_exchanges_paged() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+    let vhost = "/";
+
+    let params = PaginationParams::first_page(10);
+    let result = rc.list_exchanges_paged(&params);
+    assert!(result.is_ok(), "list_exchanges_paged returned {result:?}");
+
+    let result_in = rc.list_exchanges_in_paged(vhost, &params);
+    assert!(
+        result_in.is_ok(),
+        "list_exchanges_in_paged returned {result_in:?}"
+    );
+}
+
+#[test]
+fn test_blocking_delete_exchanges_bulk() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+    let vhost = "/";
+    let names = [
+        "rust.tests.x.bulk.1",
+        "rust.tests.x.bulk.2",
+        "rust.tests.x.bulk.3",
+    ];
+
+    for name in &names {
+        let _ = rc.delete_exchange(vhost, name, true);
+        let params = ExchangeParams::durable_fanout(name, None);
+        rc.declare_exchange(vhost, &params).unwrap();
+    }
+
+    let name_refs: Vec<&str> = names.iter().map(|s| *s).collect();
+    let result = rc.delete_exchanges(vhost, &name_refs, false);
+    assert!(result.is_ok(), "delete_exchanges returned {result:?}");
+
+    for name in &names {
+        let info = rc.get_exchange_info(vhost, name);
+        assert!(info.is_err(), "Exchange {} should have been deleted", name);
+    }
+
+    let result_idempotent = rc.delete_exchanges(vhost, &name_refs, true);
+    assert!(
+        result_idempotent.is_ok(),
+        "Idempotent delete_exchanges should succeed"
+    );
 }

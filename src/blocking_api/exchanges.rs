@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::{path, requests::ExchangeParams, responses};
+use crate::{commons::PaginationParams, path, requests::ExchangeParams, responses};
 
 use super::client::{Client, Result};
 use std::fmt::Display;
@@ -26,17 +26,36 @@ where
     /// Lists all exchanges across the cluster.
     /// See [Exchanges Guide](https://www.rabbitmq.com/docs/exchanges) to learn more.
     pub fn list_exchanges(&self) -> Result<Vec<responses::ExchangeInfo>> {
-        let response = self.http_get("exchanges", None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request("exchanges")
+    }
+
+    /// Lists exchanges with pagination.
+    pub fn list_exchanges_paged(
+        &self,
+        params: &PaginationParams,
+    ) -> Result<Vec<responses::ExchangeInfo>> {
+        match params.to_query_string() {
+            Some(query) => self.get_paginated_api_request("exchanges", &query),
+            None => self.list_exchanges(),
+        }
     }
 
     /// Lists all exchanges in the given virtual host.
     /// See [Exchanges Guide](https://www.rabbitmq.com/docs/exchanges) to learn more.
     pub fn list_exchanges_in(&self, virtual_host: &str) -> Result<Vec<responses::ExchangeInfo>> {
-        let response = self.http_get(path!("exchanges", virtual_host), None, None)?;
-        let response = response.json()?;
-        Ok(response)
+        self.get_api_request(path!("exchanges", virtual_host))
+    }
+
+    /// Lists exchanges in the given virtual host with pagination.
+    pub fn list_exchanges_in_paged(
+        &self,
+        virtual_host: &str,
+        params: &PaginationParams,
+    ) -> Result<Vec<responses::ExchangeInfo>> {
+        match params.to_query_string() {
+            Some(query) => self.get_paginated_api_request(path!("exchanges", virtual_host), &query),
+            None => self.list_exchanges_in(virtual_host),
+        }
     }
 
     /// Returns information about an exchange.
@@ -68,5 +87,16 @@ where
             path!("exchanges", vhost, name),
             idempotently,
         )
+    }
+
+    /// Deletes multiple exchanges in a specified virtual host.
+    ///
+    /// When `idempotently` is true, non-existent exchanges are silently skipped.
+    /// When `idempotently` is false, the operation fails on the first non-existent exchange.
+    pub fn delete_exchanges(&self, vhost: &str, names: &[&str], idempotently: bool) -> Result<()> {
+        for name in names {
+            self.delete_exchange(vhost, name, idempotently)?;
+        }
+        Ok(())
     }
 }

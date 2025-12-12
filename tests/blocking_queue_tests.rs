@@ -11,7 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-use rabbitmq_http_client::{blocking_api::Client, commons::QueueType, requests::QueueParams};
+use rabbitmq_http_client::{
+    blocking_api::Client,
+    commons::{PaginationParams, QueueType},
+    requests::QueueParams,
+};
 use serde_json::{Map, Value, json};
 
 mod test_helpers;
@@ -216,4 +220,140 @@ fn test_blocking_declare_a_transient_auto_delete_queue() {
     assert!(result2.is_ok(), "declare_queue returned {result2:?}");
 
     let _ = rc.delete_queue(vhost, name, false);
+}
+
+#[test]
+fn test_blocking_list_queues_paged() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+    let vhost = "/";
+
+    let params = PaginationParams::first_page(10);
+    let result = rc.list_queues_paged(&params);
+    assert!(result.is_ok(), "list_queues_paged returned {result:?}");
+
+    let result_in = rc.list_queues_in_paged(vhost, &params);
+    assert!(
+        result_in.is_ok(),
+        "list_queues_in_paged returned {result_in:?}"
+    );
+}
+
+#[test]
+fn test_blocking_list_quorum_queues() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+    let vhost = "/";
+    let name = "rust.tests.qq.list_quorum_queues.blocking";
+
+    let _ = rc.delete_queue(vhost, name, true);
+
+    let params = QueueParams::new_quorum_queue(name, None);
+    rc.declare_queue(vhost, &params).unwrap();
+
+    test_helpers::await_queue_metric_emission();
+
+    let result = rc.list_quorum_queues();
+    assert!(result.is_ok(), "list_quorum_queues returned {result:?}");
+    let queues = result.unwrap();
+    assert!(queues.iter().any(|q| q.name == name));
+
+    let result_in = rc.list_quorum_queues_in(vhost);
+    assert!(
+        result_in.is_ok(),
+        "list_quorum_queues_in returned {result_in:?}"
+    );
+    let queues_in = result_in.unwrap();
+    assert!(queues_in.iter().any(|q| q.name == name));
+
+    rc.delete_queue(vhost, name, false).unwrap();
+}
+
+#[test]
+fn test_blocking_list_classic_queues() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+    let vhost = "/";
+    let name = "rust.tests.cq.list_classic_queues.blocking";
+
+    let _ = rc.delete_queue(vhost, name, true);
+
+    let params = QueueParams::new_durable_classic_queue(name, None);
+    rc.declare_queue(vhost, &params).unwrap();
+
+    test_helpers::await_queue_metric_emission();
+
+    let result = rc.list_classic_queues();
+    assert!(result.is_ok(), "list_classic_queues returned {result:?}");
+    let queues = result.unwrap();
+    assert!(queues.iter().any(|q| q.name == name));
+
+    let result_in = rc.list_classic_queues_in(vhost);
+    assert!(
+        result_in.is_ok(),
+        "list_classic_queues_in returned {result_in:?}"
+    );
+    let queues_in = result_in.unwrap();
+    assert!(queues_in.iter().any(|q| q.name == name));
+
+    rc.delete_queue(vhost, name, false).unwrap();
+}
+
+#[test]
+fn test_blocking_list_streams() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+    let vhost = "/";
+    let name = "rust.tests.stream.list_streams.blocking";
+
+    let _ = rc.delete_queue(vhost, name, true);
+
+    let params = QueueParams::new_stream(name, None);
+    rc.declare_queue(vhost, &params).unwrap();
+
+    test_helpers::await_queue_metric_emission();
+
+    let result = rc.list_streams();
+    assert!(result.is_ok(), "list_streams returned {result:?}");
+    let streams = result.unwrap();
+    assert!(streams.iter().any(|q| q.name == name));
+
+    let result_in = rc.list_streams_in(vhost);
+    assert!(result_in.is_ok(), "list_streams_in returned {result_in:?}");
+    let streams_in = result_in.unwrap();
+    assert!(streams_in.iter().any(|q| q.name == name));
+
+    rc.delete_queue(vhost, name, false).unwrap();
+}
+
+#[test]
+fn test_blocking_delete_queues_bulk() {
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+    let vhost = "/";
+    let names = [
+        "rust.tests.cq.bulk.1",
+        "rust.tests.cq.bulk.2",
+        "rust.tests.cq.bulk.3",
+    ];
+
+    for name in &names {
+        let _ = rc.delete_queue(vhost, name, true);
+        let params = QueueParams::new_durable_classic_queue(name, None);
+        rc.declare_queue(vhost, &params).unwrap();
+    }
+
+    let result = rc.delete_queues(vhost, &names, false);
+    assert!(result.is_ok(), "delete_queues returned {result:?}");
+
+    for name in &names {
+        let info = rc.get_queue_info(vhost, name);
+        assert!(info.is_err(), "Queue {} should have been deleted", name);
+    }
+
+    let result_idempotent = rc.delete_queues(vhost, &names, true);
+    assert!(
+        result_idempotent.is_ok(),
+        "Idempotent delete_queues should succeed"
+    );
 }

@@ -48,9 +48,9 @@ pub const MAX_PAGE_SIZE: usize = 500;
 /// Pagination parameters for list endpoints.
 ///
 /// The RabbitMQ HTTP API supports pagination with `page` (1-indexed) and `page_size` parameters.
-/// Default page size is 100, maximum is 500. Construction methods validate that `page_size`
-/// does not exceed [`MAX_PAGE_SIZE`].
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
+/// Default page size is 100, maximum is 500. Construction methods clamp `page_size` to
+/// [`MAX_PAGE_SIZE`] if it exceeds the limit.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 #[must_use]
 pub struct PaginationParams {
     pub page: Option<usize>,
@@ -60,19 +60,11 @@ pub struct PaginationParams {
 impl PaginationParams {
     /// Creates pagination parameters with the given page number and page size.
     ///
-    /// # Panics
-    ///
-    /// Panics if `page_size` exceeds [`MAX_PAGE_SIZE`] (500).
+    /// Values exceeding [`MAX_PAGE_SIZE`] (500) are clamped to the maximum.
     pub fn new(page: usize, page_size: usize) -> Self {
-        assert!(
-            page_size <= MAX_PAGE_SIZE,
-            "page_size {} exceeds MAX_PAGE_SIZE {}",
-            page_size,
-            MAX_PAGE_SIZE
-        );
         Self {
             page: Some(page),
-            page_size: Some(page_size),
+            page_size: Some(page_size.min(MAX_PAGE_SIZE)),
         }
     }
 
@@ -83,9 +75,7 @@ impl PaginationParams {
 
     /// Creates pagination parameters for the first page with a custom page size.
     ///
-    /// # Panics
-    ///
-    /// Panics if `page_size` exceeds [`MAX_PAGE_SIZE`] (500).
+    /// Values exceeding [`MAX_PAGE_SIZE`] (500) are clamped to the maximum.
     pub fn first_page(page_size: usize) -> Self {
         Self::new(1, page_size)
     }
@@ -97,6 +87,48 @@ impl PaginationParams {
             (None, Some(size)) => Some(format!("page_size={}", size)),
             (None, None) => None,
         }
+    }
+
+    /// Returns pagination parameters for the next page, preserving the current page size.
+    ///
+    /// Returns `None` if no page is set (pagination not initialized).
+    pub fn next_page(&self) -> Option<Self> {
+        self.page.map(|p| Self {
+            page: Some(p + 1),
+            page_size: self.page_size,
+        })
+    }
+
+    /// Returns the current page number, or `None` if pagination is not configured.
+    pub fn current_page(&self) -> Option<usize> {
+        self.page
+    }
+
+    /// Returns the page size, or `None` if not explicitly set.
+    pub fn page_size(&self) -> Option<usize> {
+        self.page_size
+    }
+
+    /// Returns true if results indicate this is the last page of data.
+    ///
+    /// Returns `true` if the results slice is empty or contains fewer items than
+    /// the page size, indicating no more data is available.
+    ///
+    /// This is a helper for implementing pagination loops:
+    /// ```ignore
+    /// let mut params = PaginationParams::first_page_default();
+    /// loop {
+    ///     let results = client.list_queues_paged(&params)?;
+    ///     // process results...
+    ///     if params.is_last_page(&results) {
+    ///         break;
+    ///     }
+    ///     params = params.next_page().unwrap();
+    /// }
+    /// ```
+    pub fn is_last_page<T>(&self, results: &[T]) -> bool {
+        let effective_page_size = self.page_size.unwrap_or(DEFAULT_PAGE_SIZE).max(1);
+        results.is_empty() || results.len() < effective_page_size
     }
 }
 
@@ -213,7 +245,7 @@ impl From<&str> for SupportedProtocol {
             SUPPORTED_PROTOCOL_STOMP_WITH_TLS => SupportedProtocol::STOMPWithTLS,
             SUPPORTED_PROTOCOL_AMQP_OVER_WEBSOCKETS => SupportedProtocol::AMQPOverWebSockets,
             SUPPORTED_PROTOCOL_AMQP_OVER_WEBSOCKETS_WITH_TLS => {
-                SupportedProtocol::AMQPOverWebSockets
+                SupportedProtocol::AMQPOverWebSocketsWithTLS
             }
             SUPPORTED_PROTOCOL_MQTT_OVER_WEBSOCKETS => SupportedProtocol::MQTTOverWebSockets,
             SUPPORTED_PROTOCOL_MQTT_OVER_WEBSOCKETS_WITH_TLS => {
@@ -274,40 +306,8 @@ impl AsRef<str> for SupportedProtocol {
 impl From<SupportedProtocol> for String {
     fn from(value: SupportedProtocol) -> String {
         match value {
-            SupportedProtocol::Clustering => SUPPORTED_PROTOCOL_CLUSTERING.to_owned(),
-            SupportedProtocol::AMQP => SUPPORTED_PROTOCOL_AMQP.to_owned(),
-            SupportedProtocol::AMQPWithTLS => SUPPORTED_PROTOCOL_AMQP_WITH_TLS.to_owned(),
-            SupportedProtocol::Stream => SUPPORTED_PROTOCOL_STREAM.to_owned(),
-            SupportedProtocol::StreamWithTLS => SUPPORTED_PROTOCOL_STREAM_WITH_TLS.to_owned(),
-            SupportedProtocol::MQTT => SUPPORTED_PROTOCOL_MQTT.to_owned(),
-            SupportedProtocol::MQTTWithTLS => SUPPORTED_PROTOCOL_MQTT_WITH_TLS.to_owned(),
-            SupportedProtocol::STOMP => SUPPORTED_PROTOCOL_STOMP.to_owned(),
-            SupportedProtocol::STOMPWithTLS => SUPPORTED_PROTOCOL_STOMP_WITH_TLS.to_owned(),
-            SupportedProtocol::AMQPOverWebSockets => {
-                SUPPORTED_PROTOCOL_AMQP_OVER_WEBSOCKETS.to_owned()
-            }
-            SupportedProtocol::AMQPOverWebSocketsWithTLS => {
-                SUPPORTED_PROTOCOL_AMQP_OVER_WEBSOCKETS_WITH_TLS.to_owned()
-            }
-            SupportedProtocol::MQTTOverWebSockets => {
-                SUPPORTED_PROTOCOL_MQTT_OVER_WEBSOCKETS.to_owned()
-            }
-            SupportedProtocol::MQTTOverWebSocketsWithTLS => {
-                SUPPORTED_PROTOCOL_MQTT_OVER_WEBSOCKETS_WITH_TLS.to_owned()
-            }
-            SupportedProtocol::STOMPOverWebsockets => {
-                SUPPORTED_PROTOCOL_STOMP_OVER_WEBSOCKETS.to_owned()
-            }
-            SupportedProtocol::STOMPOverWebsocketsWithTLS => {
-                SUPPORTED_PROTOCOL_STOMP_OVER_WEBSOCKETS_WITH_TLS.to_owned()
-            }
-            SupportedProtocol::Prometheus => SUPPORTED_PROTOCOL_PROMETHEUS.to_owned(),
-            SupportedProtocol::PrometheusWithTLS => {
-                SUPPORTED_PROTOCOL_PROMETHEUS_WITH_TLS.to_owned()
-            }
-            SupportedProtocol::HTTP => SUPPORTED_PROTOCOL_HTTP.to_owned(),
-            SupportedProtocol::HTTPWithTLS => SUPPORTED_PROTOCOL_HTTP_WITH_TLS.to_owned(),
             SupportedProtocol::Other(s) => s,
+            other => other.as_ref().to_owned(),
         }
     }
 }
@@ -431,19 +431,8 @@ impl AsRef<str> for ExchangeType {
 impl From<ExchangeType> for String {
     fn from(value: ExchangeType) -> String {
         match value {
-            ExchangeType::Fanout => EXCHANGE_TYPE_FANOUT.to_owned(),
-            ExchangeType::Topic => EXCHANGE_TYPE_TOPIC.to_owned(),
-            ExchangeType::Direct => EXCHANGE_TYPE_DIRECT.to_owned(),
-            ExchangeType::Headers => EXCHANGE_TYPE_HEADERS.to_owned(),
-            ExchangeType::ConsistentHashing => EXCHANGE_TYPE_CONSISTENT_HASHING.to_owned(),
-            ExchangeType::ModulusHash => EXCHANGE_TYPE_MODULUS_HASH.to_owned(),
-            ExchangeType::Random => EXCHANGE_TYPE_RANDOM.to_owned(),
-            ExchangeType::LocalRandom => EXCHANGE_TYPE_LOCAL_RANDOM.to_owned(),
-            ExchangeType::JmsTopic => EXCHANGE_TYPE_JMS_TOPIC.to_owned(),
-            ExchangeType::RecentHistory => EXCHANGE_TYPE_RECENT_HISTORY.to_owned(),
-            ExchangeType::DelayedMessage => EXCHANGE_TYPE_DELAYED_MESSAGE.to_owned(),
-            ExchangeType::MessageDeduplication => EXCHANGE_TYPE_MESSAGE_DEDUPLICATION.to_owned(),
-            ExchangeType::Plugin(exchange_type) => exchange_type,
+            ExchangeType::Plugin(s) => s,
+            other => other.as_ref().to_owned(),
         }
     }
 }
@@ -508,11 +497,8 @@ impl AsRef<str> for QueueType {
 impl From<QueueType> for String {
     fn from(value: QueueType) -> Self {
         match value {
-            QueueType::Classic => "classic".to_owned(),
-            QueueType::Quorum => "quorum".to_owned(),
-            QueueType::Stream => "stream".to_owned(),
-            QueueType::Delayed => "delayed".to_owned(),
-            QueueType::Unsupported(val) => val.to_owned(),
+            QueueType::Unsupported(s) => s,
+            other => other.as_ref().to_owned(),
         }
     }
 }
@@ -538,7 +524,7 @@ impl fmt::Display for BindingDestinationType {
 }
 
 impl BindingDestinationType {
-    pub fn path_appreviation(&self) -> String {
+    pub fn path_abbreviation(&self) -> String {
         match *self {
             BindingDestinationType::Queue => "q".to_owned(),
             BindingDestinationType::Exchange => "e".to_owned(),

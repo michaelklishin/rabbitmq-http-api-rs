@@ -39,7 +39,7 @@ where
         params: &PaginationParams,
     ) -> Result<Vec<responses::Connection>> {
         match params.to_query_string() {
-            Some(query) => self.get_api_request_with_query("connections", &query).await,
+            Some(query) => self.get_paginated_api_request("connections", &query).await,
             None => self.list_connections().await,
         }
     }

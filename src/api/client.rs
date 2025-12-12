@@ -18,6 +18,7 @@ use crate::error::{
     Error::{ClientErrorResponse, NotFound, ServerErrorResponse},
     ErrorDetails,
 };
+use crate::responses;
 use backtrace::Backtrace;
 use log::trace;
 use reqwest::{Client as HttpClient, StatusCode, header::HeaderMap};
@@ -381,15 +382,19 @@ where
         Ok(response)
     }
 
-    pub(crate) async fn get_api_request_with_query<T, S>(&self, path: S, query: &str) -> Result<T>
+    pub(crate) async fn get_paginated_api_request<T, S>(
+        &self,
+        path: S,
+        query: &str,
+    ) -> Result<Vec<T>>
     where
         T: DeserializeOwned,
         S: AsRef<str>,
     {
         let path_with_query = format!("{}?{}", path.as_ref(), query);
         let response = self.http_get(path_with_query, None, None).await?;
-        let response = response.json().await?;
-        Ok(response)
+        let response: responses::PaginatedResponse<T> = response.json().await?;
+        Ok(response.items)
     }
 
     pub(crate) async fn delete_api_request_with_optional_not_found<S>(

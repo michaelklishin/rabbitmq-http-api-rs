@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::{path, requests::VirtualHostParams, responses};
+use crate::{commons::PaginationParams, path, requests::VirtualHostParams, responses};
 
 use super::client::{Client, Result};
 use std::fmt::Display;
@@ -27,6 +27,17 @@ where
     /// See [Virtual Hosts Guide](https://www.rabbitmq.com/docs/vhosts) to learn more.
     pub fn list_vhosts(&self) -> Result<Vec<responses::VirtualHost>> {
         self.get_api_request("vhosts")
+    }
+
+    /// Lists virtual hosts with pagination.
+    pub fn list_vhosts_paged(
+        &self,
+        params: &PaginationParams,
+    ) -> Result<Vec<responses::VirtualHost>> {
+        match params.to_query_string() {
+            Some(query) => self.get_paginated_api_request("vhosts", &query),
+            None => self.list_vhosts(),
+        }
     }
 
     /// Returns information about a virtual host.
