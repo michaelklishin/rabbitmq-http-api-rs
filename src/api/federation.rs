@@ -18,6 +18,7 @@ use crate::responses::{FederationLink, FederationUpstream};
 
 use super::client::{Client, Result};
 use std::fmt::Display;
+use std::result::Result as StdResult;
 
 impl<E, U, P> Client<E, U, P>
 where
@@ -33,9 +34,7 @@ where
         let upstreams = response
             .into_iter()
             .map(FederationUpstream::try_from)
-            // TODO: in theory this can be an Err
-            .map(|r| r.unwrap())
-            .collect::<Vec<_>>();
+            .collect::<StdResult<Vec<_>, _>>()?;
 
         Ok(upstreams)
     }
