@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use crate::{
+    commons::PaginationParams,
     path,
     requests::{QueueParams, StreamParams},
     responses,
@@ -34,10 +35,33 @@ where
         self.get_api_request("queues")
     }
 
+    /// Lists queues and streams with pagination.
+    pub fn list_queues_paged(
+        &self,
+        params: &PaginationParams,
+    ) -> Result<Vec<responses::QueueInfo>> {
+        match params.to_query_string() {
+            Some(query) => self.get_api_request_with_query("queues", &query),
+            None => self.list_queues(),
+        }
+    }
+
     /// Lists all queues and streams in the given virtual host.
     /// See [Queues Guide](https://www.rabbitmq.com/docs/queues) and [RabbitMQ Streams Guide](https://www.rabbitmq.com/docs/streams) to learn more.
     pub fn list_queues_in(&self, virtual_host: &str) -> Result<Vec<responses::QueueInfo>> {
         self.get_api_request(path!("queues", virtual_host))
+    }
+
+    /// Lists queues and streams in the given virtual host with pagination.
+    pub fn list_queues_in_paged(
+        &self,
+        virtual_host: &str,
+        params: &PaginationParams,
+    ) -> Result<Vec<responses::QueueInfo>> {
+        match params.to_query_string() {
+            Some(query) => self.get_api_request_with_query(path!("queues", virtual_host), &query),
+            None => self.list_queues_in(virtual_host),
+        }
     }
 
     /// Lists all queues and streams across the cluster. Compared to [`list_queues`], provides more queue metrics.
@@ -121,5 +145,17 @@ where
         let _response =
             self.http_delete(path!("queues", virtual_host, name, "contents"), None, None)?;
         Ok(())
+    }
+
+    /// Convenience method: declares a durable quorum queue with no arguments.
+    pub fn declare_quorum_queue(&self, vhost: &str, name: &str) -> Result<()> {
+        let params = QueueParams::new_quorum_queue(name, None);
+        self.declare_queue(vhost, &params)
+    }
+
+    /// Convenience method: declares a durable classic queue with no arguments.
+    pub fn declare_classic_queue(&self, vhost: &str, name: &str) -> Result<()> {
+        let params = QueueParams::new_durable_classic_queue(name, None);
+        self.declare_queue(vhost, &params)
     }
 }

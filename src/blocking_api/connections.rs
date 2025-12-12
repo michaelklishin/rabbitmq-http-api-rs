@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::{path, responses};
+use crate::{commons::PaginationParams, path, responses};
 use reqwest::{
     StatusCode,
     header::{HeaderMap, HeaderValue},
@@ -31,6 +31,17 @@ where
     /// See [Connections Guide](https://www.rabbitmq.com/docs/connections) to learn more.
     pub fn list_connections(&self) -> Result<Vec<responses::Connection>> {
         self.get_api_request("connections")
+    }
+
+    /// Lists connections with pagination.
+    pub fn list_connections_paged(
+        &self,
+        params: &PaginationParams,
+    ) -> Result<Vec<responses::Connection>> {
+        match params.to_query_string() {
+            Some(query) => self.get_api_request_with_query("connections", &query),
+            None => self.list_connections(),
+        }
     }
 
     /// Returns information about a connection.

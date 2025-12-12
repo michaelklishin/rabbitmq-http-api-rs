@@ -1,8 +1,12 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.69.0(in development)
+## v0.69.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * Support for pagination with `Client#list_connections_paged`, `Client#list_queues_paged`, `Client#list_queues_in_paged`, `PaginationParams`
+ * API ergonomics improvements:`XArgumentsBuilder`, `PolicyDefinitionBuilder`, `HttpClientError#user_message`, `PolicyParams` improvements,
+   and a few more convenience methods on `Client`
 
 ## v0.68.0 (Nov 28, 2025)
 

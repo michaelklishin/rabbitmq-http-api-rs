@@ -127,4 +127,16 @@ where
             idempotently,
         )
     }
+
+    /// Convenience method: grants full permissions (configure, write, read) to a user in a virtual host.
+    pub fn grant_full_permissions(&self, user: &str, vhost: &str) -> Result<()> {
+        let params = requests::Permissions {
+            user,
+            vhost,
+            configure: ".*",
+            write: ".*",
+            read: ".*",
+        };
+        self.declare_permissions(&params)
+    }
 }

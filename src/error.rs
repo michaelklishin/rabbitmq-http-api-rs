@@ -164,3 +164,57 @@ impl From<ConversionError> for HttpClientError {
         }
     }
 }
+
+impl HttpClientError {
+    /// Returns a user-friendly error message, preferring API-provided details when available.
+    pub fn user_message(&self) -> String {
+        match self {
+            HttpClientError::ClientErrorResponse {
+                error_details,
+                status_code,
+                ..
+            } => {
+                if let Some(details) = error_details
+                    && let Some(reason) = details.reason()
+                {
+                    return reason.to_owned();
+                }
+                format!("Client error: {status_code}")
+            }
+            HttpClientError::ServerErrorResponse {
+                error_details,
+                status_code,
+                ..
+            } => {
+                if let Some(details) = error_details
+                    && let Some(reason) = details.reason()
+                {
+                    return reason.to_owned();
+                }
+                format!("Server error: {status_code}")
+            }
+            HttpClientError::HealthCheckFailed { details, .. } => {
+                format!("Health check failed: {}", details.reason())
+            }
+            HttpClientError::NotFound => "Resource not found".to_owned(),
+            HttpClientError::MultipleMatchingBindings => {
+                "Multiple matching bindings found, provide additional properties".to_owned()
+            }
+            HttpClientError::InvalidHeaderValue { .. } => "Invalid header value".to_owned(),
+            HttpClientError::UnsupportedArgumentValue { property } => {
+                format!("Unsupported value for property: {property}")
+            }
+            HttpClientError::MissingProperty { argument } => {
+                format!("Missing required argument: {argument}")
+            }
+            HttpClientError::IncompatibleBody { error, .. } => {
+                format!("Response parsing error: {error}")
+            }
+            HttpClientError::ParsingError { message } => format!("Parsing error: {message}"),
+            HttpClientError::RequestError { error, .. } => {
+                format!("Request error: {error}")
+            }
+            HttpClientError::Other => "An unspecified error occurred".to_owned(),
+        }
+    }
+}

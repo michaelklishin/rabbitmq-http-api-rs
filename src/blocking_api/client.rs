@@ -379,6 +379,17 @@ where
         Ok(response)
     }
 
+    pub(crate) fn get_api_request_with_query<T, S>(&self, path: S, query: &str) -> Result<T>
+    where
+        T: DeserializeOwned,
+        S: AsRef<str>,
+    {
+        let path_with_query = format!("{}?{}", path.as_ref(), query);
+        let response = self.http_get(path_with_query, None, None)?;
+        let response = response.json()?;
+        Ok(response)
+    }
+
     pub(crate) fn delete_api_request_with_optional_not_found<S>(
         &self,
         path: S,

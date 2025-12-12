@@ -39,6 +39,67 @@ impl Default for RetrySettings {
     }
 }
 
+/// Default page size used by the RabbitMQ HTTP API.
+pub const DEFAULT_PAGE_SIZE: usize = 100;
+
+/// Maximum page size allowed by the RabbitMQ HTTP API.
+pub const MAX_PAGE_SIZE: usize = 500;
+
+/// Pagination parameters for list endpoints.
+///
+/// The RabbitMQ HTTP API supports pagination with `page` (1-indexed) and `page_size` parameters.
+/// Default page size is 100, maximum is 500. Construction methods validate that `page_size`
+/// does not exceed [`MAX_PAGE_SIZE`].
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[must_use]
+pub struct PaginationParams {
+    pub page: Option<usize>,
+    pub page_size: Option<usize>,
+}
+
+impl PaginationParams {
+    /// Creates pagination parameters with the given page number and page size.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `page_size` exceeds [`MAX_PAGE_SIZE`] (500).
+    pub fn new(page: usize, page_size: usize) -> Self {
+        assert!(
+            page_size <= MAX_PAGE_SIZE,
+            "page_size {} exceeds MAX_PAGE_SIZE {}",
+            page_size,
+            MAX_PAGE_SIZE
+        );
+        Self {
+            page: Some(page),
+            page_size: Some(page_size),
+        }
+    }
+
+    /// Creates pagination parameters for the first page with the default page size (100).
+    pub fn first_page_default() -> Self {
+        Self::new(1, DEFAULT_PAGE_SIZE)
+    }
+
+    /// Creates pagination parameters for the first page with a custom page size.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `page_size` exceeds [`MAX_PAGE_SIZE`] (500).
+    pub fn first_page(page_size: usize) -> Self {
+        Self::new(1, page_size)
+    }
+
+    pub fn to_query_string(&self) -> Option<String> {
+        match (self.page, self.page_size) {
+            (Some(page), Some(size)) => Some(format!("page={}&page_size={}", page, size)),
+            (Some(page), None) => Some(format!("page={}", page)),
+            (None, Some(size)) => Some(format!("page_size={}", size)),
+            (None, None) => None,
+        }
+    }
+}
+
 pub type Username = String;
 pub type VirtualHostName = String;
 pub type PermissionPattern = String;
