@@ -43,6 +43,18 @@ impl fmt::Display for RuntimeParameterValue {
     }
 }
 
+impl From<Map<String, serde_json::Value>> for RuntimeParameterValue {
+    fn from(value: Map<String, serde_json::Value>) -> Self {
+        Self(value)
+    }
+}
+
+impl From<RuntimeParameterValue> for Map<String, serde_json::Value> {
+    fn from(value: RuntimeParameterValue) -> Self {
+        value.0
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(transparent)]
 pub struct GlobalRuntimeParameterValue(pub serde_json::Value);
@@ -52,6 +64,18 @@ impl fmt::Display for GlobalRuntimeParameterValue {
         writeln!(f, "{}", &self.0)?;
 
         Ok(())
+    }
+}
+
+impl From<serde_json::Value> for GlobalRuntimeParameterValue {
+    fn from(value: serde_json::Value) -> Self {
+        Self(value)
+    }
+}
+
+impl From<GlobalRuntimeParameterValue> for serde_json::Value {
+    fn from(value: GlobalRuntimeParameterValue) -> Self {
+        value.0
     }
 }
 

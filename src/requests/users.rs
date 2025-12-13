@@ -93,6 +93,86 @@ impl<'a> UserParams<'a> {
     }
 }
 
+/// Owned version of [`UserParams`] for cases where owned strings are needed.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OwnedUserParams {
+    pub name: String,
+    pub password_hash: String,
+    pub tags: String,
+}
+
+impl OwnedUserParams {
+    pub fn new(
+        name: impl Into<String>,
+        password_hash: impl Into<String>,
+        tags: impl Into<String>,
+    ) -> Self {
+        Self {
+            name: name.into(),
+            password_hash: password_hash.into(),
+            tags: tags.into(),
+        }
+    }
+
+    pub fn administrator(name: impl Into<String>, password_hash: impl Into<String>) -> Self {
+        Self {
+            name: name.into(),
+            password_hash: password_hash.into(),
+            tags: "administrator".to_owned(),
+        }
+    }
+
+    pub fn monitoring(name: impl Into<String>, password_hash: impl Into<String>) -> Self {
+        Self {
+            name: name.into(),
+            password_hash: password_hash.into(),
+            tags: "monitoring".to_owned(),
+        }
+    }
+
+    pub fn management(name: impl Into<String>, password_hash: impl Into<String>) -> Self {
+        Self {
+            name: name.into(),
+            password_hash: password_hash.into(),
+            tags: "management".to_owned(),
+        }
+    }
+
+    pub fn policymaker(name: impl Into<String>, password_hash: impl Into<String>) -> Self {
+        Self {
+            name: name.into(),
+            password_hash: password_hash.into(),
+            tags: "policymaker".to_owned(),
+        }
+    }
+
+    pub fn without_tags(name: impl Into<String>, password_hash: impl Into<String>) -> Self {
+        Self {
+            name: name.into(),
+            password_hash: password_hash.into(),
+            tags: String::new(),
+        }
+    }
+
+    pub fn as_ref(&self) -> UserParams<'_> {
+        UserParams {
+            name: &self.name,
+            password_hash: &self.password_hash,
+            tags: &self.tags,
+        }
+    }
+}
+
+impl<'a> From<UserParams<'a>> for OwnedUserParams {
+    fn from(params: UserParams<'a>) -> Self {
+        Self {
+            name: params.name.to_owned(),
+            password_hash: params.password_hash.to_owned(),
+            tags: params.tags.to_owned(),
+        }
+    }
+}
+
 /// Represents a bulk user delete operation.
 /// Used by [`crate::api::Client`] and [`crate::blocking_api::Client`]'s functions
 /// that delete multiple users in a single operation.

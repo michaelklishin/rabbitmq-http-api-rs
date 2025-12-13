@@ -44,7 +44,7 @@ where
     /// Gets cluster tags.
     pub fn get_cluster_tags(&self) -> Result<responses::ClusterTags> {
         let response = self.get_global_runtime_parameter("cluster_tags")?;
-        Ok(ClusterTags::from(response.value))
+        Ok(ClusterTags::try_from(response.value)?)
     }
 
     /// Sets cluster tags.

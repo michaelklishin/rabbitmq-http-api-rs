@@ -30,6 +30,8 @@ pub enum ConversionError {
     MissingProperty { argument: String },
     #[error("Could not parse a value: {message}")]
     ParsingError { message: String },
+    #[error("Invalid type: expected {expected}")]
+    InvalidType { expected: String },
 }
 
 /// The API returns JSON with "error" and "reason" fields in error responses.
@@ -161,11 +163,94 @@ impl From<ConversionError> for HttpClientError {
                 HttpClientError::MissingProperty { argument }
             }
             ConversionError::ParsingError { message } => HttpClientError::ParsingError { message },
+            ConversionError::InvalidType { expected } => HttpClientError::ParsingError {
+                message: format!("invalid type: expected {expected}"),
+            },
         }
     }
 }
 
 impl HttpClientError {
+    /// Returns true if the error is a 404 Not Found response.
+    pub fn is_not_found(&self) -> bool {
+        matches!(self, HttpClientError::NotFound)
+            || matches!(
+                self,
+                HttpClientError::ClientErrorResponse { status_code, .. }
+                if *status_code == StatusCode::NOT_FOUND
+            )
+    }
+
+    /// Returns true if the error indicates a resource already exists (409 Conflict).
+    pub fn is_already_exists(&self) -> bool {
+        matches!(
+            self,
+            HttpClientError::ClientErrorResponse { status_code, .. }
+            if *status_code == StatusCode::CONFLICT
+        )
+    }
+
+    /// Returns true if the error is a 401 Unauthorized response (not authenticated).
+    pub fn is_unauthorized(&self) -> bool {
+        matches!(
+            self,
+            HttpClientError::ClientErrorResponse { status_code, .. }
+            if *status_code == StatusCode::UNAUTHORIZED
+        )
+    }
+
+    /// Returns true if the error is a 403 Forbidden response (authenticated but not authorized).
+    pub fn is_forbidden(&self) -> bool {
+        matches!(
+            self,
+            HttpClientError::ClientErrorResponse { status_code, .. }
+            if *status_code == StatusCode::FORBIDDEN
+        )
+    }
+
+    /// Returns true if the error is a client error (4xx status code).
+    pub fn is_client_error(&self) -> bool {
+        matches!(
+            self,
+            HttpClientError::ClientErrorResponse { .. } | HttpClientError::NotFound
+        )
+    }
+
+    /// Returns true if the error is a server error (5xx status code).
+    pub fn is_server_error(&self) -> bool {
+        matches!(self, HttpClientError::ServerErrorResponse { .. })
+    }
+
+    /// Returns the HTTP status code, if available.
+    pub fn status_code(&self) -> Option<StatusCode> {
+        match self {
+            HttpClientError::ClientErrorResponse { status_code, .. } => Some(*status_code),
+            HttpClientError::ServerErrorResponse { status_code, .. } => Some(*status_code),
+            HttpClientError::HealthCheckFailed { status_code, .. } => Some(*status_code),
+            HttpClientError::NotFound => Some(StatusCode::NOT_FOUND),
+            _ => None,
+        }
+    }
+
+    /// Returns the URL that caused the error, if available.
+    pub fn url(&self) -> Option<&Url> {
+        match self {
+            HttpClientError::ClientErrorResponse { url, .. } => url.as_ref(),
+            HttpClientError::ServerErrorResponse { url, .. } => url.as_ref(),
+            HttpClientError::RequestError { error, .. } => error.url(),
+            _ => None,
+        }
+    }
+
+    /// Returns the error details from the API response, if available.
+    pub fn error_details(&self) -> Option<&ErrorDetails> {
+        match self {
+            HttpClientError::ClientErrorResponse { error_details, .. } => error_details.as_ref(),
+            HttpClientError::ServerErrorResponse { error_details, .. } => error_details.as_ref(),
+            _ => None,
+        }
+    }
+
     /// Returns a user-friendly error message, preferring API-provided details when available.
     pub fn user_message(&self) -> String {
         match self {

@@ -93,6 +93,19 @@ where
     U: Display,
     P: Display,
 {
+    /// Applies recommended default settings: 60 second request timeout,
+    /// 3 retry attempts with 1 second delay between retries.
+    pub fn with_recommended_defaults(self) -> Self {
+        Self {
+            request_timeout: Some(Duration::from_secs(60)),
+            retry_settings: RetrySettings {
+                max_attempts: 3,
+                delay_ms: 1000,
+            },
+            ..self
+        }
+    }
+
     /// Sets the API credentials.
     pub fn with_basic_auth_credentials<NewU, NewP>(
         self,

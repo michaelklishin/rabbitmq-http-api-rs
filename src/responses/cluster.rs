@@ -435,9 +435,17 @@ impl AsRef<str> for ClusterIdentity {
 #[allow(dead_code)]
 pub struct ClusterTags(pub Map<String, serde_json::Value>);
 
-impl From<GlobalRuntimeParameterValue> for ClusterTags {
-    fn from(value: GlobalRuntimeParameterValue) -> Self {
-        ClusterTags(value.0.as_object().unwrap().clone())
+impl TryFrom<GlobalRuntimeParameterValue> for ClusterTags {
+    type Error = crate::error::ConversionError;
+
+    fn try_from(value: GlobalRuntimeParameterValue) -> Result<Self, Self::Error> {
+        value
+            .0
+            .as_object()
+            .map(|obj| ClusterTags(obj.clone()))
+            .ok_or_else(|| crate::error::ConversionError::InvalidType {
+                expected: "JSON object".to_string(),
+            })
     }
 }
 

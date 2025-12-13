@@ -13,6 +13,7 @@
 // limitations under the License.
 use std::fmt;
 use std::fmt::Display;
+use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};
 
@@ -270,6 +271,14 @@ impl From<String> for SupportedProtocol {
     }
 }
 
+impl FromStr for SupportedProtocol {
+    type Err = std::convert::Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self::from(s))
+    }
+}
+
 impl AsRef<str> for SupportedProtocol {
     fn as_ref(&self) -> &str {
         match self {
@@ -408,6 +417,14 @@ impl From<String> for ExchangeType {
     }
 }
 
+impl FromStr for ExchangeType {
+    type Err = std::convert::Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self::from(s))
+    }
+}
+
 impl AsRef<str> for ExchangeType {
     fn as_ref(&self) -> &str {
         match self {
@@ -482,6 +499,14 @@ impl From<String> for QueueType {
     }
 }
 
+impl FromStr for QueueType {
+    type Err = std::convert::Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self::from(s))
+    }
+}
+
 impl AsRef<str> for QueueType {
     fn as_ref(&self) -> &str {
         match self {
@@ -548,6 +573,14 @@ impl From<String> for BindingDestinationType {
     }
 }
 
+impl FromStr for BindingDestinationType {
+    type Err = std::convert::Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self::from(s))
+    }
+}
+
 /// Represents whether a binding resource is a source or destination in binding operations.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BindingVertex {
@@ -605,7 +638,7 @@ impl From<QueueType> for PolicyTarget {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq, Eq, Hash)]
 #[serde(rename_all = "kebab-case")]
 pub enum OverflowBehavior {
     DropHead,
@@ -627,13 +660,35 @@ impl From<OverflowBehavior> for &str {
     }
 }
 
+impl From<&str> for OverflowBehavior {
+    fn from(s: &str) -> Self {
+        match s {
+            OVERFLOW_DROP_HEAD => OverflowBehavior::DropHead,
+            OVERFLOW_REJECT_PUBLISH => OverflowBehavior::RejectPublish,
+            OVERFLOW_REJECT_PUBLISH_DLX => OverflowBehavior::RejectPublishDlx,
+            _ => OverflowBehavior::DropHead,
+        }
+    }
+}
+
+impl From<String> for OverflowBehavior {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl FromStr for OverflowBehavior {
+    type Err = std::convert::Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self::from(s))
+    }
+}
+
 impl From<OverflowBehavior> for String {
     fn from(value: OverflowBehavior) -> Self {
-        match value {
-            OverflowBehavior::DropHead => OVERFLOW_DROP_HEAD.to_owned(),
-            OverflowBehavior::RejectPublish => OVERFLOW_REJECT_PUBLISH.to_owned(),
-            OverflowBehavior::RejectPublishDlx => OVERFLOW_REJECT_PUBLISH_DLX.to_owned(),
-        }
+        let s: &str = value.into();
+        s.to_owned()
     }
 }
 
@@ -690,6 +745,14 @@ impl From<&str> for PolicyTarget {
 impl From<String> for PolicyTarget {
     fn from(value: String) -> Self {
         Self::from(value.as_str())
+    }
+}
+
+impl FromStr for PolicyTarget {
+    type Err = std::convert::Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self::from(s))
     }
 }
 
@@ -751,6 +814,14 @@ impl From<String> for VirtualHostLimitTarget {
     }
 }
 
+impl FromStr for VirtualHostLimitTarget {
+    type Err = std::convert::Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self::from(s))
+    }
+}
+
 impl From<VirtualHostLimitTarget> for String {
     fn from(value: VirtualHostLimitTarget) -> Self {
         value.as_ref().to_string()
@@ -786,6 +857,14 @@ impl From<&str> for UserLimitTarget {
 impl From<String> for UserLimitTarget {
     fn from(value: String) -> Self {
         Self::from(value.as_str())
+    }
+}
+
+impl FromStr for UserLimitTarget {
+    type Err = std::convert::Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self::from(s))
     }
 }
 
@@ -825,6 +904,14 @@ impl From<&str> for TlsPeerVerificationMode {
 impl From<String> for TlsPeerVerificationMode {
     fn from(value: String) -> Self {
         Self::from(value.as_str())
+    }
+}
+
+impl FromStr for TlsPeerVerificationMode {
+    type Err = std::convert::Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self::from(s))
     }
 }
 
@@ -886,6 +973,14 @@ impl From<String> for MessageTransferAcknowledgementMode {
     }
 }
 
+impl FromStr for MessageTransferAcknowledgementMode {
+    type Err = std::convert::Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self::from(s))
+    }
+}
+
 impl AsRef<str> for MessageTransferAcknowledgementMode {
     fn as_ref(&self) -> &str {
         match self {
@@ -937,6 +1032,14 @@ impl From<&str> for ChannelUseMode {
 impl From<String> for ChannelUseMode {
     fn from(value: String) -> Self {
         Self::from(value.as_str())
+    }
+}
+
+impl FromStr for ChannelUseMode {
+    type Err = std::convert::Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self::from(s))
     }
 }
 

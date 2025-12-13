@@ -63,6 +63,19 @@ pub struct FederationUpstream {
     pub channel_use_mode: ChannelUseMode,
 }
 
+impl FederationUpstream {
+    /// Returns a copy with the URI replaced.
+    ///
+    /// Useful when re-declaring an upstream with a different URI
+    /// (e.g., for failover or migration scenarios).
+    pub fn with_uri(&self, uri: impl Into<String>) -> Self {
+        Self {
+            uri: uri.into(),
+            ..self.clone()
+        }
+    }
+}
+
 impl TryFrom<RuntimeParameter> for FederationUpstream {
     type Error = ConversionError;
 

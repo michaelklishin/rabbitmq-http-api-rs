@@ -367,6 +367,414 @@ impl<'a> Amqp10ShovelDestinationParams<'a> {
     }
 }
 
+/// Type-safe AMQP 0-9-1 shovel source endpoint configuration.
+///
+/// This enum enforces that a source is either a queue or an exchange at compile time,
+/// preventing invalid configurations where both or neither are specified.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Amqp091ShovelSourceEndpoint<'a> {
+    /// Consume messages from a queue
+    Queue {
+        uri: &'a str,
+        queue: &'a str,
+        predeclared: bool,
+    },
+    /// Consume messages from an exchange (creates a temporary queue bound to it)
+    Exchange {
+        uri: &'a str,
+        exchange: &'a str,
+        routing_key: Option<&'a str>,
+        predeclared: bool,
+    },
+}
+
+impl<'a> Amqp091ShovelSourceEndpoint<'a> {
+    pub fn queue(uri: &'a str, queue: &'a str) -> Self {
+        Self::Queue {
+            uri,
+            queue,
+            predeclared: false,
+        }
+    }
+
+    pub fn predeclared_queue(uri: &'a str, queue: &'a str) -> Self {
+        Self::Queue {
+            uri,
+            queue,
+            predeclared: true,
+        }
+    }
+
+    pub fn exchange(uri: &'a str, exchange: &'a str, routing_key: Option<&'a str>) -> Self {
+        Self::Exchange {
+            uri,
+            exchange,
+            routing_key,
+            predeclared: false,
+        }
+    }
+
+    pub fn predeclared_exchange(
+        uri: &'a str,
+        exchange: &'a str,
+        routing_key: Option<&'a str>,
+    ) -> Self {
+        Self::Exchange {
+            uri,
+            exchange,
+            routing_key,
+            predeclared: true,
+        }
+    }
+
+    pub fn uri(&self) -> &'a str {
+        match self {
+            Self::Queue { uri, .. } => uri,
+            Self::Exchange { uri, .. } => uri,
+        }
+    }
+
+    pub fn is_predeclared(&self) -> bool {
+        match self {
+            Self::Queue { predeclared, .. } => *predeclared,
+            Self::Exchange { predeclared, .. } => *predeclared,
+        }
+    }
+}
+
+impl<'a> From<Amqp091ShovelSourceEndpoint<'a>> for Amqp091ShovelSourceParams<'a> {
+    fn from(endpoint: Amqp091ShovelSourceEndpoint<'a>) -> Self {
+        match endpoint {
+            Amqp091ShovelSourceEndpoint::Queue {
+                uri,
+                queue,
+                predeclared,
+            } => Self {
+                source_uri: uri,
+                source_queue: Some(queue),
+                source_exchange: None,
+                source_exchange_routing_key: None,
+                predeclared,
+            },
+            Amqp091ShovelSourceEndpoint::Exchange {
+                uri,
+                exchange,
+                routing_key,
+                predeclared,
+            } => Self {
+                source_uri: uri,
+                source_queue: None,
+                source_exchange: Some(exchange),
+                source_exchange_routing_key: routing_key,
+                predeclared,
+            },
+        }
+    }
+}
+
+/// Type-safe AMQP 0-9-1 shovel destination endpoint configuration.
+///
+/// This enum enforces that a destination is either a queue or an exchange at compile time,
+/// preventing invalid configurations where both or neither are specified.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Amqp091ShovelDestinationEndpoint<'a> {
+    /// Publish messages to a queue
+    Queue {
+        uri: &'a str,
+        queue: &'a str,
+        predeclared: bool,
+    },
+    /// Publish messages to an exchange
+    Exchange {
+        uri: &'a str,
+        exchange: &'a str,
+        routing_key: Option<&'a str>,
+        predeclared: bool,
+    },
+}
+
+impl<'a> Amqp091ShovelDestinationEndpoint<'a> {
+    pub fn queue(uri: &'a str, queue: &'a str) -> Self {
+        Self::Queue {
+            uri,
+            queue,
+            predeclared: false,
+        }
+    }
+
+    pub fn predeclared_queue(uri: &'a str, queue: &'a str) -> Self {
+        Self::Queue {
+            uri,
+            queue,
+            predeclared: true,
+        }
+    }
+
+    pub fn exchange(uri: &'a str, exchange: &'a str, routing_key: Option<&'a str>) -> Self {
+        Self::Exchange {
+            uri,
+            exchange,
+            routing_key,
+            predeclared: false,
+        }
+    }
+
+    pub fn predeclared_exchange(
+        uri: &'a str,
+        exchange: &'a str,
+        routing_key: Option<&'a str>,
+    ) -> Self {
+        Self::Exchange {
+            uri,
+            exchange,
+            routing_key,
+            predeclared: true,
+        }
+    }
+
+    pub fn uri(&self) -> &'a str {
+        match self {
+            Self::Queue { uri, .. } => uri,
+            Self::Exchange { uri, .. } => uri,
+        }
+    }
+
+    pub fn is_predeclared(&self) -> bool {
+        match self {
+            Self::Queue { predeclared, .. } => *predeclared,
+            Self::Exchange { predeclared, .. } => *predeclared,
+        }
+    }
+}
+
+impl<'a> From<Amqp091ShovelDestinationEndpoint<'a>> for Amqp091ShovelDestinationParams<'a> {
+    fn from(endpoint: Amqp091ShovelDestinationEndpoint<'a>) -> Self {
+        match endpoint {
+            Amqp091ShovelDestinationEndpoint::Queue {
+                uri,
+                queue,
+                predeclared,
+            } => Self {
+                destination_uri: uri,
+                destination_queue: Some(queue),
+                destination_exchange: None,
+                destination_exchange_routing_key: None,
+                predeclared,
+            },
+            Amqp091ShovelDestinationEndpoint::Exchange {
+                uri,
+                exchange,
+                routing_key,
+                predeclared,
+            } => Self {
+                destination_uri: uri,
+                destination_queue: None,
+                destination_exchange: Some(exchange),
+                destination_exchange_routing_key: routing_key,
+                predeclared,
+            },
+        }
+    }
+}
+
+/// Owned version of [`Amqp091ShovelSourceEndpoint`] for cases where owned strings are needed.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum OwnedAmqp091ShovelSourceEndpoint {
+    Queue {
+        uri: String,
+        queue: String,
+        predeclared: bool,
+    },
+    Exchange {
+        uri: String,
+        exchange: String,
+        routing_key: Option<String>,
+        predeclared: bool,
+    },
+}
+
+impl OwnedAmqp091ShovelSourceEndpoint {
+    pub fn queue(uri: impl Into<String>, queue: impl Into<String>) -> Self {
+        Self::Queue {
+            uri: uri.into(),
+            queue: queue.into(),
+            predeclared: false,
+        }
+    }
+
+    pub fn predeclared_queue(uri: impl Into<String>, queue: impl Into<String>) -> Self {
+        Self::Queue {
+            uri: uri.into(),
+            queue: queue.into(),
+            predeclared: true,
+        }
+    }
+
+    pub fn exchange(
+        uri: impl Into<String>,
+        exchange: impl Into<String>,
+        routing_key: Option<String>,
+    ) -> Self {
+        Self::Exchange {
+            uri: uri.into(),
+            exchange: exchange.into(),
+            routing_key,
+            predeclared: false,
+        }
+    }
+
+    pub fn predeclared_exchange(
+        uri: impl Into<String>,
+        exchange: impl Into<String>,
+        routing_key: Option<String>,
+    ) -> Self {
+        Self::Exchange {
+            uri: uri.into(),
+            exchange: exchange.into(),
+            routing_key,
+            predeclared: true,
+        }
+    }
+
+    pub fn uri(&self) -> &str {
+        match self {
+            Self::Queue { uri, .. } => uri,
+            Self::Exchange { uri, .. } => uri,
+        }
+    }
+
+    pub fn is_predeclared(&self) -> bool {
+        match self {
+            Self::Queue { predeclared, .. } => *predeclared,
+            Self::Exchange { predeclared, .. } => *predeclared,
+        }
+    }
+
+    pub fn as_ref(&self) -> Amqp091ShovelSourceEndpoint<'_> {
+        match self {
+            Self::Queue {
+                uri,
+                queue,
+                predeclared,
+            } => Amqp091ShovelSourceEndpoint::Queue {
+                uri,
+                queue,
+                predeclared: *predeclared,
+            },
+            Self::Exchange {
+                uri,
+                exchange,
+                routing_key,
+                predeclared,
+            } => Amqp091ShovelSourceEndpoint::Exchange {
+                uri,
+                exchange,
+                routing_key: routing_key.as_deref(),
+                predeclared: *predeclared,
+            },
+        }
+    }
+}
+
+/// Owned version of [`Amqp091ShovelDestinationEndpoint`] for cases where owned strings are needed.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum OwnedAmqp091ShovelDestinationEndpoint {
+    Queue {
+        uri: String,
+        queue: String,
+        predeclared: bool,
+    },
+    Exchange {
+        uri: String,
+        exchange: String,
+        routing_key: Option<String>,
+        predeclared: bool,
+    },
+}
+
+impl OwnedAmqp091ShovelDestinationEndpoint {
+    pub fn queue(uri: impl Into<String>, queue: impl Into<String>) -> Self {
+        Self::Queue {
+            uri: uri.into(),
+            queue: queue.into(),
+            predeclared: false,
+        }
+    }
+
+    pub fn predeclared_queue(uri: impl Into<String>, queue: impl Into<String>) -> Self {
+        Self::Queue {
+            uri: uri.into(),
+            queue: queue.into(),
+            predeclared: true,
+        }
+    }
+
+    pub fn exchange(
+        uri: impl Into<String>,
+        exchange: impl Into<String>,
+        routing_key: Option<String>,
+    ) -> Self {
+        Self::Exchange {
+            uri: uri.into(),
+            exchange: exchange.into(),
+            routing_key,
+            predeclared: false,
+        }
+    }
+
+    pub fn predeclared_exchange(
+        uri: impl Into<String>,
+        exchange: impl Into<String>,
+        routing_key: Option<String>,
+    ) -> Self {
+        Self::Exchange {
+            uri: uri.into(),
+            exchange: exchange.into(),
+            routing_key,
+            predeclared: true,
+        }
+    }
+
+    pub fn uri(&self) -> &str {
+        match self {
+            Self::Queue { uri, .. } => uri,
+            Self::Exchange { uri, .. } => uri,
+        }
+    }
+
+    pub fn is_predeclared(&self) -> bool {
+        match self {
+            Self::Queue { predeclared, .. } => *predeclared,
+            Self::Exchange { predeclared, .. } => *predeclared,
+        }
+    }
+
+    pub fn as_ref(&self) -> Amqp091ShovelDestinationEndpoint<'_> {
+        match self {
+            Self::Queue {
+                uri,
+                queue,
+                predeclared,
+            } => Amqp091ShovelDestinationEndpoint::Queue {
+                uri,
+                queue,
+                predeclared: *predeclared,
+            },
+            Self::Exchange {
+                uri,
+                exchange,
+                routing_key,
+                predeclared,
+            } => Amqp091ShovelDestinationEndpoint::Exchange {
+                uri,
+                exchange,
+                routing_key: routing_key.as_deref(),
+                predeclared: *predeclared,
+            },
+        }
+    }
+}
+
 /// Used to specify custom properties that should be applied to messages
 /// when they are re-published by shovels.
 pub type MessageProperties = Map<String, Value>;
@@ -395,6 +803,20 @@ pub struct OwnedShovelParams {
     pub destination_exchange_routing_key: Option<String>,
     pub destination_address: Option<String>,
     pub destination_predeclared: Option<bool>,
+}
+
+impl OwnedShovelParams {
+    /// Returns a copy with the source URI replaced.
+    pub fn with_source_uri(mut self, uri: impl Into<String>) -> Self {
+        self.source_uri = uri.into();
+        self
+    }
+
+    /// Returns a copy with the destination URI replaced.
+    pub fn with_destination_uri(mut self, uri: impl Into<String>) -> Self {
+        self.destination_uri = uri.into();
+        self
+    }
 }
 
 impl TryFrom<RuntimeParameter> for OwnedShovelParams {

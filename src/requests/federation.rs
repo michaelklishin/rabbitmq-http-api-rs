@@ -94,6 +94,16 @@ impl<'a> QueueFederationParams<'a> {
             consumer_tag: Some(consumer_tag),
         }
     }
+
+    /// Returns queue federation parameters from optional values.
+    ///
+    /// Useful when constructing parameters from CLI arguments or other optional sources.
+    pub fn from_options(queue: Option<&'a str>, consumer_tag: Option<&'a str>) -> Self {
+        Self {
+            queue,
+            consumer_tag,
+        }
+    }
 }
 
 /// Parameters specific to [exchange federation](https://www.rabbitmq.com/docs/federated-exchanges).
@@ -269,6 +279,14 @@ pub struct OwnedFederationUpstreamParams {
 
     pub queue_federation: Option<OwnedQueueFederationParams>,
     pub exchange_federation: Option<OwnedExchangeFederationParams>,
+}
+
+impl OwnedFederationUpstreamParams {
+    /// Returns a copy with the URI replaced.
+    pub fn with_uri(mut self, uri: impl Into<String>) -> Self {
+        self.uri = uri.into();
+        self
+    }
 }
 
 /// Owned version of QueueFederationParams

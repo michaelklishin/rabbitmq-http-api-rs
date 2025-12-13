@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::commons::PolicyTarget;
 use crate::{path, requests::PolicyParams, responses};
 
 use super::client::{Client, Result};
@@ -144,5 +145,74 @@ where
             self.delete_operator_policy(vhost, name, true)?;
         }
         Ok(())
+    }
+
+    /// Lists policies in a virtual host that apply to the specified target.
+    ///
+    /// This is a convenience method that filters policies by their `apply_to` field.
+    /// For example, to get only policies that apply to queues:
+    /// ```ignore
+    /// let queue_policies = client.list_policies_for_target("/", PolicyTarget::Queues)?;
+    /// ```
+    pub fn list_policies_for_target(
+        &self,
+        vhost: &str,
+        target: PolicyTarget,
+    ) -> Result<Vec<responses::Policy>> {
+        let policies = self.list_policies_in(vhost)?;
+        Ok(policies
+            .into_iter()
+            .filter(|p| target.does_apply_to(p.apply_to))
+            .collect())
+    }
+
+    /// Lists policies in a virtual host that would match the given resource name and target.
+    ///
+    /// This is useful for finding which policies would apply to a specific queue or exchange.
+    /// Returns policies sorted by priority (highest first).
+    pub fn list_matching_policies(
+        &self,
+        vhost: &str,
+        name: &str,
+        target: PolicyTarget,
+    ) -> Result<Vec<responses::Policy>> {
+        let policies = self.list_policies_in(vhost)?;
+        let mut matching: Vec<_> = policies
+            .into_iter()
+            .filter(|p| p.does_match_name(vhost, name, target))
+            .collect();
+        matching.sort_by(|a, b| b.priority.cmp(&a.priority));
+        Ok(matching)
+    }
+
+    /// Lists operator policies in a virtual host that apply to the specified target.
+    pub fn list_operator_policies_for_target(
+        &self,
+        vhost: &str,
+        target: PolicyTarget,
+    ) -> Result<Vec<responses::Policy>> {
+        let policies = self.list_operator_policies_in(vhost)?;
+        Ok(policies
+            .into_iter()
+            .filter(|p| target.does_apply_to(p.apply_to))
+            .collect())
+    }
+
+    /// Lists operator policies in a virtual host that would match the given resource name and target.
+    ///
+    /// Returns policies sorted by priority (highest first).
+    pub fn list_matching_operator_policies(
+        &self,
+        vhost: &str,
+        name: &str,
+        target: PolicyTarget,
+    ) -> Result<Vec<responses::Policy>> {
+        let policies = self.list_operator_policies_in(vhost)?;
+        let mut matching: Vec<_> = policies
+            .into_iter()
+            .filter(|p| p.does_match_name(vhost, name, target))
+            .collect();
+        matching.sort_by(|a, b| b.priority.cmp(&a.priority));
+        Ok(matching)
     }
 }

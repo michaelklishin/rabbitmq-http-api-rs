@@ -2,7 +2,20 @@
 
 ## v0.71.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * `ClientBuilder#with_recommended_defaults` applies sensible defaults: 60s request timeout, 3 retries with 1s delay
+ * `HttpClientError` now has helper methods: `is_not_found`, `is_already_exists`, `is_unauthorized`, `is_forbidden`,
+   `is_client_error`, `is_server_error`, `status_code`, `url`, `error_details`
+ * New policies-related functions:`Client#list_policies_for_target`, `Client#list_operator_policies_for_target`, `Client#list_matching_policies`,
+   `Client#list_matching_operator_policies`
+ * `OptionalQueueArgument` is a new enum for type-safe [optional queue arguments](https://www.rabbitmq.com/docs/queues#optional-arguments)
+ * `XArgumentsBuilder#with_argument` accepts `OptionalQueueArgument` directly
+ * `Amqp091ShovelSourceEndpoint`, `Amqp091ShovelDestinationEndpoint` make type-safe shovel endpoint configuration easier
+ * Owned variants of param types: `OwnedQueueParams`, `OwnedExchangeParams`, `OwnedPolicyParams`, `OwnedUserParams`,
+   `OwnedAmqp091ShovelSourceEndpoint`, `OwnedAmqp091ShovelDestinationEndpoint`
+ * The library has accumulated two `OverflowBehavior` implementations; they were folded into the `common` version and
+   re-exported from the `requests` module
 
 ## v0.70.0 (Dec 11, 2025)
 

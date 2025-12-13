@@ -210,6 +210,162 @@ impl<'a> From<&'a QueueInfo> for QueueParams<'a> {
     }
 }
 
+/// Owned version of [`QueueParams`] for cases where owned strings are needed.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OwnedQueueParams {
+    pub name: String,
+    pub queue_type: QueueType,
+    pub durable: bool,
+    pub auto_delete: bool,
+    pub exclusive: bool,
+    pub arguments: XArguments,
+}
+
+impl OwnedQueueParams {
+    pub fn new_quorum_queue(name: impl Into<String>, optional_args: XArguments) -> Self {
+        let name = name.into();
+        let typ = QueueType::Quorum;
+        let args = QueueParams::combined_args(optional_args, &typ);
+        Self {
+            name,
+            queue_type: QueueType::Quorum,
+            durable: true,
+            auto_delete: false,
+            exclusive: false,
+            arguments: args,
+        }
+    }
+
+    pub fn new_stream(name: impl Into<String>, optional_args: XArguments) -> Self {
+        let name = name.into();
+        let typ = QueueType::Stream;
+        let args = QueueParams::combined_args(optional_args, &typ);
+        Self {
+            name,
+            queue_type: QueueType::Stream,
+            durable: true,
+            auto_delete: false,
+            exclusive: false,
+            arguments: args,
+        }
+    }
+
+    pub fn new_durable_classic_queue(name: impl Into<String>, optional_args: XArguments) -> Self {
+        let name = name.into();
+        let typ = QueueType::Classic;
+        let args = QueueParams::combined_args(optional_args, &typ);
+        Self {
+            name,
+            queue_type: QueueType::Classic,
+            durable: true,
+            auto_delete: false,
+            exclusive: false,
+            arguments: args,
+        }
+    }
+
+    pub fn new(
+        name: impl Into<String>,
+        queue_type: QueueType,
+        durable: bool,
+        auto_delete: bool,
+        optional_args: XArguments,
+    ) -> Self {
+        let name = name.into();
+        let args = QueueParams::combined_args(optional_args, &queue_type);
+        Self {
+            name,
+            queue_type,
+            durable,
+            auto_delete,
+            exclusive: false,
+            arguments: args,
+        }
+    }
+
+    pub fn with_message_ttl(mut self, millis: u64) -> Self {
+        self.add_argument("x-message-ttl", json!(millis));
+        self
+    }
+
+    pub fn with_queue_ttl(mut self, millis: u64) -> Self {
+        self.add_argument("x-expires", json!(millis));
+        self
+    }
+
+    pub fn with_max_length(mut self, max_length: u64) -> Self {
+        self.add_argument("x-max-length", json!(max_length));
+        self
+    }
+
+    pub fn with_max_length_bytes(mut self, max_length_in_bytes: u64) -> Self {
+        self.add_argument("x-max-length-bytes", json!(max_length_in_bytes));
+        self
+    }
+
+    pub fn with_dead_letter_exchange(mut self, exchange: impl Into<String>) -> Self {
+        self.add_argument("x-dead-letter-exchange", json!(exchange.into()));
+        self
+    }
+
+    pub fn with_dead_letter_routing_key(mut self, routing_key: impl Into<String>) -> Self {
+        self.add_argument("x-dead-letter-routing-key", json!(routing_key.into()));
+        self
+    }
+
+    pub fn with_argument(mut self, key: impl Into<String>, value: Value) -> Self {
+        self.add_argument(key, value);
+        self
+    }
+
+    fn add_argument(&mut self, key: impl Into<String>, value: Value) {
+        self.arguments
+            .get_or_insert_with(Default::default)
+            .insert(key.into(), value);
+    }
+
+    pub fn as_ref(&self) -> QueueParams<'_> {
+        QueueParams {
+            name: &self.name,
+            queue_type: self.queue_type.clone(),
+            durable: self.durable,
+            auto_delete: self.auto_delete,
+            exclusive: self.exclusive,
+            arguments: self.arguments.clone(),
+        }
+    }
+}
+
+impl From<QueueInfo> for OwnedQueueParams {
+    fn from(queue: QueueInfo) -> Self {
+        Self {
+            name: queue.name,
+            queue_type: QueueType::from(queue.queue_type.as_str()),
+            durable: queue.durable,
+            auto_delete: queue.auto_delete,
+            exclusive: queue.exclusive,
+            arguments: if queue.arguments.is_empty() {
+                None
+            } else {
+                Some(queue.arguments.0)
+            },
+        }
+    }
+}
+
+impl<'a> From<QueueParams<'a>> for OwnedQueueParams {
+    fn from(params: QueueParams<'a>) -> Self {
+        Self {
+            name: params.name.to_owned(),
+            queue_type: params.queue_type,
+            durable: params.durable,
+            auto_delete: params.auto_delete,
+            exclusive: params.exclusive,
+            arguments: params.arguments,
+        }
+    }
+}
+
 /// [Stream](https://rabbitmq.com/docs/streams/) properties used at declaration time
 #[derive(Serialize, Debug)]
 pub struct StreamParams<'a> {

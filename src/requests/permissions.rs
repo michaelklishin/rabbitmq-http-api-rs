@@ -31,6 +31,41 @@ pub struct Permissions<'a> {
     pub write: &'a str,
 }
 
+impl<'a> Permissions<'a> {
+    /// Returns permissions granting full access (configure, read, and write) to all resources.
+    pub fn full_access(user: &'a str, vhost: &'a str) -> Self {
+        Self {
+            user,
+            vhost,
+            configure: ".*",
+            read: ".*",
+            write: ".*",
+        }
+    }
+
+    /// Returns permissions granting read-only access to all resources.
+    pub fn read_only(user: &'a str, vhost: &'a str) -> Self {
+        Self {
+            user,
+            vhost,
+            configure: "",
+            read: ".*",
+            write: "",
+        }
+    }
+
+    /// Returns permissions denying all access to resources.
+    pub fn no_access(user: &'a str, vhost: &'a str) -> Self {
+        Self {
+            user,
+            vhost,
+            configure: "",
+            read: "",
+            write: "",
+        }
+    }
+}
+
 /// Represents a user's [topic permission in a particular virtual host](https://www.rabbitmq.com/docs/access-control#topic-authorisation).
 ///
 /// Topic permissions are defined using regular expression patterns that match exchange names.

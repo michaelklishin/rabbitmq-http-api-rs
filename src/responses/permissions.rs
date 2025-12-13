@@ -53,6 +53,17 @@ impl Permissions {
             write: self.write.clone(),
         }
     }
+
+    /// Converts to a request type that can be used to re-declare these permissions.
+    pub fn to_request(&self) -> crate::requests::Permissions<'_> {
+        crate::requests::Permissions {
+            user: &self.user,
+            vhost: &self.vhost,
+            configure: &self.configure,
+            read: &self.read,
+            write: &self.write,
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]

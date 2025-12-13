@@ -103,6 +103,84 @@ impl<'a> From<&'a Policy> for PolicyParams<'a> {
     }
 }
 
+/// Owned version of [`PolicyParams`] for cases where owned strings are needed.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OwnedPolicyParams {
+    pub vhost: String,
+    pub name: String,
+    pub pattern: String,
+    pub apply_to: PolicyTarget,
+    pub priority: i32,
+    pub definition: PolicyDefinition,
+}
+
+impl OwnedPolicyParams {
+    pub fn new(
+        vhost: impl Into<String>,
+        name: impl Into<String>,
+        pattern: impl Into<String>,
+        definition: PolicyDefinition,
+    ) -> Self {
+        Self {
+            vhost: vhost.into(),
+            name: name.into(),
+            pattern: pattern.into(),
+            apply_to: PolicyTarget::All,
+            priority: 0,
+            definition,
+        }
+    }
+
+    #[must_use]
+    pub fn apply_to(mut self, target: PolicyTarget) -> Self {
+        self.apply_to = target;
+        self
+    }
+
+    #[must_use]
+    pub fn priority(mut self, priority: i32) -> Self {
+        self.priority = priority;
+        self
+    }
+
+    pub fn as_ref(&self) -> PolicyParams<'_> {
+        PolicyParams {
+            vhost: &self.vhost,
+            name: &self.name,
+            pattern: &self.pattern,
+            apply_to: self.apply_to,
+            priority: self.priority,
+            definition: self.definition.clone(),
+        }
+    }
+}
+
+impl From<Policy> for OwnedPolicyParams {
+    fn from(policy: Policy) -> Self {
+        Self {
+            vhost: policy.vhost,
+            name: policy.name,
+            pattern: policy.pattern,
+            apply_to: policy.apply_to,
+            priority: policy.priority as i32,
+            definition: policy.definition.into(),
+        }
+    }
+}
+
+impl<'a> From<PolicyParams<'a>> for OwnedPolicyParams {
+    fn from(params: PolicyParams<'a>) -> Self {
+        Self {
+            vhost: params.vhost.to_owned(),
+            name: params.name.to_owned(),
+            pattern: params.pattern.to_owned(),
+            apply_to: params.apply_to,
+            priority: params.priority,
+            definition: params.definition,
+        }
+    }
+}
+
 /// A builder for constructing [`PolicyDefinition`] with a fluent API.
 ///
 /// This builder provides convenient methods for common policy keys,

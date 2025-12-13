@@ -223,3 +223,100 @@ impl<'a> From<&'a ExchangeInfo> for ExchangeParams<'a> {
         }
     }
 }
+
+/// Owned version of [`ExchangeParams`] for cases where owned strings are needed.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OwnedExchangeParams {
+    pub name: String,
+    pub exchange_type: ExchangeType,
+    pub durable: bool,
+    pub auto_delete: bool,
+    pub arguments: XArguments,
+}
+
+impl OwnedExchangeParams {
+    pub fn durable(
+        name: impl Into<String>,
+        exchange_type: ExchangeType,
+        optional_args: XArguments,
+    ) -> Self {
+        Self::new(name, exchange_type, true, false, optional_args)
+    }
+
+    pub fn durable_fanout(name: impl Into<String>, optional_args: XArguments) -> Self {
+        Self::new(name, ExchangeType::Fanout, true, false, optional_args)
+    }
+
+    pub fn durable_topic(name: impl Into<String>, optional_args: XArguments) -> Self {
+        Self::new(name, ExchangeType::Topic, true, false, optional_args)
+    }
+
+    pub fn durable_direct(name: impl Into<String>, optional_args: XArguments) -> Self {
+        Self::new(name, ExchangeType::Direct, true, false, optional_args)
+    }
+
+    pub fn durable_headers(name: impl Into<String>, optional_args: XArguments) -> Self {
+        Self::new(name, ExchangeType::Headers, true, false, optional_args)
+    }
+
+    pub fn new(
+        name: impl Into<String>,
+        exchange_type: ExchangeType,
+        durable: bool,
+        auto_delete: bool,
+        optional_args: XArguments,
+    ) -> Self {
+        Self {
+            name: name.into(),
+            exchange_type,
+            durable,
+            auto_delete,
+            arguments: optional_args,
+        }
+    }
+
+    pub fn with_argument(mut self, key: String, value: Value) -> Self {
+        self.arguments
+            .get_or_insert_with(Default::default)
+            .insert(key, value);
+        self
+    }
+
+    pub fn as_ref(&self) -> ExchangeParams<'_> {
+        ExchangeParams {
+            name: &self.name,
+            exchange_type: self.exchange_type.clone(),
+            durable: self.durable,
+            auto_delete: self.auto_delete,
+            arguments: self.arguments.clone(),
+        }
+    }
+}
+
+impl From<ExchangeInfo> for OwnedExchangeParams {
+    fn from(exchange: ExchangeInfo) -> Self {
+        Self {
+            name: exchange.name,
+            exchange_type: ExchangeType::from(exchange.exchange_type.as_str()),
+            durable: exchange.durable,
+            auto_delete: exchange.auto_delete,
+            arguments: if exchange.arguments.is_empty() {
+                None
+            } else {
+                Some(exchange.arguments.0)
+            },
+        }
+    }
+}
+
+impl<'a> From<ExchangeParams<'a>> for OwnedExchangeParams {
+    fn from(params: ExchangeParams<'a>) -> Self {
+        Self {
+            name: params.name.to_owned(),
+            exchange_type: params.exchange_type,
+            durable: params.durable,
+            auto_delete: params.auto_delete,
+            arguments: params.arguments,
+        }
+    }
+}
