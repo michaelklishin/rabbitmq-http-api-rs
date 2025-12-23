@@ -12,6 +12,7 @@ on:
       - 'src/**'
       - "tests/**"
       - "bin/ci/before_build.sh"
+      - "bin/ci/before_build_tls.sh"
   pull_request: {}
 
 env:
@@ -35,6 +36,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Free up disk space
+        run: .github/scripts/free_disk_space.sh
+
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{ matrix.rust-version }}
@@ -71,6 +76,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Free up disk space
+        run: .github/scripts/free_disk_space.sh
+
       - name: Set up Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -88,4 +97,136 @@ jobs:
         run: sleep 10
 
       - name: Run all tests
-        run: RUST_BACKTRACE=1 TEST_STATS_DELAY=1500 cargo nextest run --workspace --no-fail-fast --all-features
+        run: RUST_BACKTRACE=1 TEST_STATS_DELAY=1500 cargo nextest run --cargo-profile ci --workspace --no-fail-fast --all-features
+
+  tls-tests:
+    name: TLS tests
+    strategy:
+      matrix:
+        rabbitmq-series:
+          - "4.0"
+          - "4.1"
+        rust-version:
+          - stable
+        runner:
+          - "ubuntu-22.04"
+          - "ubuntu-24.04"
+          - "ubuntu-24.04-arm"
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free up disk space
+        run: .github/scripts/free_disk_space.sh
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ matrix.rust-version }}
+
+      - uses: taiki-e/install-action@nextest
+
+      - name: Clone tls-gen
+        run: git clone --depth 1 https://github.com/rabbitmq/tls-gen.git target/tls-gen
+
+      - name: Generate TLS certificates
+        run: |
+          cd target/tls-gen/basic
+          make CN=localhost
+
+      - name: Create certs directory
+        run: mkdir -p tests/tls/certs
+
+      - name: Copy certificates
+        run: |
+          cp target/tls-gen/basic/result/ca_certificate.pem tests/tls/certs/
+          cp target/tls-gen/basic/result/server_localhost_certificate.pem tests/tls/certs/server_certificate.pem
+          cp target/tls-gen/basic/result/server_localhost_key.pem tests/tls/certs/server_key.pem
+          cp target/tls-gen/basic/result/client_localhost_certificate.pem tests/tls/certs/client_certificate.pem
+          cp target/tls-gen/basic/result/client_localhost_key.pem tests/tls/certs/client_key.pem
+          # Create PKCS#12 client identity for native-tls compatibility
+          openssl pkcs12 -export \
+            -out tests/tls/certs/client_identity.p12 \
+            -inkey tests/tls/certs/client_key.pem \
+            -in tests/tls/certs/client_certificate.pem \
+            -certfile tests/tls/certs/ca_certificate.pem \
+            -passout pass:
+          chmod o+r tests/tls/certs/*
+          chmod g+r tests/tls/certs/*
+
+      - name: Create RabbitMQ TLS configuration
+        run: |
+          cat > tests/tls/certs/rabbitmq.conf << 'EOF'
+          management.ssl.port       = 15671
+          management.ssl.cacertfile = /certs/ca_certificate.pem
+          management.ssl.certfile   = /certs/server_certificate.pem
+          management.ssl.keyfile    = /certs/server_key.pem
+          management.tcp.port       = 15672
+          loopback_users            = none
+          EOF
+          sed -i 's/^[[:space:]]*//' tests/tls/certs/rabbitmq.conf
+          echo "Generated config:"
+          cat tests/tls/certs/rabbitmq.conf
+          echo -n "rabbitmq-test-cookie" > tests/tls/certs/.erlang.cookie
+          chmod 600 tests/tls/certs/.erlang.cookie
+
+      - name: Start RabbitMQ with TLS
+        run: |
+          docker run -d --name rabbitmq-tls \
+            -p 15671:15671 \
+            -p 15672:15672 \
+            -p 5672:5672 \
+            -v ${{ github.workspace }}/tests/tls/certs/.erlang.cookie:/var/lib/rabbitmq/.erlang.cookie \
+            -v ${{ github.workspace }}/tests/tls/certs:/certs:ro \
+            -v ${{ github.workspace }}/tests/tls/certs/rabbitmq.conf:/etc/rabbitmq/conf.d/10-tls.conf:ro \
+            rabbitmq:${{ matrix.rabbitmq-series }}-management
+
+      - name: Wait for RabbitMQ to start
+        run: |
+          for i in $(seq 1 30); do
+            if docker exec rabbitmq-tls rabbitmqctl await_startup --timeout 60; then
+              echo "RabbitMQ is ready"
+              exit 0
+            fi
+            echo "Waiting for container... ($i/30)"
+            sleep 2
+          done
+          echo "RabbitMQ failed to start. Container logs:"
+          docker logs rabbitmq-tls
+          exit 1
+
+      - name: Verify TLS listener
+        run: |
+          docker exec rabbitmq-tls rabbitmq-diagnostics listeners
+          echo "Checking if TLS port 15671 is listening..."
+          docker exec rabbitmq-tls rabbitmq-diagnostics listeners | grep -E "15671|ssl" || echo "Note: TLS listener output"
+
+      - name: Debug TLS certificates
+        run: |
+          echo "=== CA Certificate ==="
+          openssl x509 -in tests/tls/certs/ca_certificate.pem -noout -subject -issuer
+          echo "=== Server Certificate ==="
+          openssl x509 -in tests/tls/certs/server_certificate.pem -noout -subject -issuer
+          echo "=== Verify server cert against CA ==="
+          openssl verify -CAfile tests/tls/certs/ca_certificate.pem tests/tls/certs/server_certificate.pem
+          echo "=== Test TLS connection with curl ==="
+          curl -v --cacert tests/tls/certs/ca_certificate.pem https://localhost:15671/api/overview -u guest:guest 2>&1 | head -30 || true
+          echo "=== Certificate file permissions ==="
+          ls -la tests/tls/certs/
+
+      - name: Configure broker
+        run: |
+          docker exec rabbitmq-tls rabbitmqctl add_vhost / || true
+          docker exec rabbitmq-tls rabbitmqctl add_user guest guest || true
+          docker exec rabbitmq-tls rabbitmqctl set_permissions -p / guest ".*" ".*" ".*"
+
+      - name: Run TLS tests
+        run: |
+          TLS_CERTS_DIR=${{ github.workspace }}/tests/tls/certs \
+          RUST_BACKTRACE=1 \
+          cargo nextest run --cargo-profile ci -E 'binary(async_tls_tests) | binary(blocking_tls_tests)' --run-ignored=only --no-fail-fast --all-features
+
+      - name: Stop RabbitMQ container
+        if: always()
+        run: docker stop rabbitmq-tls && docker rm rabbitmq-tls || true

@@ -177,3 +177,28 @@ pub fn cluster_tags(tags: Map<String, Value>) -> Map<String, Value> {
     val.insert(String::from("cluster_tags"), json!(tags));
     val
 }
+
+//
+// TLS tests
+//
+
+use std::path::PathBuf;
+
+pub const TLS_ENDPOINT: &str = "https://localhost:15671/api";
+
+pub fn tls_certs_dir() -> PathBuf {
+    env::var("TLS_CERTS_DIR")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| {
+            let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| ".".to_string());
+            PathBuf::from(manifest_dir).join("tests/tls/certs")
+        })
+}
+
+pub fn ca_cert_path() -> PathBuf {
+    tls_certs_dir().join("ca_certificate.pem")
+}
+
+pub fn client_identity_p12_path() -> PathBuf {
+    tls_certs_dir().join("client_identity.p12")
+}
