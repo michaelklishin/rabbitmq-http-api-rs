@@ -66,5 +66,10 @@ native-tls = ["reqwest?/native-tls"]
 rustls-tls = ["reqwest?/rustls-tls"]
 hickory-dns = ["reqwest?/hickory-dns"]
 
+[profile.ci]
+inherits = "dev"
+opt-level = "s"
+strip = true
+
 [lints.clippy]
 uninlined_format_args = "allow"
