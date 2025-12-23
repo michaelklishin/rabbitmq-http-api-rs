@@ -1,8 +1,11 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.72.0 (in development)
+## v0.72.0 (Dec 22, 2025)
 
-No changes yet.
+### Enhancements
+
+ * New `RuntimeParameter` predicates: `is_shovel`, `is_federation_upstream`,
+   `is_federation_upstream_set`, `is_federation`, `is_policy`, `is_operator_policy`, `is_vhost_limits`
 
 
 ## v0.71.0 (Dec 13, 2025)

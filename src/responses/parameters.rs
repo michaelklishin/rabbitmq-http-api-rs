@@ -90,6 +90,36 @@ pub struct RuntimeParameter {
     pub value: RuntimeParameterValue,
 }
 
+impl RuntimeParameter {
+    pub fn is_shovel(&self) -> bool {
+        self.component == "shovel"
+    }
+
+    pub fn is_federation_upstream(&self) -> bool {
+        self.component == "federation-upstream"
+    }
+
+    pub fn is_federation_upstream_set(&self) -> bool {
+        self.component == "federation-upstream-set"
+    }
+
+    pub fn is_federation(&self) -> bool {
+        self.component == "federation"
+    }
+
+    pub fn is_policy(&self) -> bool {
+        self.component == "policy"
+    }
+
+    pub fn is_operator_policy(&self) -> bool {
+        self.component == "operator_policy"
+    }
+
+    pub fn is_vhost_limits(&self) -> bool {
+        self.component == "vhost-limits"
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
