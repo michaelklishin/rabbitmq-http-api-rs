@@ -1,6 +1,13 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.73.0 (in development)
+## v0.73.0 (Dec 30, 2025)
+
+### Dependencies
+
+ * `reqwest` upgraded to `0.13.1`
+
+
+## v0.74.0 (in development)
 
 No changes yet.
 
