@@ -254,7 +254,7 @@ fn test_federation_upstream_to_params_conversion_exchange_federation() {
     let exchange_fed = owned_params.exchange_federation.as_ref().unwrap();
     assert_eq!(exchange_fed.exchange.as_ref().unwrap(), "fed.ex.upstream");
     assert_eq!(exchange_fed.max_hops.unwrap(), 2);
-    assert_eq!(exchange_fed.queue_type, QueueType::Quorum);
+    assert_eq!(exchange_fed.queue_type, Some(QueueType::Quorum));
     assert_eq!(exchange_fed.ttl.unwrap(), 3600000);
     assert_eq!(exchange_fed.message_ttl.unwrap(), 7200000);
     assert_eq!(

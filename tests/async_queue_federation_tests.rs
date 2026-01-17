@@ -192,7 +192,7 @@ async fn test_async_exchange_federation_upstream_fetch_and_update_workflow() {
     if let Some(ref mut exchange_fed) = modified_params.exchange_federation {
         exchange_fed.exchange = Some("updated-exchange".to_string());
         exchange_fed.max_hops = Some(3);
-        exchange_fed.queue_type = QueueType::Classic;
+        exchange_fed.queue_type = Some(QueueType::Classic);
     }
 
     // Step 5: Convert back to FederationUpstreamParams and update

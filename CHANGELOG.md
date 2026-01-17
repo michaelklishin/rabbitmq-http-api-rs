@@ -2,7 +2,13 @@
 
 ## v0.74.0 (in development)
 
-No changes yet.
+### Breaking Changes
+
+ * `ExchangeFederationParams#queue_type` and `OwnedExchangeFederationParams#queue_type` are now
+   optional (`Option<QueueType>` intead of `QueueType`) for RabbitMQ 3.12.x compatibility.
+
+   The [`queue-type`](https://www.rabbitmq.com/docs/federation-reference) parameter was introduced
+   in the 3.13 series.
 
 
 ## v0.73.0 (Dec 30, 2025)
