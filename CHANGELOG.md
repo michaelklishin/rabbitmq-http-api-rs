@@ -10,6 +10,9 @@
    The [`queue-type`](https://www.rabbitmq.com/docs/federation-reference) parameter was introduced
    in the 3.13 series.
 
+ * `NodeMemoryBreakdown.other_ets_tables` is now `i64` instead of `u64` because it can be
+   negative due to an ETS table memory accounting peculiarity in RabbitMQ before 4.2.3.
+
 
 ## v0.73.0 (Dec 30, 2025)
 
