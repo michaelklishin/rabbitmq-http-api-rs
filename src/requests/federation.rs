@@ -113,8 +113,9 @@ pub struct ExchangeFederationParams<'a> {
     pub exchange: Option<&'a str>,
     /// Maximum hops for federation chains to prevent infinite loops
     pub max_hops: Option<u8>,
-    /// Queue type for the temporary federation queue
-    pub queue_type: QueueType,
+    /// Queue type for the temporary federation queue (requires RabbitMQ 3.13+)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub queue_type: Option<QueueType>,
     /// Time-to-live for the federation queue in milliseconds
     pub ttl: Option<u32>,
     /// Message TTL for federated messages in milliseconds
@@ -130,7 +131,7 @@ impl ExchangeFederationParams<'_> {
     /// for the federation link. Use quorum queues for durability or classic for simplicity.
     pub fn new(queue_type: QueueType) -> Self {
         Self {
-            queue_type,
+            queue_type: Some(queue_type),
             ..Default::default()
         }
     }
@@ -233,7 +234,9 @@ impl<'a> From<FederationUpstreamParams<'a>> for RuntimeParameterDefinition<'a> {
         }
 
         if let Some(ef) = params.exchange_federation {
-            value.insert("queue-type".to_owned(), json!(ef.queue_type));
+            if let Some(qt) = &ef.queue_type {
+                value.insert("queue-type".to_owned(), json!(qt));
+            }
             value.insert(
                 "resource-cleanup-mode".to_owned(),
                 json!(ef.resource_cleanup_mode),
@@ -301,7 +304,7 @@ pub struct OwnedQueueFederationParams {
 pub struct OwnedExchangeFederationParams {
     pub exchange: Option<String>,
     pub max_hops: Option<u8>,
-    pub queue_type: QueueType,
+    pub queue_type: Option<QueueType>,
     pub ttl: Option<u32>,
     pub message_ttl: Option<u32>,
     pub resource_cleanup_mode: FederationResourceCleanupMode,
@@ -330,7 +333,7 @@ impl From<FederationUpstream> for OwnedFederationUpstreamParams {
             Some(OwnedExchangeFederationParams {
                 exchange: upstream.exchange,
                 max_hops: upstream.max_hops,
-                queue_type: upstream.queue_type.unwrap_or_default(),
+                queue_type: upstream.queue_type,
                 ttl: upstream.expires,
                 message_ttl: upstream.message_ttl,
                 resource_cleanup_mode: upstream.resource_cleanup_mode,
