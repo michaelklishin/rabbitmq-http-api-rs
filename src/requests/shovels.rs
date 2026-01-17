@@ -79,14 +79,12 @@ impl<'a> From<Amqp091ShovelParams<'a>> for RuntimeParameterDefinition<'a> {
             value.insert("dest-exchange-key".to_owned(), json!(dxrk));
         }
 
-        value.insert(
-            "src-predeclared".to_owned(),
-            json!(params.source.predeclared),
-        );
-        value.insert(
-            "dest-predeclared".to_owned(),
-            json!(params.destination.predeclared),
-        );
+        if params.source.predeclared {
+            value.insert("src-predeclared".to_owned(), json!(true));
+        }
+        if params.destination.predeclared {
+            value.insert("dest-predeclared".to_owned(), json!(true));
+        }
 
         if let Some(val) = params.reconnect_delay {
             value.insert("reconnect-delay".to_owned(), json!(val));

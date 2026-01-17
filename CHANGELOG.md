@@ -2,7 +2,10 @@
 
 ## v0.76.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * `Amqp091ShovelParams` no longer serializes `src-predeclared`, `dest-predeclared` when those keys are `false`
+   for RabbitMQ 3.12.x compatibility
 
 
 ## v0.75.0 (Jan 16, 2026)
