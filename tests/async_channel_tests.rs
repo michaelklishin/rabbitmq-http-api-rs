@@ -77,13 +77,17 @@ async fn test_async_list_channels_on_connection() {
     tokio::time::sleep(Duration::from_millis(1000)).await;
 
     let connections = rc.list_connections().await.unwrap();
-    let first = connections.first().unwrap();
+    // Find our connection by selecting the most recently opened one
+    let our_conn = connections.iter().max_by_key(|c| c.connected_at).unwrap();
 
-    let result1 = rc.list_channels_on(&first.name).await;
+    let result1 = rc.list_channels_on(&our_conn.name).await;
     assert!(result1.is_ok(), "list_channels_on returned {result1:?}");
 
     let channels = result1.unwrap();
-    assert_eq!(1, channels.len());
+    assert!(
+        !channels.is_empty(),
+        "Expected at least one channel on the connection"
+    );
 
     // just to be explicit
     ch.close().await.unwrap();

@@ -15,6 +15,7 @@
 
 use rabbitmq_http_client::blocking_api::Client as BlockingClient;
 use std::env;
+use std::path::PathBuf;
 use std::time::Duration;
 
 use amqprs::BasicProperties;
@@ -76,6 +77,29 @@ pub fn testing_against_4_2_x() -> bool {
     testing_against_series("^4.2")
 }
 
+pub fn testing_against_4_3_x() -> bool {
+    testing_against_series("^4.3")
+}
+
+/// Picks a stable feature flag suitable for each series
+pub fn expected_stable_version_feature_flag() -> Option<&'static str> {
+    let endpoint = endpoint();
+    let rc = BlockingClient::new(&endpoint, USERNAME, PASSWORD);
+    let version = rc.server_version().unwrap();
+
+    if version.starts_with("4.3") {
+        Some("rabbitmq_4.3.0")
+    } else if version.starts_with("4.2") {
+        Some("rabbitmq_4.2.0")
+    } else if version.starts_with("4.1") {
+        Some("rabbitmq_4.1.0")
+    } else if version.starts_with("4.0") {
+        Some("rabbitmq_4.0.0")
+    } else {
+        None
+    }
+}
+
 pub fn testing_against_series(series: &str) -> bool {
     let endpoint = endpoint();
     let rc = BlockingClient::new(&endpoint, USERNAME, PASSWORD);
@@ -118,6 +142,29 @@ pub async fn async_testing_against_4_1_x() -> bool {
 
 pub async fn async_testing_against_4_2_x() -> bool {
     async_testing_against_series("^4.2").await
+}
+
+pub async fn async_testing_against_4_3_x() -> bool {
+    async_testing_against_series("^4.3").await
+}
+
+/// Picks a stable feature flag suitable for each series
+pub async fn async_expected_stable_version_feature_flag() -> Option<&'static str> {
+    let endpoint = endpoint();
+    let rc = AsyncClient::new(&endpoint, USERNAME, PASSWORD);
+    let version = rc.server_version().await.unwrap();
+
+    if version.starts_with("4.3") {
+        Some("rabbitmq_4.3.0")
+    } else if version.starts_with("4.2") {
+        Some("rabbitmq_4.2.0")
+    } else if version.starts_with("4.1") {
+        Some("rabbitmq_4.1.0")
+    } else if version.starts_with("4.0") {
+        Some("rabbitmq_4.0.0")
+    } else {
+        None
+    }
 }
 
 pub async fn async_testing_against_series(series: &str) -> bool {
@@ -181,8 +228,6 @@ pub fn cluster_tags(tags: Map<String, Value>) -> Map<String, Value> {
 //
 // TLS tests
 //
-
-use std::path::PathBuf;
 
 pub const TLS_ENDPOINT: &str = "https://localhost:15671/api";
 

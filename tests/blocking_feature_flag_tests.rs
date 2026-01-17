@@ -17,16 +17,18 @@ use rabbitmq_http_client::{
 };
 
 mod test_helpers;
-use crate::test_helpers::{PASSWORD, USERNAME, endpoint, testing_against_3_13_x};
+use crate::test_helpers::{
+    PASSWORD, USERNAME, endpoint, expected_stable_version_feature_flag, testing_against_3_13_x,
+};
 
 #[test]
 fn test_blocking_list_feature_flags() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
-    if testing_against_3_13_x() {
+    let Some(expected_ff) = expected_stable_version_feature_flag() else {
         return;
-    }
+    };
 
     let result = rc.list_feature_flags();
     assert!(result.is_ok());
@@ -34,7 +36,7 @@ fn test_blocking_list_feature_flags() {
     assert!(
         vec.0
             .into_iter()
-            .any(|ff| ff.name == "rabbitmq_4.0.0" && ff.stability == FeatureFlagStability::Stable)
+            .any(|ff| ff.name == expected_ff && ff.stability == FeatureFlagStability::Stable)
     );
 }
 
@@ -67,11 +69,10 @@ fn test_blocking_enable_all_stable_feature_flags() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
-    if testing_against_3_13_x() {
+    let Some(expected_ff) = expected_stable_version_feature_flag() else {
         return;
-    }
+    };
 
-    let ff_name = "rabbitmq_4.0.0";
     let result1 = rc.enable_all_stable_feature_flags();
     assert!(result1.is_ok());
 
@@ -82,6 +83,6 @@ fn test_blocking_enable_all_stable_feature_flags() {
     assert!(
         vec.0
             .into_iter()
-            .any(|ff| ff.name == ff_name && ff.state == FeatureFlagState::Enabled)
+            .any(|ff| ff.name == expected_ff && ff.state == FeatureFlagState::Enabled)
     );
 }
