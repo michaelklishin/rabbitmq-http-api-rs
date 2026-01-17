@@ -1,11 +1,11 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.75.0 (in development)
+## v0.76.0 (in development)
 
 No changes yet.
 
 
-## v0.74.0 (Jan 16, 2026)
+## v0.75.0 (Jan 16, 2026)
 
 ### Breaking Changes
 
@@ -15,7 +15,7 @@ No changes yet.
    The [`queue-type`](https://www.rabbitmq.com/docs/federation-reference) parameter was introduced
    in the 3.13 series.
 
- * `NodeMemoryBreakdown.other_ets_tables` is now `i64` instead of `u64` because it can be
+ * `NodeMemoryBreakdown#other_ets_tables` is now `i64` instead of `u64` because it can be
    [reported as negative](https://github.com/rabbitmq/rabbitmq-server/pull/15289) due to an ETS table memory accounting peculiarity in RabbitMQ before 4.2.3.
 
 
