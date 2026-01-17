@@ -166,8 +166,9 @@ pub struct NodeMemoryBreakdown {
     pub quorum_queue_ets_tables: u64,
     #[serde(rename = "metadata_store_ets")]
     pub metadata_store_ets_tables: u64,
+    // can be negative due to a bug in RabbitMQ versions before 4.2.3
     #[serde(rename = "other_ets")]
-    pub other_ets_tables: u64,
+    pub other_ets_tables: i64,
     #[serde(rename = "binary")]
     pub binary_heap: u64,
     #[serde(rename = "msg_index")]
@@ -274,8 +275,12 @@ impl NodeMemoryBreakdown {
         metadata_store_ets_tables
     );
 
-    percentage_fn!(other_ets_tables_percentage, other_ets_tables);
-    percentage_as_text_fn!(other_ets_tables_percentage_as_text, other_ets_tables);
+    pub fn other_ets_tables_percentage(&mut self) -> f64 {
+        percentage(self.other_ets_tables.max(0) as u64, self.grand_total())
+    }
+    pub fn other_ets_tables_percentage_as_text(&mut self) -> String {
+        percentage_as_text(self.other_ets_tables.max(0) as u64, self.grand_total())
+    }
 
     percentage_fn!(binary_heap_percentage, binary_heap);
     percentage_as_text_fn!(binary_heap_percentage_as_text, binary_heap);
@@ -310,64 +315,59 @@ impl NodeMemoryBreakdown {
 
 impl fmt::Display for NodeMemoryBreakdown {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let data = [
-            ("Connection readers".to_owned(), self.connection_readers),
-            ("Connection writers".to_owned(), self.connection_writers),
-            ("AMQP 0-9-1 channels".to_owned(), self.connection_channels),
-            (
-                "Other connection processes".to_owned(),
-                self.connection_other,
-            ),
-            (
-                "Classic queue replica processes".to_owned(),
-                self.classic_queue_procs,
-            ),
-            (
-                "Quorum queue replica processes".to_owned(),
-                self.quorum_queue_procs,
-            ),
-            (
-                "Stream replica processes".to_owned(),
-                self.stream_queue_procs,
-            ),
-            (
-                "Stream replica reader processes".to_owned(),
-                self.stream_queue_replica_reader_procs,
-            ),
-            (
-                "Stream coordinator processes".to_owned(),
-                self.stream_queue_coordinator_procs,
-            ),
-            ("Plugins".to_owned(), self.plugins),
-            ("Metadata store".to_owned(), self.metadata_store),
-            ("Other processes:".to_owned(), self.other_procs),
-            ("Metrics".to_owned(), self.metrics),
-            ("Management stats database".to_owned(), self.management_db),
-            ("Mnesia".to_owned(), self.mnesia),
-            (
-                "Quorum queue ETS tables".to_owned(),
-                self.quorum_queue_ets_tables,
-            ),
-            (
-                "Metadata store ETS tables".to_owned(),
-                self.metadata_store_ets_tables,
-            ),
-            ("Other ETS tables".to_owned(), self.other_ets_tables),
-            ("Binary heap".to_owned(), self.binary_heap),
-            ("Message indices".to_owned(), self.message_indices),
-            ("Code modules".to_owned(), self.code),
-            ("Atom table".to_owned(), self.atom_table),
-            ("Other system footprint".to_owned(), self.other_system),
-            ("Allocated but unused".to_owned(), self.allocated_but_unused),
-            (
-                "Reserved but unallocated".to_owned(),
-                self.reserved_but_unallocated,
-            ),
-        ];
-
-        for (k, v) in data {
-            writeln!(f, "{k}: {v}")?;
-        }
+        writeln!(f, "Connection readers: {}", self.connection_readers)?;
+        writeln!(f, "Connection writers: {}", self.connection_writers)?;
+        writeln!(f, "AMQP 0-9-1 channels: {}", self.connection_channels)?;
+        writeln!(f, "Other connection processes: {}", self.connection_other)?;
+        writeln!(
+            f,
+            "Classic queue replica processes: {}",
+            self.classic_queue_procs
+        )?;
+        writeln!(
+            f,
+            "Quorum queue replica processes: {}",
+            self.quorum_queue_procs
+        )?;
+        writeln!(f, "Stream replica processes: {}", self.stream_queue_procs)?;
+        writeln!(
+            f,
+            "Stream replica reader processes: {}",
+            self.stream_queue_replica_reader_procs
+        )?;
+        writeln!(
+            f,
+            "Stream coordinator processes: {}",
+            self.stream_queue_coordinator_procs
+        )?;
+        writeln!(f, "Plugins: {}", self.plugins)?;
+        writeln!(f, "Metadata store: {}", self.metadata_store)?;
+        writeln!(f, "Other processes: {}", self.other_procs)?;
+        writeln!(f, "Metrics: {}", self.metrics)?;
+        writeln!(f, "Management stats database: {}", self.management_db)?;
+        writeln!(f, "Mnesia: {}", self.mnesia)?;
+        writeln!(
+            f,
+            "Quorum queue ETS tables: {}",
+            self.quorum_queue_ets_tables
+        )?;
+        writeln!(
+            f,
+            "Metadata store ETS tables: {}",
+            self.metadata_store_ets_tables
+        )?;
+        writeln!(f, "Other ETS tables: {}", self.other_ets_tables)?;
+        writeln!(f, "Binary heap: {}", self.binary_heap)?;
+        writeln!(f, "Message indices: {}", self.message_indices)?;
+        writeln!(f, "Code modules: {}", self.code)?;
+        writeln!(f, "Atom table: {}", self.atom_table)?;
+        writeln!(f, "Other system footprint: {}", self.other_system)?;
+        writeln!(f, "Allocated but unused: {}", self.allocated_but_unused)?;
+        writeln!(
+            f,
+            "Reserved but unallocated: {}",
+            self.reserved_but_unallocated
+        )?;
 
         Ok(())
     }
