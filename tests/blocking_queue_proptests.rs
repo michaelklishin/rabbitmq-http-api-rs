@@ -14,7 +14,9 @@
 
 mod test_helpers;
 
-use crate::test_helpers::{PASSWORD, USERNAME, await_metric_emission, endpoint, rabbitmq_version_is_at_least};
+use crate::test_helpers::{
+    PASSWORD, USERNAME, await_metric_emission, endpoint, rabbitmq_version_is_at_least,
+};
 use proptest::prelude::*;
 use proptest::test_runner::Config as ProptestConfig;
 use rabbitmq_http_client::{blocking_api::Client, commons::QueueType, requests::QueueParams};
