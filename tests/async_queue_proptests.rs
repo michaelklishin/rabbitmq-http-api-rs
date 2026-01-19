@@ -14,7 +14,9 @@
 
 mod test_helpers;
 
-use crate::test_helpers::{PASSWORD, USERNAME, async_await_metric_emission, endpoint};
+use crate::test_helpers::{
+    PASSWORD, USERNAME, async_await_metric_emission, async_rabbitmq_version_is_at_least, endpoint,
+};
 use proptest::prelude::*;
 use proptest::test_runner::Config as ProptestConfig;
 use rabbitmq_http_client::{api::Client, commons::QueueType, requests::QueueParams};
@@ -161,6 +163,11 @@ proptest! {
     ) {
         let rt = Runtime::new().unwrap();
         rt.block_on(async {
+            // /api/queues/detailed endpoint was added in RabbitMQ 3.13
+            if !async_rabbitmq_version_is_at_least(3, 13, 0).await {
+                return Ok(());
+            }
+
             let endpoint = endpoint();
             let client = Client::new(&endpoint, USERNAME, PASSWORD);
             let vhost = "/";

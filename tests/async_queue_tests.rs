@@ -15,7 +15,7 @@ use rabbitmq_http_client::{api::Client, commons::QueueType, requests::QueueParam
 use serde_json::{Map, Value, json};
 
 mod test_helpers;
-use crate::test_helpers::{PASSWORD, USERNAME, endpoint};
+use crate::test_helpers::{PASSWORD, USERNAME, async_rabbitmq_version_is_at_least, endpoint};
 
 #[tokio::test]
 async fn test_async_declare_and_redeclare_a_classic_queue() {
@@ -178,6 +178,11 @@ async fn test_async_list_queues_in_a_virtual_host() {
 
 #[tokio::test]
 async fn test_async_list_queues_with_details() {
+    // /api/queues/detailed endpoint was added in RabbitMQ 3.13
+    if !async_rabbitmq_version_is_at_least(3, 13, 0).await {
+        return;
+    }
+
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 

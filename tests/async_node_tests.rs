@@ -14,7 +14,7 @@
 use rabbitmq_http_client::api::Client;
 
 mod test_helpers;
-use crate::test_helpers::{PASSWORD, USERNAME, endpoint};
+use crate::test_helpers::{PASSWORD, USERNAME, async_rabbitmq_version_is_at_least, endpoint};
 
 #[tokio::test]
 async fn test_async_list_nodes() {
@@ -42,6 +42,11 @@ async fn test_async_get_node_info() {
 
 #[tokio::test]
 async fn test_async_get_node_memory_footprint() {
+    // Node memory breakdown response format requires RabbitMQ 4.0+
+    if !async_rabbitmq_version_is_at_least(4, 0, 0).await {
+        return;
+    }
+
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let nodes = rc.list_nodes().await.unwrap();

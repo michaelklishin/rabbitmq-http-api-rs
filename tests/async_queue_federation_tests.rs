@@ -19,7 +19,9 @@ use rabbitmq_http_client::requests::{
 use rabbitmq_http_client::{api::Client, requests::VirtualHostParams};
 
 mod test_helpers;
-use crate::test_helpers::{PASSWORD, USERNAME, amqp_endpoint_with_vhost, endpoint};
+use crate::test_helpers::{
+    PASSWORD, USERNAME, amqp_endpoint_with_vhost, async_rabbitmq_version_is_at_least, endpoint,
+};
 
 #[tokio::test]
 async fn test_async_declare_a_federation_upstream_with_queue_federation_parameters() {
@@ -140,6 +142,11 @@ async fn test_async_federation_upstream_fetch_and_update_workflow() {
 
 #[tokio::test]
 async fn test_async_exchange_federation_upstream_fetch_and_update_workflow() {
+    // Exchange federation queue-type parameter requires RabbitMQ 4.0+
+    if !async_rabbitmq_version_is_at_least(4, 0, 0).await {
+        return;
+    }
+
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 

@@ -18,10 +18,15 @@ use rabbitmq_http_client::{
 };
 
 mod test_helpers;
-use crate::test_helpers::{PASSWORD, USERNAME, endpoint};
+use crate::test_helpers::{PASSWORD, USERNAME, async_rabbitmq_version_is_at_least, endpoint};
 
 #[tokio::test]
 async fn test_async_list_all_vhost_limits() {
+    // Virtual host limits require RabbitMQ 3.13+
+    if !async_rabbitmq_version_is_at_least(3, 13, 0).await {
+        return;
+    }
+
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -54,6 +59,11 @@ async fn test_async_list_all_vhost_limits() {
 
 #[tokio::test]
 async fn test_async_list_vhost_limits() {
+    // Virtual host limits require RabbitMQ 3.13+
+    if !async_rabbitmq_version_is_at_least(3, 13, 0).await {
+        return;
+    }
+
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 

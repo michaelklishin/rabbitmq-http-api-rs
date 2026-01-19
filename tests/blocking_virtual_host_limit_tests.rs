@@ -18,10 +18,15 @@ use rabbitmq_http_client::{
 };
 
 mod test_helpers;
-use crate::test_helpers::{PASSWORD, USERNAME, endpoint};
+use crate::test_helpers::{PASSWORD, USERNAME, endpoint, rabbitmq_version_is_at_least};
 
 #[test]
 fn test_blocking_list_all_vhost_limits() {
+    // Virtual host limits require RabbitMQ 3.13+
+    if !rabbitmq_version_is_at_least(3, 13, 0) {
+        return;
+    }
+
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
@@ -54,6 +59,11 @@ fn test_blocking_list_all_vhost_limits() {
 
 #[test]
 fn test_blocking_list_vhost_limits() {
+    // Virtual host limits require RabbitMQ 3.13+
+    if !rabbitmq_version_is_at_least(3, 13, 0) {
+        return;
+    }
+
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 

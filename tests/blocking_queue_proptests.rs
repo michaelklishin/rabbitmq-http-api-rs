@@ -14,7 +14,7 @@
 
 mod test_helpers;
 
-use crate::test_helpers::{PASSWORD, USERNAME, await_metric_emission, endpoint};
+use crate::test_helpers::{PASSWORD, USERNAME, await_metric_emission, endpoint, rabbitmq_version_is_at_least};
 use proptest::prelude::*;
 use proptest::test_runner::Config as ProptestConfig;
 use rabbitmq_http_client::{blocking_api::Client, commons::QueueType, requests::QueueParams};
@@ -150,6 +150,11 @@ proptest! {
     fn prop_blocking_stream_essential_ops(
         (name, max_length_bytes) in arb_stream_params()
     ) {
+        // /api/queues/detailed endpoint was added in RabbitMQ 3.13
+        if !rabbitmq_version_is_at_least(3, 13, 0) {
+            return Ok(());
+        }
+
         let endpoint = endpoint();
         let client = Client::new(&endpoint, USERNAME, PASSWORD);
         let vhost = "/";

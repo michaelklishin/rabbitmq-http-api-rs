@@ -14,7 +14,7 @@
 use rabbitmq_http_client::blocking_api::Client;
 
 mod test_helpers;
-use crate::test_helpers::{PASSWORD, USERNAME, endpoint};
+use crate::test_helpers::{PASSWORD, USERNAME, endpoint, rabbitmq_version_is_at_least};
 
 #[test]
 fn test_blocking_list_nodes() {
@@ -42,6 +42,11 @@ fn test_blocking_get_node_info() {
 
 #[test]
 fn test_blocking_get_node_memory_footprint() {
+    // Node memory breakdown response format requires RabbitMQ 4.0+
+    if !rabbitmq_version_is_at_least(4, 0, 0) {
+        return;
+    }
+
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let nodes = rc.list_nodes().unwrap();
