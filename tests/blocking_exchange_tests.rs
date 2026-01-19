@@ -18,7 +18,7 @@ use rabbitmq_http_client::{
 use serde_json::{Map, Value, json};
 
 mod test_helpers;
-use crate::test_helpers::{PASSWORD, USERNAME, endpoint, testing_against_3_13_x};
+use crate::test_helpers::{PASSWORD, USERNAME, endpoint, rabbitmq_version_is_at_least};
 
 use rabbitmq_http_client::commons::ExchangeType;
 
@@ -44,7 +44,8 @@ fn test_blocking_declare_a_durable_headers_exchange() {
 
 #[test]
 fn test_blocking_declare_a_durable_local_random_exchange() {
-    if testing_against_3_13_x() {
+    // x-local-random exchange type requires RabbitMQ 4.0+
+    if !rabbitmq_version_is_at_least(4, 0, 0) {
         return;
     }
 
@@ -53,7 +54,8 @@ fn test_blocking_declare_a_durable_local_random_exchange() {
 
 #[test]
 fn test_blocking_declare_a_durable_custom_exchange_type() {
-    if testing_against_3_13_x() {
+    // x-local-random exchange type requires RabbitMQ 4.0+
+    if !rabbitmq_version_is_at_least(4, 0, 0) {
         return;
     }
 

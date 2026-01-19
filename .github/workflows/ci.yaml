@@ -56,8 +56,11 @@ jobs:
     strategy:
       matrix:
         rabbitmq-series:
+          - "3.12"
+          - "3.13"
           - "4.0"
           - "4.1"
+          - "4.2"
         rust-version:
           - stable
           - beta
@@ -104,8 +107,11 @@ jobs:
     strategy:
       matrix:
         rabbitmq-series:
+          - "3.12"
+          - "3.13"
           - "4.0"
           - "4.1"
+          - "4.2"
         rust-version:
           - stable
         runner:

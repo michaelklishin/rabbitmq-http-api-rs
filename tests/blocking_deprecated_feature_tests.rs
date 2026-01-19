@@ -16,13 +16,19 @@ use rabbitmq_http_client::{blocking_api::Client, commons::QueueType, requests::Q
 
 mod test_helpers;
 use crate::test_helpers::{
-    PASSWORD, USERNAME, endpoint, testing_against_3_13_x, testing_against_version,
+    PASSWORD, USERNAME, endpoint, rabbitmq_version_is_at_least, testing_against_version,
 };
 
 #[test]
 fn test_blocking_list_all_deprecated_features() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    // Deprecated features API was introduced in RabbitMQ 3.13
+    if !rabbitmq_version_is_at_least(3, 13, 0) {
+        return;
+    }
+
     let result = rc.list_all_deprecated_features();
 
     assert!(result.is_ok());
@@ -39,7 +45,8 @@ fn test_blocking_list_deprecated_features_in_use() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
-    if testing_against_3_13_x() {
+    // list_deprecated_features_in_use requires RabbitMQ 4.0+
+    if !rabbitmq_version_is_at_least(4, 0, 0) {
         return;
     }
 

@@ -15,7 +15,7 @@ use rabbitmq_http_client::{api::Client, error::Error as APIClientError, requests
 use serde_json::{Map, Value, json};
 
 mod test_helpers;
-use crate::test_helpers::{PASSWORD, USERNAME, async_testing_against_3_13_x, endpoint};
+use crate::test_helpers::{PASSWORD, USERNAME, async_rabbitmq_version_is_at_least, endpoint};
 
 use rabbitmq_http_client::commons::ExchangeType;
 
@@ -44,7 +44,8 @@ async fn test_async_declare_a_durable_headers_exchange() {
 
 #[tokio::test]
 async fn test_async_declare_a_durable_local_random_exchange() {
-    if async_testing_against_3_13_x().await {
+    // x-local-random exchange type requires RabbitMQ 4.0+
+    if !async_rabbitmq_version_is_at_least(4, 0, 0).await {
         return;
     }
 
@@ -57,7 +58,8 @@ async fn test_async_declare_a_durable_local_random_exchange() {
 
 #[tokio::test]
 async fn test_async_declare_a_durable_custom_exchange_type() {
-    if async_testing_against_3_13_x().await {
+    // x-local-random exchange type requires RabbitMQ 4.0+
+    if !async_rabbitmq_version_is_at_least(4, 0, 0).await {
         return;
     }
 

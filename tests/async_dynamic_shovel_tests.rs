@@ -22,7 +22,7 @@ use rabbitmq_http_client::{api::Client, requests::VirtualHostParams};
 mod test_helpers;
 use crate::test_helpers::{
     PASSWORD, USERNAME, amqp_endpoint_with_vhost, amqp10_endpoint_with_vhost,
-    async_testing_against_3_13_x, await_metric_emission, endpoint,
+    async_rabbitmq_version_is_at_least, await_metric_emission, endpoint,
 };
 
 #[tokio::test]
@@ -30,7 +30,8 @@ async fn test_async_declare_a_dynamic_amqp091_shovel() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
-    if async_testing_against_3_13_x().await {
+    // Dynamic shovel management API requires RabbitMQ 4.0+
+    if !async_rabbitmq_version_is_at_least(4, 0, 0).await {
         return;
     }
 
@@ -68,7 +69,8 @@ async fn test_async_list_all_shovels() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
-    if async_testing_against_3_13_x().await {
+    // Dynamic shovel management API requires RabbitMQ 4.0+
+    if !async_rabbitmq_version_is_at_least(4, 0, 0).await {
         return;
     }
 
@@ -138,7 +140,8 @@ async fn test_async_list_all_shovels_in_a_virtual_host() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
-    if async_testing_against_3_13_x().await {
+    // Dynamic shovel management API requires RabbitMQ 4.0+
+    if !async_rabbitmq_version_is_at_least(4, 0, 0).await {
         return;
     }
 
@@ -189,7 +192,8 @@ async fn test_async_declare_a_dynamic_amqp10_shovel() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
-    if async_testing_against_3_13_x().await {
+    // Dynamic shovel management API requires RabbitMQ 4.0+
+    if !async_rabbitmq_version_is_at_least(4, 0, 0).await {
         return;
     }
 
@@ -235,7 +239,8 @@ async fn test_async_declare_a_dynamic_amqp091_shovel_with_predeclared_source_top
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
-    if async_testing_against_3_13_x().await {
+    // Dynamic shovel management API requires RabbitMQ 4.0+
+    if !async_rabbitmq_version_is_at_least(4, 0, 0).await {
         return;
     }
 
@@ -277,7 +282,8 @@ async fn test_async_declare_a_dynamic_amqp091_shovel_with_predeclared_destinatio
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
-    if async_testing_against_3_13_x().await {
+    // Dynamic shovel management API requires RabbitMQ 4.0+
+    if !async_rabbitmq_version_is_at_least(4, 0, 0).await {
         return;
     }
 
@@ -322,7 +328,8 @@ async fn test_async_delete_a_dynamic_amqp091_shovel() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
-    if async_testing_against_3_13_x().await {
+    // Dynamic shovel management API requires RabbitMQ 4.0+
+    if !async_rabbitmq_version_is_at_least(4, 0, 0).await {
         return;
     }
 

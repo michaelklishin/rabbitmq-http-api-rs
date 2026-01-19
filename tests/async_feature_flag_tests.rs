@@ -18,8 +18,8 @@ use rabbitmq_http_client::{
 
 mod test_helpers;
 use crate::test_helpers::{
-    PASSWORD, USERNAME, async_expected_stable_version_feature_flag, async_testing_against_3_13_x,
-    endpoint,
+    PASSWORD, USERNAME, async_expected_stable_version_feature_flag,
+    async_rabbitmq_version_is_at_least, endpoint,
 };
 
 #[tokio::test]
@@ -46,7 +46,8 @@ async fn test_async_enable_a_feature_flag() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
-    if async_testing_against_3_13_x().await {
+    // detailed_queues_endpoint feature flag was added in RabbitMQ 4.0
+    if !async_rabbitmq_version_is_at_least(4, 0, 0).await {
         return;
     }
 

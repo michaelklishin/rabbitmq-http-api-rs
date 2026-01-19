@@ -22,7 +22,7 @@ use rabbitmq_http_client::{blocking_api::Client, requests::VirtualHostParams};
 mod test_helpers;
 use crate::test_helpers::{
     PASSWORD, USERNAME, amqp_endpoint_with_vhost, amqp10_endpoint_with_vhost,
-    await_metric_emission, endpoint, testing_against_3_13_x,
+    await_metric_emission, endpoint, rabbitmq_version_is_at_least,
 };
 
 #[test]
@@ -30,7 +30,8 @@ fn test_blocking_declare_a_dynamic_amqp091_shovel() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
-    if testing_against_3_13_x() {
+    // Dynamic shovel management API requires RabbitMQ 4.0+
+    if !rabbitmq_version_is_at_least(4, 0, 0) {
         return;
     }
 
@@ -68,7 +69,8 @@ fn test_blocking_list_all_shovels() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
-    if testing_against_3_13_x() {
+    // Dynamic shovel management API requires RabbitMQ 4.0+
+    if !rabbitmq_version_is_at_least(4, 0, 0) {
         return;
     }
 
@@ -138,7 +140,8 @@ fn test_blocking_list_all_shovels_in_a_virtual_host() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
-    if testing_against_3_13_x() {
+    // Dynamic shovel management API requires RabbitMQ 4.0+
+    if !rabbitmq_version_is_at_least(4, 0, 0) {
         return;
     }
 
@@ -189,7 +192,8 @@ fn test_blocking_declare_a_dynamic_amqp10_shovel() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
-    if testing_against_3_13_x() {
+    // Dynamic shovel management API requires RabbitMQ 4.0+
+    if !rabbitmq_version_is_at_least(4, 0, 0) {
         return;
     }
 
@@ -235,7 +239,8 @@ fn test_blocking_declare_a_dynamic_amqp091_shovel_with_predeclared_source_topolo
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
-    if testing_against_3_13_x() {
+    // Dynamic shovel management API requires RabbitMQ 4.0+
+    if !rabbitmq_version_is_at_least(4, 0, 0) {
         return;
     }
 
@@ -277,7 +282,8 @@ fn test_blocking_declare_a_dynamic_amqp091_shovel_with_predeclared_destination_t
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
-    if testing_against_3_13_x() {
+    // Dynamic shovel management API requires RabbitMQ 4.0+
+    if !rabbitmq_version_is_at_least(4, 0, 0) {
         return;
     }
 
@@ -322,7 +328,8 @@ fn test_blocking_delete_a_dynamic_amqp091_shovel() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
-    if testing_against_3_13_x() {
+    // Dynamic shovel management API requires RabbitMQ 4.0+
+    if !rabbitmq_version_is_at_least(4, 0, 0) {
         return;
     }
 

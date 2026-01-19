@@ -18,7 +18,8 @@ use rabbitmq_http_client::{
 
 mod test_helpers;
 use crate::test_helpers::{
-    PASSWORD, USERNAME, endpoint, expected_stable_version_feature_flag, testing_against_3_13_x,
+    PASSWORD, USERNAME, endpoint, expected_stable_version_feature_flag,
+    rabbitmq_version_is_at_least,
 };
 
 #[test]
@@ -45,7 +46,8 @@ fn test_blocking_enable_a_feature_flag() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
 
-    if testing_against_3_13_x() {
+    // detailed_queues_endpoint feature flag was added in RabbitMQ 4.0
+    if !rabbitmq_version_is_at_least(4, 0, 0) {
         return;
     }
 

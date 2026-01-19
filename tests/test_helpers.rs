@@ -58,8 +58,43 @@ pub fn amqp10_endpoint_with_vhost(name: &str) -> String {
 }
 
 //
+// Version parsing and comparison
+//
+
+fn parse_version(version_str: &str) -> (u32, u32, u32) {
+    let base_version = version_str.split('+').next().unwrap_or(version_str);
+    let parts: Vec<&str> = base_version.split('.').collect();
+    let parse_component = |s: &str| {
+        s.split('-')
+            .next()
+            .and_then(|n| n.parse().ok())
+            .unwrap_or(0)
+    };
+    let major = parts.first().map(|s| parse_component(s)).unwrap_or(0);
+    let minor = parts.get(1).map(|s| parse_component(s)).unwrap_or(0);
+    let patch = parts.get(2).map(|s| parse_component(s)).unwrap_or(0);
+    (major, minor, patch)
+}
+
+pub fn rabbitmq_version() -> (u32, u32, u32) {
+    let endpoint = endpoint();
+    let rc = BlockingClient::new(&endpoint, USERNAME, PASSWORD);
+    let version = rc.server_version().unwrap();
+    parse_version(&version)
+}
+
+pub fn rabbitmq_version_is_at_least(min_major: u32, min_minor: u32, min_patch: u32) -> bool {
+    let (major, minor, patch) = rabbitmq_version();
+    (major, minor, patch) >= (min_major, min_minor, min_patch)
+}
+
+//
 // Blocking client tests
 //
+
+pub fn testing_against_3_12_x() -> bool {
+    testing_against_series("^3.12")
+}
 
 pub fn testing_against_3_13_x() -> bool {
     testing_against_series("^3.13")
@@ -127,6 +162,26 @@ pub fn await_queue_metric_emission() {
 //
 // Async client tests
 //
+
+pub async fn async_rabbitmq_version() -> (u32, u32, u32) {
+    let endpoint = endpoint();
+    let rc = AsyncClient::new(&endpoint, USERNAME, PASSWORD);
+    let version = rc.server_version().await.unwrap();
+    parse_version(&version)
+}
+
+pub async fn async_rabbitmq_version_is_at_least(
+    min_major: u32,
+    min_minor: u32,
+    min_patch: u32,
+) -> bool {
+    let (major, minor, patch) = async_rabbitmq_version().await;
+    (major, minor, patch) >= (min_major, min_minor, min_patch)
+}
+
+pub async fn async_testing_against_3_12_x() -> bool {
+    async_testing_against_series("^3.12").await
+}
 
 pub async fn async_testing_against_3_13_x() -> bool {
     async_testing_against_series("^3.13").await

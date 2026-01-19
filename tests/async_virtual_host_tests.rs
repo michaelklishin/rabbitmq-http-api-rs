@@ -14,7 +14,7 @@
 use rabbitmq_http_client::{api::Client, commons::QueueType, requests::VirtualHostParams};
 
 mod test_helpers;
-use crate::test_helpers::{PASSWORD, USERNAME, endpoint};
+use crate::test_helpers::{PASSWORD, USERNAME, async_rabbitmq_version_is_at_least, endpoint};
 
 #[tokio::test]
 async fn test_async_list_vhosts() {
@@ -170,6 +170,11 @@ async fn test_async_delete_vhost() {
 
 #[tokio::test]
 async fn test_async_vhost_deletion_protection() {
+    // Vhost deletion protection endpoint added in RabbitMQ 4.0
+    if !async_rabbitmq_version_is_at_least(4, 0, 0).await {
+        return;
+    }
+
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let name = "rust_test_async_vhost_deletion_protection";

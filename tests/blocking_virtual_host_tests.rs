@@ -14,7 +14,7 @@
 use rabbitmq_http_client::{blocking_api::Client, commons::QueueType, requests::VirtualHostParams};
 
 mod test_helpers;
-use crate::test_helpers::{PASSWORD, USERNAME, endpoint};
+use crate::test_helpers::{PASSWORD, USERNAME, endpoint, rabbitmq_version_is_at_least};
 
 #[test]
 fn test_blocking_list_vhosts() {
@@ -168,6 +168,11 @@ fn test_blocking_delete_vhost() {
 
 #[test]
 fn test_blocking_vhost_deletion_protection() {
+    // Vhost deletion protection endpoint added in RabbitMQ 4.0
+    if !rabbitmq_version_is_at_least(4, 0, 0) {
+        return;
+    }
+
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let name = "rust_test_blocking_vhost_deletion_protection";
