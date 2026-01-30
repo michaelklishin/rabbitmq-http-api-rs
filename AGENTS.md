@@ -53,7 +53,7 @@ all tests in a specific module.
 Property-based tests are written using [proptest](https://docs.rs/proptest/latest/proptest/) and
 use a naming convention: they begin with `prop_`.
 
-To run the property-based tests specifically, use `cargo nextest run --all-features -- --show-output`.
+To run the property-based tests specifically, use `cargo nextest run --all-features 'prop_'`.
 
 ## Source of Domain Knowledge
 
