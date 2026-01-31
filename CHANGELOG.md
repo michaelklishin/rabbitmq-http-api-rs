@@ -241,9 +241,9 @@ No documented changes yet.
 
 ### Enhancements
 
- * `FederationUpstream` and ``FederationUpstreamParams` no longer have a "fidelity gap," a difference between fields
+ * `FederationUpstream` and `FederationUpstreamParams` no longer have a "fidelity gap," a difference between fields
    that had made it impossible to convert the former into the latter
- * `FederationUpstream` now includes several missing (rarely used) fields such as `bind_using_nowait`, channel_use_mode`
+ * `FederationUpstream` now includes several missing (rarely used) fields such as `bind_using_nowait`, `channel_use_mode`
 
 ### Breaking Changes
 
@@ -639,7 +639,7 @@ No documented changes yet.
 ### Enhancements
 
  * `responses::VirtualHostDefinitionSet` is an equivalent of `responses::ClusterDefinitionSet` but adapted
-   for the specific of virtual host-specific definitions, namely the fact that they do not contain
+   for the specifics of virtual host-specific definitions, namely the fact that they do not contain
    virtual hosts, users, or permissions, and objects such as queues or bindings do not have the
    virtual host field to make it possible to import them into a virtual host with any name
 

@@ -8,7 +8,7 @@ This is not an AMQP 0-9-1 client (see [amqprs](https://github.com/gftea/amqprs))
 
 This library is reasonably mature.
 
-Before `1.0.0`, breaking API changes are can and will be introduced.
+Before `1.0.0`, breaking API changes can and will be introduced.
 
 ## Supported RabbitMQ Series
 
@@ -58,7 +58,7 @@ Documentation for async API follows that of the blocking API.
 
 ### Blocking API
 
-The examples below do not cover the entire API. Most ``
+The examples below do not cover the entire API.
 
 #### Instantiate a Client
 
@@ -167,12 +167,12 @@ let mut b = HTTPClient::builder()
 // for x.509 peer verification
 b.add_root_certificate(ca_certificate_path);
 
-let httpc = b.build()
+let httpc = b.build();
 let username = "example";
-let password = "ex4mple $eKr37;
+let password = "ex4mple $eKr37";
 
 // make sure the endpoint uses TLS and the correct port for TLS-enabled connections
-let endpoint = "https://example.domain:15671/api"
+let endpoint = "https://example.domain:15671/api";
 
 // this is this library's `ClientBuilder`
 let client = ClientBuilder::new()

@@ -39,7 +39,7 @@ pub mod blocking_api;
 pub mod commons;
 /// Formatting helpers
 pub mod formatting;
-/// Providers password hashing utilities for [user pre-seeding](https://www.rabbitmq.com/docs/access-control#seeding)
+/// Provides password hashing utilities for [user pre-seeding](https://www.rabbitmq.com/docs/access-control#seeding)
 pub mod password_hashing;
 pub mod requests;
 pub mod responses;
