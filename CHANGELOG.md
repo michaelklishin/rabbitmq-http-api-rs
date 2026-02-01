@@ -18,7 +18,7 @@ No documented changes yet.
 ### Breaking Changes
 
  * `ExchangeFederationParams#queue_type` and `OwnedExchangeFederationParams#queue_type` are now
-   optional (`Option<QueueType>` intead of `QueueType`) for RabbitMQ 3.12.x compatibility.
+   optional (`Option<QueueType>` instead of `QueueType`) for RabbitMQ 3.12.x compatibility.
 
    The [`queue-type`](https://www.rabbitmq.com/docs/federation-reference) parameter was introduced
    in the 3.13 series.
@@ -49,7 +49,7 @@ No documented changes yet.
  * `ClientBuilder#with_recommended_defaults` applies sensible defaults: 60s request timeout, 3 retries with 1s delay
  * `HttpClientError` now has helper methods: `is_not_found`, `is_already_exists`, `is_unauthorized`, `is_forbidden`,
    `is_client_error`, `is_server_error`, `status_code`, `url`, `error_details`
- * New policies-related functions:`Client#list_policies_for_target`, `Client#list_operator_policies_for_target`, `Client#list_matching_policies`,
+ * New policies-related functions: `Client#list_policies_for_target`, `Client#list_operator_policies_for_target`, `Client#list_matching_policies`,
    `Client#list_matching_operator_policies`
  * `OptionalQueueArgument` is a new enum for type-safe [optional queue arguments](https://www.rabbitmq.com/docs/queues#optional-arguments)
  * `XArgumentsBuilder#with_argument` accepts `OptionalQueueArgument` directly
@@ -79,7 +79,7 @@ No documented changes yet.
 ### Enhancements
 
  * Support for pagination with `Client#list_connections_paged`, `Client#list_queues_paged`, `Client#list_queues_in_paged`, `PaginationParams`
- * API ergonomics improvements:`XArgumentsBuilder`, `PolicyDefinitionBuilder`, `HttpClientError#user_message`, `PolicyParams` improvements,
+ * API ergonomics improvements: `XArgumentsBuilder`, `PolicyDefinitionBuilder`, `HttpClientError#user_message`, `PolicyParams` improvements,
    and a few more convenience methods on `Client`
 
 ## v0.68.0 (Nov 28, 2025)
@@ -214,7 +214,7 @@ No documented changes yet.
 
 ### Enhancements
 
- * `responses::Shovel` now can be converted to `requests::RuntimeParameterDefinition`, for example, when a shovel
+ * `responses::Shovel` can now be converted to `requests::RuntimeParameterDefinition`, for example, when a shovel
    needs to be updated
 
 ## v0.56.0 (Sep 21, 2025)
@@ -470,7 +470,7 @@ No documented changes yet.
 
 ### Enhancements
 
- * `response::Connection` now can represent direct connections,
+ * `responses::Connection` can now represent direct connections,
    a special kind of connections supported by the Erlang AMQP 0-9-1 client,
    that shovels and federation links use when connecting to the local
    node.
@@ -518,7 +518,7 @@ No documented changes yet.
 
  * `PolicyDefinition#insert` and `Policy#insert_definition_key` are new functions for adding or updating
    policy definition key-value pairs
- * `responses::Policy` now can be converted to `requests::PolicyParams` for easier policy definition
+ * `responses::Policy` can now be converted to `requests::PolicyParams` for easier policy definition
     updates
  * More flexible use of optional `reqwest` features.
 
@@ -533,7 +533,7 @@ No documented changes yet.
 
  * `Client#list_global_runtime_parameters`, `Client#get_global_runtime_parameter`, `Client#upsert_global_runtime_parameter`, `Client#clear_global_runtime_parameter`
    are new functions for working with [global runtime parameters](https://www.rabbitmq.com/docs/parameters)
- * `Client#get_cluster_tags`, `Client#set_cluser_tags`, `Client#clear_cluster_tags` are new functions for operations on [cluster tags](https://www.rabbitmq.com/docs/parameters#cluster-tags)
+ * `Client#get_cluster_tags`, `Client#set_cluster_tags`, `Client#clear_cluster_tags` are new functions for operations on [cluster tags](https://www.rabbitmq.com/docs/parameters#cluster-tags)
 
 
 ## v0.29.0 (Apr 14, 2025)
@@ -662,7 +662,7 @@ No documented changes yet.
 
 ### Enhancements
 
- * `Client#.close_user_connections` is a new function that closes all connections
+ * `Client#close_user_connections` is a new function that closes all connections
     that authenticated with a specific username
 
 
@@ -806,7 +806,7 @@ No documented changes yet.
 
    This reason for doing this comes down to how `reqwest`'s `Response` functions
    are designed: the ones that consume and parse the body also consume `self`,
-   which means propagating a `Response` to the caller is not very useless at best,
+   which means propagating a `Response` to the caller is not very useful at best,
    and arguably is misleading.
 
 ### Enhancements

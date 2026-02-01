@@ -22,8 +22,8 @@ If compilation fails, investigate and fix compilation errors before proceeding w
 
 This library provides two clients:
 
- * An async client, `rabbitmq_http_client::api::Client`, defined in `src/api.rs`
- * A blocking client, `rabbitmq_http_client::api::BlockingClient`, defined in `src/blocking_api.rs`
+ * An async client, `rabbitmq_http_client::api::Client`, defined in `src/api/client.rs`
+ * A blocking client, `rabbitmq_http_client::blocking_api::BlockingClient`, defined in `src/blocking_api/client.rs`
 
 They have very similar APIs except that all functions of the async client are, well, `async`.
 
