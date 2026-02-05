@@ -28,12 +28,16 @@ where
     P: Display,
 {
     /// Lists all [runtime parameters](https://www.rabbitmq.com/docs/parameters) defined in the cluster.
+    ///
+    /// Requires the `policymaker` user tag. Does not modify state.
     pub async fn list_runtime_parameters(&self) -> Result<Vec<responses::RuntimeParameter>> {
         self.get_api_request("parameters").await
     }
 
     /// Lists all [runtime parameters](https://www.rabbitmq.com/docs/parameters) with a given
     /// component type (like "federation-upstream" or "shovel") defined in the cluster.
+    ///
+    /// Requires the `policymaker` user tag. Does not modify state.
     pub async fn list_runtime_parameters_of_component(
         &self,
         component: &str,
@@ -43,6 +47,8 @@ where
 
     /// Lists all [runtime parameters](https://www.rabbitmq.com/docs/parameters) defined in
     /// a specific virtual host.
+    ///
+    /// Requires the `policymaker` user tag. Does not modify state.
     pub async fn list_runtime_parameters_of_component_in(
         &self,
         component: &str,
@@ -52,6 +58,9 @@ where
             .await
     }
 
+    /// Gets a specific runtime parameter.
+    ///
+    /// Requires the `policymaker` user tag. Does not modify state.
     pub async fn get_runtime_parameter(
         &self,
         component: &str,
@@ -65,6 +74,9 @@ where
         Ok(response)
     }
 
+    /// Creates or updates a runtime parameter.
+    ///
+    /// Requires the `policymaker` user tag.
     pub async fn upsert_runtime_parameter<'a>(
         &self,
         param: &'a RuntimeParameterDefinition<'a>,
@@ -80,6 +92,9 @@ where
         Ok(())
     }
 
+    /// Clears (deletes) a runtime parameter.
+    ///
+    /// Requires the `policymaker` user tag.
     pub async fn clear_runtime_parameter(
         &self,
         component: &str,
@@ -94,6 +109,9 @@ where
         .await
     }
 
+    /// Clears all runtime parameters in the cluster.
+    ///
+    /// Requires the `policymaker` user tag.
     pub async fn clear_all_runtime_parameters(&self) -> Result<()> {
         let params = self.list_runtime_parameters().await?;
         for rp in params {
@@ -103,6 +121,9 @@ where
         Ok(())
     }
 
+    /// Clears all runtime parameters of a given component type.
+    ///
+    /// Requires the `policymaker` user tag.
     pub async fn clear_all_runtime_parameters_of_component(&self, component: &str) -> Result<()> {
         let params = self.list_runtime_parameters_of_component(component).await?;
         for rp in params {
@@ -112,6 +133,9 @@ where
         Ok(())
     }
 
+    /// Lists all global runtime parameters.
+    ///
+    /// Requires the `policymaker` user tag. Does not modify state.
     pub async fn list_global_runtime_parameters(
         &self,
     ) -> Result<Vec<responses::GlobalRuntimeParameter>> {
@@ -120,6 +144,9 @@ where
         Ok(response)
     }
 
+    /// Gets a specific global runtime parameter.
+    ///
+    /// Requires the `policymaker` user tag. Does not modify state.
     pub async fn get_global_runtime_parameter(
         &self,
         name: &str,
@@ -131,6 +158,9 @@ where
         Ok(response)
     }
 
+    /// Creates or updates a global runtime parameter.
+    ///
+    /// Requires the `administrator` user tag.
     pub async fn upsert_global_runtime_parameter<'a>(
         &self,
         param: &'a GlobalRuntimeParameterDefinition<'a>,
@@ -141,6 +171,9 @@ where
         Ok(())
     }
 
+    /// Clears (deletes) a global runtime parameter.
+    ///
+    /// Requires the `administrator` user tag.
     pub async fn clear_global_runtime_parameter(&self, name: &str) -> Result<()> {
         let _response = self
             .http_delete(path!("global-parameters", name), None, None)

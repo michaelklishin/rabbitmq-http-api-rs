@@ -27,6 +27,8 @@ where
     P: Display,
 {
     /// Lists [federation](https://www.rabbitmq.com/docs/federation) upstreams defined in the cluster.
+    ///
+    /// Requires the `policymaker` user tag. Does not modify state.
     pub fn list_federation_upstreams(&self) -> Result<Vec<FederationUpstream>> {
         let response = self.list_runtime_parameters_of_component(FEDERATION_UPSTREAM_COMPONENT)?;
         let upstreams = response
@@ -38,6 +40,9 @@ where
     }
 
     /// Lists [federation](https://www.rabbitmq.com/docs/federation) links (connections) running in the cluster.
+    ///
+    /// Requires the `monitoring` user tag. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub fn list_federation_links(&self) -> Result<Vec<FederationLink>> {
         let response = self.http_get("federation-links", None, None)?;
         let response = response.json()?;
@@ -48,6 +53,8 @@ where
     ///
     /// Federation upstreams define connection endpoints for federation links (connections that federate
     /// queues or exchanges).
+    ///
+    /// Requires the `policymaker` user tag.
     pub fn declare_federation_upstream(&self, params: FederationUpstreamParams<'_>) -> Result<()> {
         let runtime_param = RuntimeParameterDefinition::from(params);
 
@@ -55,6 +62,8 @@ where
     }
 
     /// Gets a specific [federation](https://www.rabbitmq.com/docs/federation) upstream by name and virtual host.
+    ///
+    /// Requires the `policymaker` user tag. Does not modify state.
     pub fn get_federation_upstream(&self, vhost: &str, name: &str) -> Result<FederationUpstream> {
         let param = self.get_runtime_parameter(FEDERATION_UPSTREAM_COMPONENT, vhost, name)?;
         FederationUpstream::try_from(param).map_err(|e| e.into())
@@ -62,6 +71,8 @@ where
 
     /// Deletes a [federation](https://www.rabbitmq.com/docs/federation) upstream.
     /// Deleting an upstream will stop any links connected to it.
+    ///
+    /// Requires the `policymaker` user tag.
     pub fn delete_federation_upstream(
         &self,
         vhost: &str,

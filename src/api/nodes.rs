@@ -26,18 +26,27 @@ where
 {
     /// Lists cluster nodes.
     /// See [RabbitMQ Clustering Guide](https://www.rabbitmq.com/docs/clustering) to learn more.
+    ///
+    /// Requires the `monitoring` user tag. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub async fn list_nodes(&self) -> Result<Vec<responses::ClusterNode>> {
         self.get_api_request("nodes").await
     }
 
     /// Returns information about a cluster node.
     /// See [Clustering Guide](https://www.rabbitmq.com/docs/clustering) to learn more.
+    ///
+    /// Requires the `monitoring` user tag. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub async fn get_node_info(&self, name: &str) -> Result<responses::ClusterNode> {
         self.get_api_request(path!("nodes", name)).await
     }
 
     /// Returns memory usage information for a cluster node.
-    ///See [Reasoning About Memory Footprint](https://www.rabbitmq.com/docs/memory-use) to learn more
+    /// See [Reasoning About Memory Footprint](https://www.rabbitmq.com/docs/memory-use) to learn more.
+    ///
+    /// Requires the `monitoring` user tag. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub async fn get_node_memory_footprint(
         &self,
         name: &str,
@@ -51,6 +60,9 @@ where
 
     /// Returns a unique set of plugins enabled on all cluster nodes.
     /// See [RabbitMQ Plugins Guide](https://www.rabbitmq.com/docs/plugins) to learn more.
+    ///
+    /// Requires the `monitoring` user tag. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub async fn list_all_cluster_plugins(&self) -> Result<responses::PluginList> {
         let nodes = self.list_nodes().await?;
 
@@ -68,6 +80,9 @@ where
     /// Returns the list of plugins enabled on a specific cluster node.
     /// This is a convenience method equivalent to `get_node_info(name).enabled_plugins`.
     /// See [RabbitMQ Plugins Guide](https://www.rabbitmq.com/docs/plugins) to learn more.
+    ///
+    /// Requires the `monitoring` user tag. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub async fn list_node_plugins(&self, name: &str) -> Result<responses::PluginList> {
         let node = self.get_node_info(name).await?;
         Ok(node.enabled_plugins)

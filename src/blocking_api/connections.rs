@@ -29,11 +29,15 @@ where
 {
     /// Lists all AMQP 1.0 and 0-9-1 client connections across the cluster.
     /// See [Connections Guide](https://www.rabbitmq.com/docs/connections) to learn more.
+    ///
+    /// Requires the `management` user tag. Does not modify state.
     pub fn list_connections(&self) -> Result<Vec<responses::Connection>> {
         self.get_api_request("connections")
     }
 
     /// Lists connections with pagination.
+    ///
+    /// Requires the `management` user tag. Does not modify state.
     pub fn list_connections_paged(
         &self,
         params: &PaginationParams,
@@ -48,6 +52,8 @@ where
     ///
     /// Connection name is usually obtained from `crate::responses::Connection` or `crate::responses::UserConnection`,
     /// e.g. via `Client#list_connections`, `Client#list_connections_in`, `Client#list_user_connections`.
+    ///
+    /// Requires the `management` user tag. Does not modify state.
     pub fn get_connection_info(&self, name: &str) -> Result<responses::Connection> {
         self.get_api_request(path!("connections", name))
     }
@@ -56,6 +62,8 @@ where
     ///
     /// Connection name is usually obtained from `crate::responses::Connection` or `crate::responses::UserConnection`,
     /// e.g. via `Client#list_stream_connections`, `Client#list_stream_connections_in`, `Client#list_user_connections`.
+    ///
+    /// Requires the `management` user tag. Does not modify state.
     pub fn get_stream_connection_info(
         &self,
         virtual_host: &str,
@@ -67,6 +75,8 @@ where
     /// Closes a connection with an optional reason.
     ///
     /// The reason will be passed on in the connection error to the client and will be logged on the RabbitMQ end.
+    ///
+    /// Requires the `management` user tag.
     pub fn close_connection(
         &self,
         name: &str,
@@ -96,6 +106,8 @@ where
     ///
     /// This is en equivalent of listing all connections of a user with `Client#list_user_connections` and then
     /// closing them one by one.
+    ///
+    /// Requires the `administrator` user tag.
     pub fn close_user_connections(
         &self,
         username: &str,
@@ -126,24 +138,32 @@ where
 
     /// Lists all connections in the given virtual host.
     /// See [Connections Guide](https://www.rabbitmq.com/docs/connections) to learn more.
+    ///
+    /// Requires the `management` user tag. Does not modify state.
     pub fn list_connections_in(&self, virtual_host: &str) -> Result<Vec<responses::Connection>> {
         self.get_api_request(path!("vhosts", virtual_host, "connections"))
     }
 
     /// Lists all connections of a specific user.
     /// See [Connection Guide](https://www.rabbitmq.com/docs/connections) to learn more.
+    ///
+    /// Requires the `management` user tag. Does not modify state.
     pub fn list_user_connections(&self, username: &str) -> Result<Vec<responses::UserConnection>> {
         self.get_api_request(path!("connections", "username", username))
     }
 
     /// Lists all RabbitMQ Stream Protocol client connections across the cluster.
     /// See [RabbitMQ Streams Guide](https://www.rabbitmq.com/docs/streams) to learn more.
+    ///
+    /// Requires the `management` user tag. Does not modify state.
     pub fn list_stream_connections(&self) -> Result<Vec<responses::Connection>> {
         self.get_api_request("stream/connections")
     }
 
     /// Lists RabbitMQ Stream Protocol client connections in the given virtual host.
     /// See [RabbitMQ Streams Guide](https://www.rabbitmq.com/docs/streams) to learn more.
+    ///
+    /// Requires the `management` user tag. Does not modify state.
     pub fn list_stream_connections_in(
         &self,
         virtual_host: &str,

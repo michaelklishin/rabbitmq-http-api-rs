@@ -25,6 +25,11 @@ where
 {
     /// Lists all deprecated features.
     /// See [Deprecated Features](https://www.rabbitmq.com/docs/deprecated) to learn more.
+    ///
+    /// Requires RabbitMQ 3.13.0 or a later version.
+    ///
+    /// Requires the `monitoring` user tag. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub fn list_all_deprecated_features(&self) -> Result<DeprecatedFeatureList> {
         let response = self.http_get("deprecated-features", None, None)?;
         let response = response.json()?;
@@ -33,6 +38,11 @@ where
 
     /// Lists deprecated features that are in use.
     /// See [Deprecated Features](https://www.rabbitmq.com/docs/deprecated) to learn more.
+    ///
+    /// Requires RabbitMQ 3.13.0 or a later version.
+    ///
+    /// Requires the `monitoring` user tag. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub fn list_deprecated_features_in_use(&self) -> Result<DeprecatedFeatureList> {
         let response = self.http_get("deprecated-features/used", None, None)?;
         let response = response.json()?;

@@ -25,12 +25,16 @@ where
 {
     /// Lists all permissions in the cluster.
     /// See [Access Control Guide](https://www.rabbitmq.com/docs/access-control) to learn more.
+    ///
+    /// Requires the `administrator` user tag.
     pub async fn list_permissions(&self) -> Result<Vec<responses::Permissions>> {
         self.get_api_request("permissions").await
     }
 
     /// Lists permissions in a virtual host.
     /// See [Access Control Guide](https://www.rabbitmq.com/docs/access-control) to learn more.
+    ///
+    /// Requires the `administrator` user tag.
     pub async fn list_permissions_in(&self, vhost: &str) -> Result<Vec<responses::Permissions>> {
         let response = self
             .http_get(path!("vhosts", vhost, "permissions"), None, None)
@@ -41,6 +45,8 @@ where
 
     /// Lists permissions for a specific user.
     /// See [Access Control Guide](https://www.rabbitmq.com/docs/access-control) to learn more.
+    ///
+    /// Requires the `administrator` user tag.
     pub async fn list_permissions_of(&self, user: &str) -> Result<Vec<responses::Permissions>> {
         let response = self
             .http_get(path!("users", user, "permissions"), None, None)
@@ -51,6 +57,8 @@ where
 
     /// Gets permissions for a user in a virtual host.
     /// See [Access Control Guide](https://www.rabbitmq.com/docs/access-control) to learn more.
+    ///
+    /// Requires the `administrator` user tag.
     pub async fn get_permissions(&self, vhost: &str, user: &str) -> Result<responses::Permissions> {
         let response = self
             .http_get(path!("permissions", vhost, user), None, None)
@@ -61,6 +69,8 @@ where
 
     /// Declares permissions for a user in a virtual host.
     /// See [Access Control Guide](https://www.rabbitmq.com/docs/access-control) to learn more.
+    ///
+    /// Requires the `administrator` user tag.
     pub async fn declare_permissions(&self, params: &requests::Permissions<'_>) -> Result<()> {
         self.put_api_request(path!("permissions", params.vhost, params.user), params)
             .await
@@ -68,12 +78,16 @@ where
 
     /// An easier to remember alias for [`declare_permissions`].
     /// See [Access Control Guide](https://www.rabbitmq.com/docs/access-control) to learn more.
+    ///
+    /// Requires the `administrator` user tag.
     pub async fn grant_permissions(&self, params: &requests::Permissions<'_>) -> Result<()> {
         self.declare_permissions(params).await
     }
 
     /// Revokes user permissions in a specific virtual host.
     /// See [Access Control Guide](https://www.rabbitmq.com/docs/access-control) to learn more.
+    ///
+    /// Requires the `administrator` user tag.
     pub async fn clear_permissions(
         &self,
         vhost: &str,
@@ -89,6 +103,8 @@ where
 
     /// Sets [topic permissions](https://www.rabbitmq.com/docs/access-control#topic-authorisation) in a specific virtual host.
     /// See [Topic Authorisation](https://www.rabbitmq.com/docs/access-control#topic-authorisation) to learn more.
+    ///
+    /// Requires the `administrator` user tag.
     pub async fn declare_topic_permissions(
         &self,
         params: &requests::TopicPermissions<'_>,
@@ -102,12 +118,16 @@ where
 
     /// Lists all topic permissions in the cluster.
     /// See [Topic Authorisation](https://www.rabbitmq.com/docs/access-control#topic-authorisation) to learn more.
+    ///
+    /// Requires the `administrator` user tag.
     pub async fn list_topic_permissions(&self) -> Result<Vec<responses::TopicPermission>> {
         self.get_api_request("topic-permissions").await
     }
 
     /// Lists all topic permissions in a virtual host.
     /// See [Topic Authorisation](https://www.rabbitmq.com/docs/access-control#topic-authorisation) to learn more.
+    ///
+    /// Requires the `administrator` user tag.
     pub async fn list_topic_permissions_in(
         &self,
         vhost: &str,
@@ -118,6 +138,8 @@ where
 
     /// Lists all topic permissions of a user.
     /// See [Topic Authorisation](https://www.rabbitmq.com/docs/access-control#topic-authorisation) to learn more.
+    ///
+    /// Requires the `administrator` user tag.
     pub async fn list_topic_permissions_of(
         &self,
         user: &str,
@@ -131,6 +153,8 @@ where
 
     /// Gets topic permissions for a user in a specific virtual host.
     /// See [Topic Authorisation](https://www.rabbitmq.com/docs/access-control#topic-authorisation) to learn more.
+    ///
+    /// Requires the `administrator` user tag.
     pub async fn get_topic_permissions_of(
         &self,
         vhost: &str,
@@ -148,6 +172,8 @@ where
 
     /// Clears [topic permissions](https://www.rabbitmq.com/docs/access-control#topic-authorisation) for a user in a specific virtual host.
     /// See [Topic Authorisation](https://www.rabbitmq.com/docs/access-control#topic-authorisation) to learn more.
+    ///
+    /// Requires the `administrator` user tag.
     pub async fn clear_topic_permissions(
         &self,
         vhost: &str,
@@ -162,6 +188,8 @@ where
     }
 
     /// Convenience method: grants full permissions (configure, write, read) to a user in a virtual host.
+    ///
+    /// Requires the `administrator` user tag.
     pub async fn grant_full_permissions(&self, user: &str, vhost: &str) -> Result<()> {
         let params = requests::Permissions {
             user,

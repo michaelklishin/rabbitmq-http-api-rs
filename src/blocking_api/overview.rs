@@ -25,6 +25,8 @@ where
 {
     /// Provides an overview of the most commonly used cluster metrics.
     /// See `crate::responses::Overview`.
+    ///
+    /// Requires the `management` user tag. Does not modify state.
     pub fn overview(&self) -> Result<responses::Overview> {
         let response = self.http_get("overview", None, None)?;
         let response = response.json()?;
@@ -32,6 +34,8 @@ where
     }
 
     /// Returns the version of RabbitMQ used by the API endpoint.
+    ///
+    /// Requires the `management` user tag. Does not modify state.
     pub fn server_version(&self) -> Result<String> {
         let response = self.http_get("overview", None, None)?;
         let response: responses::Overview = response.json()?;

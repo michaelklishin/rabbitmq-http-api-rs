@@ -23,6 +23,9 @@ where
     U: Display,
     P: Display,
 {
+    /// Triggers queue leader rebalancing across the cluster.
+    ///
+    /// Requires the `administrator` user tag.
     pub fn rebalance_queue_leaders(&self) -> Result<()> {
         self.http_post("rebalance/queues", &json!({}), None, None)?;
         Ok(())

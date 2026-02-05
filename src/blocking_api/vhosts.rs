@@ -25,11 +25,15 @@ where
 {
     /// Lists virtual hosts in the cluster.
     /// See [Virtual Hosts Guide](https://www.rabbitmq.com/docs/vhosts) to learn more.
+    ///
+    /// Requires the `management` user tag. Does not modify state.
     pub fn list_vhosts(&self) -> Result<Vec<responses::VirtualHost>> {
         self.get_api_request("vhosts")
     }
 
     /// Lists virtual hosts with pagination.
+    ///
+    /// Requires the `management` user tag. Does not modify state.
     pub fn list_vhosts_paged(
         &self,
         params: &PaginationParams,
@@ -42,6 +46,8 @@ where
 
     /// Returns information about a virtual host.
     /// See [Virtual Hosts Guide](https://www.rabbitmq.com/docs/vhosts) to learn more.
+    ///
+    /// Requires the `management` user tag. Does not modify state.
     pub fn get_vhost(&self, name: &str) -> Result<responses::VirtualHost> {
         self.get_api_request(path!("vhosts", name))
     }
@@ -49,6 +55,8 @@ where
     /// Creates a virtual host.
     ///
     /// See [`VirtualHostParams`]
+    ///
+    /// Requires the `administrator` user tag.
     pub fn create_vhost(&self, params: &VirtualHostParams<'_>) -> Result<()> {
         self.update_vhost(params)
     }
@@ -56,6 +64,8 @@ where
     /// Creates a virtual host or updates metadata of an existing one.
     ///
     /// See [`VirtualHostParams`]
+    ///
+    /// Requires the `administrator` user tag.
     pub fn update_vhost(&self, params: &VirtualHostParams<'_>) -> Result<()> {
         self.put_api_request(path!("vhosts", params.name), params)
     }
@@ -66,6 +76,8 @@ where
     /// along with all queues, exchanges, bindings, and messages it contains. All
     /// connections to this virtual host will be closed. If `idempotently` is true,
     /// the operation will succeed even if the virtual host doesn't exist.
+    ///
+    /// Requires the `administrator` user tag.
     pub fn delete_vhost(&self, vhost: &str, idempotently: bool) -> Result<()> {
         self.delete_api_request_with_optional_not_found(path!("vhosts", vhost), idempotently)
     }
@@ -76,6 +88,10 @@ where
     /// has been explicitly lifted (disabled) using [`disable_vhost_deletion_protection`].
     ///
     /// See [Virtual Host Deletion Protection](https://www.rabbitmq.com/vhosts.html#deletion-protection) to learn more.
+    ///
+    /// Requires RabbitMQ 4.1.0 or a later version.
+    ///
+    /// Requires the `administrator` user tag.
     pub fn enable_vhost_deletion_protection(&self, vhost: &str) -> Result<()> {
         self.http_post_without_body(path!("vhosts", vhost, "deletion", "protection"), None, None)?;
         Ok(())
@@ -86,6 +102,10 @@ where
     /// This allows the virtual host to be deleted again.
     ///
     /// See [Virtual Host Deletion Protection](https://www.rabbitmq.com/vhosts.html#deletion-protection) to learn more.
+    ///
+    /// Requires RabbitMQ 4.1.0 or a later version.
+    ///
+    /// Requires the `administrator` user tag.
     pub fn disable_vhost_deletion_protection(&self, vhost: &str) -> Result<()> {
         self.http_delete(path!("vhosts", vhost, "deletion", "protection"), None, None)?;
         Ok(())

@@ -31,6 +31,8 @@ where
     /// This includes all virtual hosts, users, permissions, policies, queues, streams, exchanges, bindings, runtime parameters.
     ///
     /// See [Definition Export and Import](https://www.rabbitmq.com/docs/definitions) to learn more.
+    ///
+    /// Requires the `administrator` user tag. Does not modify state.
     pub fn export_cluster_wide_definitions(&self) -> Result<String> {
         self.export_cluster_wide_definitions_as_string()
     }
@@ -39,6 +41,8 @@ where
     /// This includes all virtual hosts, users, permissions, policies, queues, streams, exchanges, bindings, runtime parameters.
     ///
     /// See [Definition Export and Import](https://www.rabbitmq.com/docs/definitions) to learn more.
+    ///
+    /// Requires the `administrator` user tag. Does not modify state.
     pub fn export_cluster_wide_definitions_as_string(&self) -> Result<String> {
         let response = self.http_get("definitions", None, None)?;
         let response = response.text()?;
@@ -49,6 +53,8 @@ where
     /// This includes all virtual hosts, users, permissions, policies, queues, streams, exchanges, bindings, runtime parameters.
     ///
     /// See [Definition Export and Import](https://www.rabbitmq.com/docs/definitions) to learn more.
+    ///
+    /// Requires the `administrator` user tag. Does not modify state.
     pub fn export_cluster_wide_definitions_as_data(&self) -> Result<ClusterDefinitionSet> {
         let response = self.http_get("definitions", None, None)?;
         let response = response.json()?;
@@ -60,6 +66,8 @@ where
     /// with the given virtual host.
     ///
     /// See [Definition Export and Import](https://www.rabbitmq.com/docs/definitions) to learn more.
+    ///
+    /// Requires the `administrator` user tag. Does not modify state.
     pub fn export_vhost_definitions(&self, vhost: &str) -> Result<String> {
         self.export_vhost_definitions_as_string(vhost)
     }
@@ -69,6 +77,8 @@ where
     /// with the given virtual host.
     ///
     /// See [Definition Export and Import](https://www.rabbitmq.com/docs/definitions) to learn more.
+    ///
+    /// Requires the `administrator` user tag. Does not modify state.
     pub fn export_vhost_definitions_as_string(&self, vhost: &str) -> Result<String> {
         let response = self.http_get(path!("definitions", vhost), None, None)?;
         let response = response.text()?;
@@ -80,6 +90,8 @@ where
     /// with the given virtual host.
     ///
     /// See [Definition Export and Import](https://www.rabbitmq.com/docs/definitions) to learn more.
+    ///
+    /// Requires the `administrator` user tag. Does not modify state.
     pub fn export_vhost_definitions_as_data(
         &self,
         vhost: &str,
@@ -92,6 +104,8 @@ where
     /// Imports cluster-wide definitions from a JSON document value.
     ///
     /// See [Definition Export and Import](https://www.rabbitmq.com/docs/definitions) to learn more.
+    ///
+    /// Requires the `administrator` user tag.
     pub fn import_definitions(&self, definitions: Value) -> Result<()> {
         self.import_cluster_wide_definitions(definitions)
     }
@@ -99,6 +113,8 @@ where
     /// Imports cluster-wide definitions from a JSON document value.
     ///
     /// See [Definition Export and Import](https://www.rabbitmq.com/docs/definitions) to learn more.
+    ///
+    /// Requires the `administrator` user tag.
     pub fn import_cluster_wide_definitions(&self, definitions: Value) -> Result<()> {
         self.http_post("definitions", &definitions, None, None)?;
         Ok(())
@@ -107,6 +123,8 @@ where
     /// Imports definitions of a single virtual host from a JSON document value.
     ///
     /// See [Definition Export and Import](https://www.rabbitmq.com/docs/definitions) to learn more.
+    ///
+    /// Requires the `administrator` user tag.
     pub fn import_vhost_definitions(&self, vhost: &str, definitions: Value) -> Result<()> {
         self.http_post(path!("definitions", vhost), &definitions, None, None)?;
         Ok(())

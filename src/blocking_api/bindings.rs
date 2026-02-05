@@ -32,17 +32,23 @@ where
     P: Display,
 {
     /// Lists all bindings (both queue-to-exchange and exchange-to-exchange ones) across the cluster.
+    ///
+    /// Requires the `management` user tag and the `read` permissions. Does not modify state.
     pub fn list_bindings(&self) -> Result<Vec<responses::BindingInfo>> {
         self.get_api_request("bindings")
     }
 
     /// Lists all bindings (both queue-to-exchange and exchange-to-exchange ones) in the given virtual host.
+    ///
+    /// Requires the `management` user tag and the `read` permissions. Does not modify state.
     pub fn list_bindings_in(&self, virtual_host: &str) -> Result<Vec<responses::BindingInfo>> {
         self.get_api_request(path!("bindings", virtual_host))
     }
 
     /// Lists all bindings of a specific queue.
     /// Use this function for troubleshooting routing of a particular queue.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the queue. Does not modify state.
     pub fn list_queue_bindings(
         &self,
         virtual_host: &str,
@@ -56,6 +62,8 @@ where
 
     /// Lists all bindings of a specific exchange where it is the source.
     /// Use this function for troubleshooting routing of a particular exchange.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the exchange. Does not modify state.
     pub fn list_exchange_bindings_with_source(
         &self,
         virtual_host: &str,
@@ -70,6 +78,8 @@ where
 
     /// Lists all bindings of a specific exchange where it is the destination.
     /// Use this function for troubleshooting routing of a particular exchange.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the exchange. Does not modify state.
     pub fn list_exchange_bindings_with_destination(
         &self,
         virtual_host: &str,
@@ -103,6 +113,8 @@ where
     /// The exchange type, routing key and arguments define the routing behavior.
     ///
     /// Both the source (exchange) and destination (queue or stream) must exist.
+    ///
+    /// Requires the `management` user tag and have `write` permissions on the queue and `read` permissions on the exchange.
     pub fn bind_queue(
         &self,
         vhost: &str,
@@ -136,6 +148,8 @@ where
     /// message flow patterns.
     ///
     /// Both source and destination exchanges must exist.
+    ///
+    /// Requires the `management` user tag and have `write` permissions on the destination exchange and `read` permissions on the source exchange.
     pub fn bind_exchange(
         &self,
         vhost: &str,
@@ -165,6 +179,8 @@ where
     ///
     /// This is useful when you have retrieved a binding from the API
     /// and want to replicate it (e.g., after deleting or in a different virtual host).
+    ///
+    /// Requires the `management` user tag and have `write` permissions on the destination and `read` permissions on the source.
     pub fn recreate_binding(&self, binding: &BindingInfo) -> Result<()> {
         let args = if binding.arguments.is_empty() {
             None

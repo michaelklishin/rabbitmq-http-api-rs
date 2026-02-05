@@ -29,11 +29,17 @@ where
 {
     /// Lists all AMQP 1.0 and 0-9-1 client connections across the cluster.
     /// See [Connections Guide](https://www.rabbitmq.com/docs/connections) to learn more.
+    ///
+    /// Requires the `monitoring` user tag for all connections, or `management` for own connections only. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub async fn list_connections(&self) -> Result<Vec<responses::Connection>> {
         self.get_api_request("connections").await
     }
 
     /// Lists connections with pagination.
+    ///
+    /// Requires the `monitoring` user tag for all connections, or `management` for own connections only. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub async fn list_connections_paged(
         &self,
         params: &PaginationParams,
@@ -48,6 +54,9 @@ where
     ///
     /// Connection name is usually obtained from `crate::responses::Connection` or `crate::responses::UserConnection`,
     /// e.g. via `Client#list_connections`, `Client#list_connections_in`, `Client#list_user_connections`.
+    ///
+    /// Requires the `monitoring` user tag. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub async fn get_connection_info(&self, name: &str) -> Result<responses::Connection> {
         self.get_api_request(path!("connections", name)).await
     }
@@ -56,6 +65,8 @@ where
     ///
     /// Connection name is usually obtained from `crate::responses::Connection` or `crate::responses::UserConnection`,
     /// e.g. via `Client#list_stream_connections`, `Client#list_stream_connections_in`, `Client#list_user_connections`.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the vhost. Does not modify state.
     pub async fn get_stream_connection_info(
         &self,
         virtual_host: &str,
@@ -68,6 +79,8 @@ where
     /// Closes a connection with an optional reason.
     ///
     /// The reason will be passed on in the connection error to the client and will be logged on the RabbitMQ end.
+    ///
+    /// Requires the `administrator` user tag for other users' connections, or `management` for own connections.
     pub async fn close_connection(
         &self,
         name: &str,
@@ -98,6 +111,8 @@ where
     ///
     /// This is en equivalent of listing all connections of a user with `Client#list_user_connections` and then
     /// closing them one by one.
+    ///
+    /// Requires the `administrator` user tag.
     pub async fn close_user_connections(
         &self,
         username: &str,
@@ -129,6 +144,8 @@ where
 
     /// Lists all connections in the given virtual host.
     /// See [Connections Guide](https://www.rabbitmq.com/docs/connections) to learn more.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the vhost. Does not modify state.
     pub async fn list_connections_in(
         &self,
         virtual_host: &str,
@@ -139,6 +156,9 @@ where
 
     /// Lists all connections of a specific user.
     /// See [Connection Guide](https://www.rabbitmq.com/docs/connections) to learn more.
+    ///
+    /// Requires the `monitoring` user tag. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub async fn list_user_connections(
         &self,
         username: &str,
@@ -149,12 +169,17 @@ where
 
     /// Lists all RabbitMQ Stream Protocol client connections across the cluster.
     /// See [RabbitMQ Streams Guide](https://www.rabbitmq.com/docs/streams) to learn more.
+    ///
+    /// Requires the `monitoring` user tag. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub async fn list_stream_connections(&self) -> Result<Vec<responses::Connection>> {
         self.get_api_request("stream/connections").await
     }
 
     /// Lists RabbitMQ Stream Protocol client connections in the given virtual host.
     /// See [RabbitMQ Streams Guide](https://www.rabbitmq.com/docs/streams) to learn more.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the vhost. Does not modify state.
     pub async fn list_stream_connections_in(
         &self,
         virtual_host: &str,

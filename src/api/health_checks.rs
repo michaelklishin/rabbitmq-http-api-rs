@@ -27,18 +27,27 @@ where
 {
     /// Performs a cluster-wide health check for any active resource alarms in the cluster.
     /// See [Monitoring and Health Checks Guide](https://www.rabbitmq.com/docs/monitoring#health-checks) to learn more.
+    ///
+    /// No authentication required. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub async fn health_check_cluster_wide_alarms(&self) -> Result<()> {
         self.health_check_alarms("health/checks/alarms").await
     }
 
     /// Performs a health check for alarms on the target node only.
     /// See [Monitoring and Health Checks Guide](https://www.rabbitmq.com/docs/monitoring#health-checks) to learn more.
+    ///
+    /// No authentication required. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub async fn health_check_local_alarms(&self) -> Result<()> {
         self.health_check_alarms("health/checks/local-alarms").await
     }
 
     /// Will fail if target node is critical to the quorum of some quorum queues, streams or the Khepri metadata store.
     /// See [Upgrades Guide](https://www.rabbitmq.com/docs/upgrade#maintaining-quorum) to learn more.
+    ///
+    /// No authentication required. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub async fn health_check_if_node_is_quorum_critical(&self) -> Result<()> {
         let path = "health/checks/node-is-quorum-critical";
         self.boolean_health_check(path).await
@@ -47,6 +56,9 @@ where
     /// Checks if a specific port has an active listener.
     /// See [Monitoring and Health Checks Guide](https://www.rabbitmq.com/docs/monitoring#health-checks)
     /// and [Networking Guide](https://www.rabbitmq.com/docs/networking) to learn more.
+    ///
+    /// No authentication required. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub async fn health_check_port_listener(&self, port: u16) -> Result<()> {
         let port_s = port.to_string();
         let path = path!("health", "checks", "port-listener", port_s);
@@ -56,6 +68,9 @@ where
     /// Checks if a specific protocol listener is active.
     /// See [Monitoring and Health Checks Guide](https://www.rabbitmq.com/docs/monitoring#health-checks)
     /// and [Networking Guide](https://www.rabbitmq.com/docs/networking) to learn more.
+    ///
+    /// No authentication required. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub async fn health_check_protocol_listener(&self, protocol: SupportedProtocol) -> Result<()> {
         let proto: String = String::from(protocol);
         let path = path!("health", "checks", "protocol-listener", proto);

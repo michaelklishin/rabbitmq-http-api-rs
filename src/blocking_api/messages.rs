@@ -26,6 +26,8 @@ where
 {
     /// Only use this function in tests and experiments.
     /// Always use a messaging or streaming protocol client for publishing in production.
+    ///
+    /// Requires the `management` user tag and have `write` permissions on the exchange.
     pub fn publish_message(
         &self,
         vhost: &str,
@@ -53,6 +55,8 @@ where
 
     /// Only use this function in tests and experiments.
     /// Always use a messaging or streaming protocol client for consuming in production.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the queue.
     pub fn get_messages(
         &self,
         vhost: &str,

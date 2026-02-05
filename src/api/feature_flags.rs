@@ -28,6 +28,9 @@ where
 {
     /// Lists all feature flags and their current states.
     /// See [Feature Flags Guide](https://www.rabbitmq.com/docs/feature-flags) to learn more.
+    ///
+    /// Requires the `monitoring` user tag. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub async fn list_feature_flags(&self) -> Result<FeatureFlagList> {
         let response = self.http_get("feature-flags", None, None).await?;
         let response = response.json().await?;
@@ -38,6 +41,8 @@ where
     /// This function is idempotent: enabling an already enabled feature flag
     /// will succeed.
     /// See [Feature Flags Guide](https://www.rabbitmq.com/docs/feature-flags) to learn more.
+    ///
+    /// Requires the `administrator` user tag.
     pub async fn enable_feature_flag(&self, name: &str) -> Result<()> {
         let body = serde_json::json!({
             "name": name
@@ -52,6 +57,8 @@ where
     /// This function is idempotent: enabling an already enabled feature flag
     /// will succeed.
     /// See [Feature Flags Guide](https://www.rabbitmq.com/docs/feature-flags) to learn more.
+    ///
+    /// Requires the `administrator` user tag.
     pub async fn enable_all_stable_feature_flags(&self) -> Result<()> {
         // PUT /api/feature-flags/{name}/enable does not support the special 'all' value like 'rabbitmqctl enable_feature_flag' does.
         // Thus we do what management UI does: discover the stable disabled flags and enable

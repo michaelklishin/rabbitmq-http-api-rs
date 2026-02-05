@@ -25,6 +25,9 @@ where
 {
     /// Returns the current OAuth 2.0 configuration for authentication.
     /// See [OAuth 2 Guide](https://www.rabbitmq.com/docs/oauth2) to learn more.
+    ///
+    /// No authentication required. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub fn oauth_configuration(&self) -> Result<responses::OAuthConfiguration> {
         let response = self.http_get("auth", None, None)?;
         let response = response.json()?;
@@ -33,6 +36,9 @@ where
     }
 
     /// Returns authentication attempt statistics for a given node.
+    ///
+    /// Requires the `monitoring` user tag. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub fn auth_attempts_statistics(
         &self,
         node: &str,

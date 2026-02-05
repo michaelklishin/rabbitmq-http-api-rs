@@ -32,11 +32,16 @@ where
     P: Display,
 {
     /// Lists all bindings (both queue-to-exchange and exchange-to-exchange ones) across the cluster.
+    ///
+    /// Requires the `monitoring` user tag for all vhosts, or `management` for accessible vhosts only. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub async fn list_bindings(&self) -> Result<Vec<responses::BindingInfo>> {
         self.get_api_request("bindings").await
     }
 
     /// Lists all bindings (both queue-to-exchange and exchange-to-exchange ones) in the given virtual host.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the vhost. Does not modify state.
     pub async fn list_bindings_in(
         &self,
         virtual_host: &str,
@@ -46,6 +51,8 @@ where
 
     /// Lists all bindings of a specific queue.
     /// Use this function for troubleshooting routing of a particular queue.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the vhost. Does not modify state.
     pub async fn list_queue_bindings(
         &self,
         virtual_host: &str,
@@ -60,6 +67,8 @@ where
 
     /// Lists all bindings of a specific exchange where it is the source.
     /// Use this function for troubleshooting routing of a particular exchange.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the vhost. Does not modify state.
     pub async fn list_exchange_bindings_with_source(
         &self,
         virtual_host: &str,
@@ -75,6 +84,8 @@ where
 
     /// Lists all bindings of a specific exchange where it is the destination.
     /// Use this function for troubleshooting routing of a particular exchange.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the vhost. Does not modify state.
     pub async fn list_exchange_bindings_with_destination(
         &self,
         virtual_host: &str,
@@ -111,6 +122,8 @@ where
     /// The exchange type, routing key and arguments define the routing behavior.
     ///
     /// Both the source (exchange) and destination (queue or stream) must exist.
+    ///
+    /// Requires the `management` user tag and have `write` permissions on the queue and `read` permissions on the exchange.
     pub async fn bind_queue(
         &self,
         vhost: &str,
@@ -146,6 +159,8 @@ where
     /// message flow patterns.
     ///
     /// Both source and destination exchanges must exist.
+    ///
+    /// Requires the `management` user tag and have `write` permissions on the destination and `read` permissions on the source.
     pub async fn bind_exchange(
         &self,
         vhost: &str,
@@ -174,6 +189,8 @@ where
     }
 
     /// Re-creates a binding from a [`BindingInfo`] response.
+    ///
+    /// Requires the `management` user tag and have `write` permissions on the destination and `read` permissions on the source.
     pub async fn recreate_binding(&self, binding: &BindingInfo) -> Result<()> {
         let args = if binding.arguments.is_empty() {
             None
@@ -210,6 +227,9 @@ where
         }
     }
 
+    /// Deletes a binding.
+    ///
+    /// Requires the `management` user tag and have `write` permissions on the destination and `read` permissions on the source.
     #[allow(clippy::too_many_arguments)]
     pub async fn delete_binding(
         &self,

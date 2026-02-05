@@ -30,6 +30,7 @@ where
     U: Display,
     P: Display,
 {
+    /// Requires the `administrator` user tag.
     pub fn set_user_limit(
         &self,
         username: &str,
@@ -45,17 +46,20 @@ where
         Ok(())
     }
 
+    /// Requires the `administrator` user tag.
     pub fn clear_user_limit(&self, username: &str, kind: UserLimitTarget) -> Result<()> {
         let _response = self.http_delete(path!("user-limits", username, kind), None, None)?;
         Ok(())
     }
 
+    /// Requires the `administrator` user tag. Does not modify state.
     pub fn list_all_user_limits(&self) -> Result<Vec<responses::UserLimits>> {
         let response = self.http_get("user-limits", None, None)?;
         let response = response.json()?;
         Ok(response)
     }
 
+    /// Requires the `administrator` user tag. Does not modify state.
     pub fn list_user_limits(&self, username: &str) -> Result<Vec<responses::UserLimits>> {
         let response = self.http_get(path!("user-limits", username), None, None)?;
         let response = response.json()?;
@@ -63,6 +67,8 @@ where
     }
 
     /// Sets a [virtual host limit](https://www.rabbitmq.com/docs/vhosts#limits).
+    ///
+    /// Requires the `administrator` user tag.
     pub fn set_vhost_limit(
         &self,
         vhost: &str,
@@ -75,6 +81,8 @@ where
     }
 
     /// Clears (removes) a [virtual host limit](https://www.rabbitmq.com/docs/vhosts#limits).
+    ///
+    /// Requires the `administrator` user tag.
     pub fn clear_vhost_limit(&self, vhost: &str, kind: VirtualHostLimitTarget) -> Result<()> {
         let _response = self.http_delete(
             path!("vhost-limits", vhost, kind),
@@ -85,6 +93,8 @@ where
     }
 
     /// Lists all [virtual host limits](https://www.rabbitmq.com/docs/vhosts#limits) set in the cluster.
+    ///
+    /// Requires the `administrator` user tag. Does not modify state.
     pub fn list_all_vhost_limits(&self) -> Result<Vec<responses::VirtualHostLimits>> {
         let response = self.http_get("vhost-limits", None, None)?;
         let response = response.json()?;
@@ -92,6 +102,8 @@ where
     }
 
     /// Lists the [limits of a given virtual host](https://www.rabbitmq.com/docs/vhosts#limits).
+    ///
+    /// Requires the `administrator` user tag. Does not modify state.
     pub fn list_vhost_limits(&self, vhost: &str) -> Result<Vec<responses::VirtualHostLimits>> {
         let response = self.http_get(path!("vhost-limits", vhost), None, None)?;
         let response = response.json()?;

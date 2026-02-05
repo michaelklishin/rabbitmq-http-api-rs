@@ -24,11 +24,15 @@ where
     P: Display,
 {
     /// Lists all stream publishers across the cluster.
+    ///
+    /// Requires the `management` user tag. Does not modify state.
     pub fn list_stream_publishers(&self) -> Result<Vec<responses::StreamPublisher>> {
         self.get_api_request(path!("stream", "publishers"))
     }
 
     /// Lists stream publishers publishing to the given stream.
+    ///
+    /// Requires the `management` user tag. Does not modify state.
     pub fn list_stream_publishers_in(
         &self,
         virtual_host: &str,
@@ -38,6 +42,8 @@ where
 
     /// Lists stream publishers publishing to the given stream.
     /// Useful for detecting publishers that are publishing to a specific stream.
+    ///
+    /// Requires the `management` user tag. Does not modify state.
     pub fn list_stream_publishers_of(
         &self,
         virtual_host: &str,
@@ -48,6 +54,8 @@ where
 
     /// Lists stream publishers on the given stream connection.
     /// Use this function for inspecting stream publishers on a specific connection.
+    ///
+    /// Requires the `management` user tag. Does not modify state.
     pub fn list_stream_publishers_on_connection(
         &self,
         virtual_host: &str,
@@ -63,11 +71,15 @@ where
     }
 
     /// Lists all stream consumers across the cluster.
+    ///
+    /// Requires the `management` user tag. Does not modify state.
     pub fn list_stream_consumers(&self) -> Result<Vec<responses::StreamConsumer>> {
         self.get_api_request(path!("stream", "consumers"))
     }
 
     /// Lists stream consumers on connections in the given virtual host.
+    ///
+    /// Requires the `management` user tag. Does not modify state.
     pub fn list_stream_consumers_in(
         &self,
         virtual_host: &str,
@@ -77,6 +89,8 @@ where
 
     /// Lists stream consumers on the given stream connection.
     /// Use this function for inspecting stream consumers on a specific connection.
+    ///
+    /// Requires the `management` user tag. Does not modify state.
     pub fn list_stream_consumers_on_connection(
         &self,
         virtual_host: &str,
@@ -93,12 +107,16 @@ where
 
     /// Lists all consumers across the cluster.
     /// See [Consumers Guide](https://www.rabbitmq.com/docs/consumers) to learn more.
+    ///
+    /// Requires the `management` user tag. Does not modify state.
     pub fn list_consumers(&self) -> Result<Vec<responses::Consumer>> {
         self.get_api_request("consumers")
     }
 
     /// Lists all consumers in the given virtual host.
     /// See [Consumers Guide](https://www.rabbitmq.com/docs/consumers) to learn more.
+    ///
+    /// Requires the `management` user tag. Does not modify state.
     pub fn list_consumers_in(&self, virtual_host: &str) -> Result<Vec<responses::Consumer>> {
         self.get_api_request(path!("consumers", virtual_host))
     }

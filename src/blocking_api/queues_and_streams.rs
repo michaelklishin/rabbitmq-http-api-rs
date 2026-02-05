@@ -31,11 +31,15 @@ where
 {
     /// Lists all queues and streams across the cluster.
     /// See [Queues Guide](https://www.rabbitmq.com/docs/queues) and [RabbitMQ Streams Guide](https://www.rabbitmq.com/docs/streams) to learn more.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the queues. Does not modify state.
     pub fn list_queues(&self) -> Result<Vec<responses::QueueInfo>> {
         self.get_api_request("queues")
     }
 
     /// Lists queues and streams with pagination.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the queues. Does not modify state.
     pub fn list_queues_paged(
         &self,
         params: &PaginationParams,
@@ -48,11 +52,15 @@ where
 
     /// Lists all queues and streams in the given virtual host.
     /// See [Queues Guide](https://www.rabbitmq.com/docs/queues) and [RabbitMQ Streams Guide](https://www.rabbitmq.com/docs/streams) to learn more.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the queues. Does not modify state.
     pub fn list_queues_in(&self, virtual_host: &str) -> Result<Vec<responses::QueueInfo>> {
         self.get_api_request(path!("queues", virtual_host))
     }
 
     /// Lists queues and streams in the given virtual host with pagination.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the queues. Does not modify state.
     pub fn list_queues_in_paged(
         &self,
         virtual_host: &str,
@@ -66,12 +74,19 @@ where
 
     /// Lists all queues and streams across the cluster. Compared to [`list_queues`], provides more queue metrics.
     /// See [Queues Guide](https://www.rabbitmq.com/docs/queues) and [RabbitMQ Streams Guide](https://www.rabbitmq.com/docs/streams) to learn more.
+    ///
+    /// Requires RabbitMQ 3.13.0 or a later version.
+    ///
+    /// Requires the `monitoring` user tag. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub fn list_queues_with_details(&self) -> Result<Vec<responses::DetailedQueueInfo>> {
         self.get_api_request("queues/detailed")
     }
 
     /// Returns information about a queue or stream.
     /// See [Queues Guide](https://www.rabbitmq.com/docs/queues) to learn more.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the queue. Does not modify state.
     pub fn get_queue_info(&self, virtual_host: &str, name: &str) -> Result<responses::QueueInfo> {
         let response = self.http_get(path!("queues", virtual_host, name), None, None)?;
         let response = response.json()?;
@@ -80,6 +95,8 @@ where
 
     /// Returns information about a stream.
     /// See [RabbitMQ Streams Guide](https://www.rabbitmq.com/docs/streams) to learn more.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the queue. Does not modify state.
     pub fn get_stream_info(&self, virtual_host: &str, name: &str) -> Result<responses::QueueInfo> {
         self.get_queue_info(virtual_host, name)
     }
@@ -88,6 +105,8 @@ where
     ///
     /// If the queue already exists with different parameters, this operation may fail
     /// unless the parameters are equivalent.
+    ///
+    /// Requires the `management` user tag and have `configure` permissions on the queue.
     pub fn declare_queue(&self, vhost: &str, params: &QueueParams<'_>) -> Result<()> {
         self.put_api_request(path!("queues", vhost, params.name), params)
     }
@@ -101,6 +120,8 @@ where
     ///
     /// If the stream already exists with different parameters, this operation may fail
     /// unless the parameters are equivalent.
+    ///
+    /// Requires the `management` user tag and have `configure` permissions on the queue.
     pub fn declare_stream(&self, vhost: &str, params: &StreamParams<'_>) -> Result<()> {
         let mut m: Map<String, Value> = Map::new();
 
@@ -125,6 +146,8 @@ where
     ///
     /// Unless `idempotently` is set to `true`, an attempt to delete a non-existent queue
     /// will fail.
+    ///
+    /// Requires the `management` user tag and have `configure` permissions on the queue.
     pub fn delete_queue(&self, vhost: &str, name: &str, idempotently: bool) -> Result<()> {
         self.delete_api_request_with_optional_not_found(path!("queues", vhost, name), idempotently)
     }
@@ -133,6 +156,8 @@ where
     ///
     /// When `idempotently` is true, non-existent queues are silently skipped.
     /// When `idempotently` is false, the operation fails on the first non-existent queue.
+    ///
+    /// Requires the `management` user tag and have `configure` permissions on the queues.
     pub fn delete_queues(&self, vhost: &str, names: &[&str], idempotently: bool) -> Result<()> {
         for name in names {
             self.delete_queue(vhost, name, idempotently)?;
@@ -144,6 +169,8 @@ where
     ///
     /// Unless `idempotently` is set to `true`, an attempt to delete a non-existent stream
     /// will fail.
+    ///
+    /// Requires the `management` user tag and have `configure` permissions on the queue.
     pub fn delete_stream(&self, vhost: &str, name: &str, idempotently: bool) -> Result<()> {
         self.delete_queue(vhost, name, idempotently)
     }
@@ -152,6 +179,8 @@ where
     ///
     /// Messages that were delivered but are pending acknowledgement will not be deleted
     /// by purging.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the queue.
     pub fn purge_queue(&self, virtual_host: &str, name: &str) -> Result<()> {
         let _response =
             self.http_delete(path!("queues", virtual_host, name, "contents"), None, None)?;
@@ -159,18 +188,24 @@ where
     }
 
     /// Convenience method: declares a durable quorum queue with no arguments.
+    ///
+    /// Requires the `management` user tag and have `configure` permissions on the queue.
     pub fn declare_quorum_queue(&self, vhost: &str, name: &str) -> Result<()> {
         let params = QueueParams::new_quorum_queue(name, None);
         self.declare_queue(vhost, &params)
     }
 
     /// Convenience method: declares a durable classic queue with no arguments.
+    ///
+    /// Requires the `management` user tag and have `configure` permissions on the queue.
     pub fn declare_classic_queue(&self, vhost: &str, name: &str) -> Result<()> {
         let params = QueueParams::new_durable_classic_queue(name, None);
         self.declare_queue(vhost, &params)
     }
 
     /// Lists only quorum queues across the cluster.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the queues. Does not modify state.
     pub fn list_quorum_queues(&self) -> Result<Vec<responses::QueueInfo>> {
         let all = self.list_queues()?;
         Ok(all
@@ -180,6 +215,8 @@ where
     }
 
     /// Lists only quorum queues in the given virtual host.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the queues. Does not modify state.
     pub fn list_quorum_queues_in(&self, virtual_host: &str) -> Result<Vec<responses::QueueInfo>> {
         let all = self.list_queues_in(virtual_host)?;
         Ok(all
@@ -189,6 +226,8 @@ where
     }
 
     /// Lists only classic queues across the cluster.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the queues. Does not modify state.
     pub fn list_classic_queues(&self) -> Result<Vec<responses::QueueInfo>> {
         let all = self.list_queues()?;
         Ok(all
@@ -198,6 +237,8 @@ where
     }
 
     /// Lists only classic queues in the given virtual host.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the queues. Does not modify state.
     pub fn list_classic_queues_in(&self, virtual_host: &str) -> Result<Vec<responses::QueueInfo>> {
         let all = self.list_queues_in(virtual_host)?;
         Ok(all
@@ -207,6 +248,8 @@ where
     }
 
     /// Lists only streams across the cluster.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the queues. Does not modify state.
     pub fn list_streams(&self) -> Result<Vec<responses::QueueInfo>> {
         let all = self.list_queues()?;
         Ok(all
@@ -216,6 +259,8 @@ where
     }
 
     /// Lists only streams in the given virtual host.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the queues. Does not modify state.
     pub fn list_streams_in(&self, virtual_host: &str) -> Result<Vec<responses::QueueInfo>> {
         let all = self.list_queues_in(virtual_host)?;
         Ok(all
@@ -229,6 +274,8 @@ where
     /// Note: Pagination is applied server-side to all queues, then streams are
     /// filtered client-side. This means the number of results may be less than
     /// the page size even on non-final pages.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the queues. Does not modify state.
     pub fn list_streams_paged(
         &self,
         params: &PaginationParams,
@@ -245,6 +292,8 @@ where
     /// Note: Pagination is applied server-side to all queues, then streams are
     /// filtered client-side. This means the number of results may be less than
     /// the page size even on non-final pages.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the queues. Does not modify state.
     pub fn list_streams_in_paged(
         &self,
         virtual_host: &str,

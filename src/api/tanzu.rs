@@ -28,6 +28,10 @@ where
 {
     /// Returns the status of schema definition synchronization.
     /// See [Schema Definition Synchronization](https://docs.vmware.com/en/VMware-Tanzu-RabbitMQ-for-Kubernetes/index.html) to learn more.
+    ///
+    /// Requires VMware Tanzu RabbitMQ.
+    ///
+    /// Requires the `administrator` user tag. Does not modify state.
     pub async fn schema_definition_sync_status(
         &self,
         node: Option<&str>,
@@ -45,6 +49,10 @@ where
 
     /// Enables schema definition synchronization on a single node or cluster-wide.
     /// See [Schema Definition Synchronization](https://docs.vmware.com/en/VMware-Tanzu-RabbitMQ-for-Kubernetes/index.html) to learn more.
+    ///
+    /// Requires VMware Tanzu RabbitMQ.
+    ///
+    /// Requires the `administrator` user tag.
     pub async fn enable_schema_definition_sync_on_node(&self, node: Option<&str>) -> Result<()> {
         let path = match node {
             Some(n) => path!("definitions", "sync", "enable", n),
@@ -56,6 +64,10 @@ where
 
     /// Disables schema definition synchronization on a specific node.
     /// See [Schema Definition Synchronization](https://docs.vmware.com/en/VMware-Tanzu-RabbitMQ-for-Kubernetes/index.html) to learn more.
+    ///
+    /// Requires VMware Tanzu RabbitMQ.
+    ///
+    /// Requires the `administrator` user tag.
     pub async fn disable_schema_definition_sync_on_node(&self, node: Option<&str>) -> Result<()> {
         let path = match node {
             Some(n) => path!("definitions", "sync", "disable", n),
@@ -67,18 +79,30 @@ where
 
     /// Enables schema definition synchronization cluster-wide.
     /// See [Schema Definition Synchronization](https://docs.vmware.com/en/VMware-Tanzu-RabbitMQ-for-Kubernetes/index.html) to learn more.
+    ///
+    /// Requires VMware Tanzu RabbitMQ.
+    ///
+    /// Requires the `administrator` user tag.
     pub async fn enable_schema_definition_sync(&self) -> Result<()> {
         self.enable_schema_definition_sync_on_node(None).await
     }
 
     /// Disables schema definition synchronization cluster-wide.
     /// See [Schema Definition Synchronization](https://docs.vmware.com/en/VMware-Tanzu-RabbitMQ-for-Kubernetes/index.html) to learn more.
+    ///
+    /// Requires VMware Tanzu RabbitMQ.
+    ///
+    /// Requires the `administrator` user tag.
     pub async fn disable_schema_definition_sync(&self) -> Result<()> {
         self.disable_schema_definition_sync_on_node(None).await
     }
 
     /// Returns the status of warm standby replication.
     /// See [Warm Standby Replication](https://docs.vmware.com/en/VMware-Tanzu-RabbitMQ-for-Kubernetes/index.html) to learn more.
+    ///
+    /// Requires VMware Tanzu RabbitMQ.
+    ///
+    /// Requires the `administrator` user tag. Does not modify state.
     pub async fn warm_standby_replication_status(&self) -> Result<WarmStandbyReplicationStatus> {
         let response = self.http_get("replication/status", None, None).await?;
         let response = response.json().await?;

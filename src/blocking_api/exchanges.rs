@@ -25,11 +25,15 @@ where
 {
     /// Lists all exchanges across the cluster.
     /// See [Exchanges Guide](https://www.rabbitmq.com/docs/exchanges) to learn more.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the exchanges. Does not modify state.
     pub fn list_exchanges(&self) -> Result<Vec<responses::ExchangeInfo>> {
         self.get_api_request("exchanges")
     }
 
     /// Lists exchanges with pagination.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the exchanges. Does not modify state.
     pub fn list_exchanges_paged(
         &self,
         params: &PaginationParams,
@@ -42,11 +46,15 @@ where
 
     /// Lists all exchanges in the given virtual host.
     /// See [Exchanges Guide](https://www.rabbitmq.com/docs/exchanges) to learn more.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the exchanges. Does not modify state.
     pub fn list_exchanges_in(&self, virtual_host: &str) -> Result<Vec<responses::ExchangeInfo>> {
         self.get_api_request(path!("exchanges", virtual_host))
     }
 
     /// Lists exchanges in the given virtual host with pagination.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the exchanges. Does not modify state.
     pub fn list_exchanges_in_paged(
         &self,
         virtual_host: &str,
@@ -60,6 +68,8 @@ where
 
     /// Returns information about an exchange.
     /// See [Exchanges Guide](https://www.rabbitmq.com/docs/exchanges) to learn more.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the exchange. Does not modify state.
     pub fn get_exchange_info(
         &self,
         virtual_host: &str,
@@ -74,6 +84,8 @@ where
     ///
     /// If the exchange already exists with different parameters, this operation may fail
     /// unless the parameters are equivalent.
+    ///
+    /// Requires the `management` user tag and have `configure` permissions on the exchange.
     pub fn declare_exchange(&self, vhost: &str, params: &ExchangeParams<'_>) -> Result<()> {
         self.put_api_request(path!("exchanges", vhost, params.name), params)
     }
@@ -82,6 +94,8 @@ where
     ///
     /// Unless `idempotently` is set to `true`, an attempt to delete a non-existent exchange
     /// will fail.
+    ///
+    /// Requires the `management` user tag and have `configure` permissions on the exchange.
     pub fn delete_exchange(&self, vhost: &str, name: &str, idempotently: bool) -> Result<()> {
         self.delete_api_request_with_optional_not_found(
             path!("exchanges", vhost, name),
@@ -93,6 +107,8 @@ where
     ///
     /// When `idempotently` is true, non-existent exchanges are silently skipped.
     /// When `idempotently` is false, the operation fails on the first non-existent exchange.
+    ///
+    /// Requires the `management` user tag and have `configure` permissions on the exchanges.
     pub fn delete_exchanges(&self, vhost: &str, names: &[&str], idempotently: bool) -> Result<()> {
         for name in names {
             self.delete_exchange(vhost, name, idempotently)?;

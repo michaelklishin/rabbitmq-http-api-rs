@@ -25,42 +25,56 @@ where
 {
     /// Lists all permissions in the cluster.
     /// See [Access Control Guide](https://www.rabbitmq.com/docs/access-control) to learn more.
+    ///
+    /// Requires the `administrator` user tag. Does not modify state.
     pub fn list_permissions(&self) -> Result<Vec<responses::Permissions>> {
         self.get_api_request("permissions")
     }
 
     /// Lists permissions in a virtual host.
     /// See [Access Control Guide](https://www.rabbitmq.com/docs/access-control) to learn more.
+    ///
+    /// Requires the `administrator` user tag. Does not modify state.
     pub fn list_permissions_in(&self, vhost: &str) -> Result<Vec<responses::Permissions>> {
         self.get_api_request(path!("vhosts", vhost, "permissions"))
     }
 
     /// Lists permissions for a specific user.
     /// See [Access Control Guide](https://www.rabbitmq.com/docs/access-control) to learn more.
+    ///
+    /// Requires the `administrator` user tag. Does not modify state.
     pub fn list_permissions_of(&self, user: &str) -> Result<Vec<responses::Permissions>> {
         self.get_api_request(path!("users", user, "permissions"))
     }
 
     /// Gets permissions for a user in a virtual host.
     /// See [Access Control Guide](https://www.rabbitmq.com/docs/access-control) to learn more.
+    ///
+    /// Requires the `administrator` user tag. Does not modify state.
     pub fn get_permissions(&self, vhost: &str, user: &str) -> Result<responses::Permissions> {
         self.get_api_request(path!("permissions", vhost, user))
     }
 
     /// Declares permissions for a user in a virtual host.
     /// See [Access Control Guide](https://www.rabbitmq.com/docs/access-control) to learn more.
+    ///
+    /// Requires the `administrator` user tag.
     pub fn declare_permissions(&self, params: &requests::Permissions<'_>) -> Result<()> {
         self.put_api_request(path!("permissions", params.vhost, params.user), params)
     }
 
     /// An easier to remember alias for [`declare_permissions`].
     /// See [Access Control Guide](https://www.rabbitmq.com/docs/access-control) to learn more.
+    ///
+    /// Requires the `administrator` user tag.
     pub fn grant_permissions(&self, params: &requests::Permissions<'_>) -> Result<()> {
         self.declare_permissions(params)
     }
 
     /// Revokes user permissions in a specific virtual host.
     /// See [Access Control Guide](https://www.rabbitmq.com/docs/access-control) to learn more.
+    ///
+    /// Requires the `administrator` user tag.
     pub fn clear_permissions(&self, vhost: &str, username: &str, idempotently: bool) -> Result<()> {
         self.delete_api_request_with_optional_not_found(
             path!("permissions", vhost, username),
@@ -70,6 +84,8 @@ where
 
     /// Sets [topic permissions](https://www.rabbitmq.com/docs/access-control#topic-authorisation) in a specific virtual host.
     /// See [Topic Authorisation](https://www.rabbitmq.com/docs/access-control#topic-authorisation) to learn more.
+    ///
+    /// Requires the `administrator` user tag.
     pub fn declare_topic_permissions(&self, params: &requests::TopicPermissions<'_>) -> Result<()> {
         self.put_api_request(
             path!("topic-permissions", params.vhost, params.user),
@@ -79,12 +95,16 @@ where
 
     /// Lists all topic permissions in the cluster.
     /// See [Topic Authorisation](https://www.rabbitmq.com/docs/access-control#topic-authorisation) to learn more.
+    ///
+    /// Requires the `administrator` user tag. Does not modify state.
     pub fn list_topic_permissions(&self) -> Result<Vec<responses::TopicPermission>> {
         self.get_api_request("topic-permissions")
     }
 
     /// Lists all topic permissions in a virtual host.
     /// See [Topic Authorisation](https://www.rabbitmq.com/docs/access-control#topic-authorisation) to learn more.
+    ///
+    /// Requires the `administrator` user tag. Does not modify state.
     pub fn list_topic_permissions_in(
         &self,
         vhost: &str,
@@ -94,12 +114,16 @@ where
 
     /// Lists all topic permissions of a user.
     /// See [Topic Authorisation](https://www.rabbitmq.com/docs/access-control#topic-authorisation) to learn more.
+    ///
+    /// Requires the `administrator` user tag. Does not modify state.
     pub fn list_topic_permissions_of(&self, user: &str) -> Result<Vec<responses::TopicPermission>> {
         self.get_api_request(path!("users", user, "topic-permissions"))
     }
 
     /// Gets topic permissions for a user in a specific virtual host.
     /// See [Topic Authorisation](https://www.rabbitmq.com/docs/access-control#topic-authorisation) to learn more.
+    ///
+    /// Requires the `administrator` user tag. Does not modify state.
     pub fn get_topic_permissions_of(
         &self,
         vhost: &str,
@@ -116,6 +140,8 @@ where
 
     /// Clears [topic permissions](https://www.rabbitmq.com/docs/access-control#topic-authorisation) for a user in a specific virtual host.
     /// See [Topic Authorisation](https://www.rabbitmq.com/docs/access-control#topic-authorisation) to learn more.
+    ///
+    /// Requires the `administrator` user tag.
     pub fn clear_topic_permissions(
         &self,
         vhost: &str,
@@ -129,6 +155,8 @@ where
     }
 
     /// Convenience method: grants full permissions (configure, write, read) to a user in a virtual host.
+    ///
+    /// Requires the `administrator` user tag.
     pub fn grant_full_permissions(&self, user: &str, vhost: &str) -> Result<()> {
         let params = requests::Permissions {
             user,

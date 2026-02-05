@@ -30,11 +30,15 @@ where
 {
     /// Lists users in the internal database.
     /// See [Access Control Guide](https://www.rabbitmq.com/docs/access-control) to learn more.
+    ///
+    /// Requires the `administrator` user tag. Does not modify state.
     pub fn list_users(&self) -> Result<Vec<responses::User>> {
         self.get_api_request("users")
     }
 
     /// Lists users with pagination.
+    ///
+    /// Requires the `administrator` user tag. Does not modify state.
     pub fn list_users_paged(&self, params: &PaginationParams) -> Result<Vec<responses::User>> {
         match params.to_query_string() {
             Some(query) => self.get_paginated_api_request("users", &query),
@@ -45,12 +49,16 @@ where
     /// Lists users in the internal database that do not have access to any virtual hosts.
     /// This is useful for finding users that may need permissions granted, or are not used
     /// and should be cleaned up.
+    ///
+    /// Requires the `administrator` user tag. Does not modify state.
     pub fn list_users_without_permissions(&self) -> Result<Vec<responses::User>> {
         self.get_api_request("users/without-permissions")
     }
 
     /// Returns information about a user in the internal database.
     /// See [Access Control Guide](https://www.rabbitmq.com/docs/access-control) to learn more.
+    ///
+    /// Requires the `administrator` user tag. Does not modify state.
     pub fn get_user(&self, name: &str) -> Result<responses::User> {
         let response = self.http_get(path!("users", name), None, None)?;
         let response = response.json()?;
@@ -59,6 +67,8 @@ where
 
     /// Returns information about the authenticated user.
     /// See [Access Control Guide](https://www.rabbitmq.com/docs/access-control) to learn more.
+    ///
+    /// Requires the `management` user tag. Does not modify state.
     pub fn current_user(&self) -> Result<responses::CurrentUser> {
         let response = self.http_get("whoami", None, None)?;
         let response = response.json()?;
@@ -68,6 +78,8 @@ where
     /// Adds a user to the internal database.
     ///
     /// See [`UserParams`] and [`crate::password_hashing`].
+    ///
+    /// Requires the `administrator` user tag.
     pub fn create_user(&self, params: &UserParams<'_>) -> Result<()> {
         self.put_api_request(path!("users", params.name), params)
     }
@@ -78,6 +90,8 @@ where
     /// across all virtual hosts. Active connections belonging to this user will be
     /// closed. If `idempotently` is true, the operation will succeed even if the
     /// user doesn't exist.
+    ///
+    /// Requires the `administrator` user tag.
     pub fn delete_user(&self, username: &str, idempotently: bool) -> Result<()> {
         self.delete_api_request_with_optional_not_found(path!("users", username), idempotently)
     }
@@ -88,6 +102,8 @@ where
     /// need to remove several user accounts. All specified users will be deleted
     /// along with their permissions, and any active connections will be closed.
     /// Non-existent users in the list are silently ignored.
+    ///
+    /// Requires the `administrator` user tag.
     pub fn delete_users(&self, usernames: Vec<&str>) -> Result<()> {
         let delete = BulkUserDelete { usernames };
         let _response = self.http_post(path!("users", "bulk-delete"), &delete, None, None)?;

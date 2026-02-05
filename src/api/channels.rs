@@ -25,11 +25,17 @@ where
 {
     /// Lists all channels across the cluster.
     /// See [Channels Guide](https://www.rabbitmq.com/docs/channels) to learn more.
+    ///
+    /// Requires the `monitoring` user tag for all channels, or `management` for own channels only. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub async fn list_channels(&self) -> Result<Vec<responses::Channel>> {
         self.get_api_request("channels").await
     }
 
     /// Lists channels with pagination.
+    ///
+    /// Requires the `monitoring` user tag for all channels, or `management` for own channels only. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub async fn list_channels_paged(
         &self,
         params: &PaginationParams,
@@ -42,12 +48,16 @@ where
 
     /// Lists all channels in the given virtual host.
     /// See [Channels Guide](https://www.rabbitmq.com/docs/channels) to learn more.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the vhost. Does not modify state.
     pub async fn list_channels_in(&self, virtual_host: &str) -> Result<Vec<responses::Channel>> {
         self.get_api_request(path!("vhosts", virtual_host, "channels"))
             .await
     }
 
     /// Lists channels in the given virtual host with pagination.
+    ///
+    /// Requires the `management` user tag and have `read` permissions on the vhost. Does not modify state.
     pub async fn list_channels_in_paged(
         &self,
         virtual_host: &str,
@@ -64,6 +74,9 @@ where
 
     /// Lists all channels on a given AMQP 0-9-1 connection.
     /// See [Channels Guide](https://www.rabbitmq.com/docs/channels) to learn more.
+    ///
+    /// Requires the `monitoring` user tag. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub async fn list_channels_on(&self, connection_name: &str) -> Result<Vec<responses::Channel>> {
         self.get_api_request(path!("connections", connection_name, "channels"))
             .await
@@ -76,6 +89,9 @@ where
     /// Channel name is usually obtained from `crate::responses::Channel`,
     /// e.g. via `Client#list_channels`, `Client#list_channels_in`, `Client#list_channels_on`.
     /// See [Channels Guide](https://www.rabbitmq.com/docs/channels) to learn more.
+    ///
+    /// Requires the `monitoring` user tag. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub async fn get_channel_info<S: AsRef<str>>(
         &self,
         channel_name: S,

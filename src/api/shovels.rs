@@ -31,6 +31,9 @@ where
     P: Display,
 {
     /// Lists [shovel](https://www.rabbitmq.com/docs/shovel) across all virtual hosts in the cluster.
+    ///
+    /// Requires the `monitoring` user tag. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub async fn list_shovels(&self) -> Result<Vec<responses::Shovel>> {
         let response = self.http_get("shovels", None, None).await?;
         let response = response.json().await?;
@@ -38,6 +41,9 @@ where
     }
 
     /// Lists [dynamic shovels](https://www.rabbitmq.com/docs/shovel-dynamic) in a specific virtual host.
+    ///
+    /// Requires the `monitoring` user tag. Does not modify state.
+    /// Can be used by restricted monitoring users with the `monitoring` tag and only the `read`, `configure` permissions.
     pub async fn list_shovels_in(&self, vhost: &str) -> Result<Vec<responses::Shovel>> {
         let response = self.http_get(path!("shovels", vhost), None, None).await?;
         let response = response.json().await?;
@@ -46,6 +52,8 @@ where
 
     /// Declares [shovel](https://www.rabbitmq.com/docs/shovel) that will use the AMQP 0-9-1 protocol
     /// for both source and destination collection.
+    ///
+    /// Requires the `policymaker` user tag.
     pub async fn declare_amqp091_shovel(&self, params: Amqp091ShovelParams<'_>) -> Result<()> {
         let runtime_param = RuntimeParameterDefinition::from(params);
 
@@ -54,6 +62,8 @@ where
 
     /// Declares [shovel](https://www.rabbitmq.com/docs/shovel) that will use the AMQP 1.0 protocol
     /// for both source and destination collection.
+    ///
+    /// Requires the `policymaker` user tag.
     pub async fn declare_amqp10_shovel(&self, params: Amqp10ShovelParams<'_>) -> Result<()> {
         let runtime_param = RuntimeParameterDefinition::from(params);
 
@@ -64,6 +74,8 @@ where
     ///
     /// Unless `idempotently` is set to `true`, an attempt to delete a non-existent shovel
     /// will fail.
+    ///
+    /// Requires the `policymaker` user tag.
     pub async fn delete_shovel(&self, vhost: &str, name: &str, idempotently: bool) -> Result<()> {
         self.clear_runtime_parameter(SHOVEL_COMPONENT, vhost, name, idempotently)
             .await

@@ -28,6 +28,8 @@ where
     P: Display,
 {
     /// Gets cluster name (identifier).
+    ///
+    /// Requires the `management` user tag. Does not modify state.
     pub async fn get_cluster_name(&self) -> Result<responses::ClusterIdentity> {
         let response = self.http_get("cluster-name", None, None).await?;
         let response = response.json().await?;
@@ -35,6 +37,8 @@ where
     }
 
     /// Sets cluster name (identifier).
+    ///
+    /// Requires the `administrator` user tag.
     pub async fn set_cluster_name(&self, new_name: &str) -> Result<()> {
         let body = json!({"name": new_name});
         let _response = self.http_put("cluster-name", &body, None, None).await?;
@@ -42,12 +46,16 @@ where
     }
 
     /// Gets cluster tags.
+    ///
+    /// Requires the `policymaker` user tag. Does not modify state.
     pub async fn get_cluster_tags(&self) -> Result<responses::ClusterTags> {
         let response = self.get_global_runtime_parameter("cluster_tags").await?;
         Ok(ClusterTags::try_from(response.value)?)
     }
 
     /// Sets cluster tags.
+    ///
+    /// Requires the `administrator` user tag.
     pub async fn set_cluster_tags(&self, tags: Map<String, Value>) -> Result<()> {
         let grp = GlobalRuntimeParameterDefinition {
             name: "cluster_tags",
@@ -58,6 +66,8 @@ where
     }
 
     /// Clears all cluster tags.
+    ///
+    /// Requires the `administrator` user tag.
     pub async fn clear_cluster_tags(&self) -> Result<()> {
         self.clear_global_runtime_parameter("cluster_tags").await?;
         Ok(())
