@@ -1,8 +1,16 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.77.0 (in development)
+## v0.77.0 (Feb 5, 2026)
 
-No documented changes yet.
+### Enhancements
+
+ * Documentation improvements
+
+### Dependencies
+
+ * `regex` bumped to `1.12`
+ * `tokio` bumped to `1.49`
+ * `percent-encoding` bumped to `2.3`
 
 
 ## v0.76.0 (Jan 16, 2026)
