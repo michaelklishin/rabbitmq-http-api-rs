@@ -21,7 +21,7 @@
 //! See the [Credentials and Passwords guide](https://rabbitmq.com/docs/passwords/).
 //!
 
-use rand::RngCore;
+use rand::Rng;
 use ring::digest::{Context, SHA256, SHA512};
 use std::fmt;
 use thiserror::Error;
