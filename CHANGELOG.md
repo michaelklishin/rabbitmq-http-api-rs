@@ -2,7 +2,10 @@
 
 ## v0.79.0 (in development)
 
-(no changes yet)
+### Enhancements
+
+ * `responses::Listener#human_friendly_name` is a new method that returns a human-friendly name for the listener:
+   for example, "MQTT over WebSockets with TLS" for `https/web-mqtt` (a cryptic internal listener name)
 
 
 ## v0.78.0 (Feb 10, 2026)
