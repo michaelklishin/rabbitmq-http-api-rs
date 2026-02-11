@@ -111,7 +111,7 @@ pub use cluster::{
     AuthenticationAttemptStatistics, ChurnRates, ClusterIdentity, ClusterNode, ClusterTags,
     GarbageCollectionDetails, Listener, MessageStats, NodeList, NodeMemoryBreakdown,
     NodeMemoryFootprint, NodeMemoryTotals, ObjectTotals, OtpApplication, Overview, QueueTotals,
-    Rate,
+    Rate, has_tls_enabled, human_friendly_protocol_name,
 };
 
 pub mod permissions;

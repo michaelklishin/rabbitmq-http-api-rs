@@ -509,11 +509,61 @@ pub struct ChurnRates {
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 pub struct Listener {
-    node: String,
-    protocol: String,
-    port: u32,
+    pub node: String,
+    pub protocol: String,
+    pub port: u32,
     #[serde(rename(deserialize = "ip_address"))]
-    interface: String,
+    pub interface: String,
+}
+
+impl Listener {
+    pub fn human_friendly_name(&self) -> &str {
+        human_friendly_protocol_name(&self.protocol)
+    }
+
+    pub fn has_tls_enabled(&self) -> bool {
+        has_tls_enabled(&self.protocol)
+    }
+}
+
+pub fn human_friendly_protocol_name(protocol: &str) -> &str {
+    match protocol {
+        "amqp" => "AMQP 1.0 and 0-9-1",
+        "amqp/ssl" => "AMQP 1.0 and 0-9-1 with TLS",
+        "mqtt" => "MQTT",
+        "mqtt/ssl" => "MQTT with TLS",
+        "stomp" => "STOMP",
+        "stomp/ssl" => "STOMP with TLS",
+        "stream" => "Stream Protocol",
+        "stream/ssl" => "Stream Protocol with TLS",
+        "http/web-mqtt" => "MQTT over WebSockets",
+        "https/web-mqtt" => "MQTT over WebSockets with TLS",
+        "http/web-stomp" => "STOMP over WebSockets",
+        "https/web-stomp" => "STOMP over WebSockets with TLS",
+        "http/web-amqp" => "AMQP 1.0 over WebSockets",
+        "https/web-amqp" => "AMQP 1.0 over WebSockets with TLS",
+        "http/prometheus" => "Prometheus",
+        "https/prometheus" => "Prometheus with TLS",
+        "http" => "HTTP API",
+        "https" => "HTTP API with TLS",
+        "clustering" => "Inter-node and CLI Tool Communication",
+        other => other,
+    }
+}
+
+pub fn has_tls_enabled(protocol: &str) -> bool {
+    matches!(
+        protocol,
+        "amqp/ssl"
+            | "mqtt/ssl"
+            | "stomp/ssl"
+            | "stream/ssl"
+            | "https/web-mqtt"
+            | "https/web-stomp"
+            | "https/web-amqp"
+            | "https/prometheus"
+            | "https"
+    )
 }
 
 #[derive(Debug, Deserialize, Clone, PartialEq, Default)]
@@ -541,6 +591,9 @@ pub struct Overview {
     pub queue_totals: QueueTotals,
     pub object_totals: ObjectTotals,
     pub message_stats: MessageStats,
+
+    #[cfg_attr(feature = "tabled", tabled(skip))]
+    pub listeners: Vec<Listener>,
 }
 
 impl Overview {
