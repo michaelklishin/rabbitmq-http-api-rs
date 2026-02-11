@@ -24,7 +24,17 @@ async fn test_async_list_nodes() {
 
     assert!(result.is_ok());
     let vec = result.unwrap();
-    assert!(vec.iter().any(|n| n.name.starts_with("rabbit@")))
+    assert!(vec.iter().any(|n| n.name.starts_with("rabbit@")));
+
+    for node in &vec {
+        assert!(!node.applications.is_empty());
+        let v = node.rabbitmq_version();
+        assert!(
+            v.chars().next().unwrap().is_ascii_digit(),
+            "version should start with a digit, got: {}",
+            v
+        );
+    }
 }
 
 #[tokio::test]

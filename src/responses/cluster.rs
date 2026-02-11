@@ -373,6 +373,18 @@ impl fmt::Display for NodeMemoryBreakdown {
     }
 }
 
+/// An OTP application running on a RabbitMQ node.
+///
+/// Each node reports a list of running OTP applications via `GET /api/nodes`.
+/// The `rabbit` application's version corresponds to the node's RabbitMQ version.
+#[derive(Debug, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+pub struct OtpApplication {
+    pub name: String,
+    pub description: String,
+    pub version: String,
+}
+
 #[derive(Debug, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
@@ -397,6 +409,21 @@ pub struct ClusterNode {
     pub rates_mode: String,
     pub enabled_plugins: PluginList,
     pub being_drained: bool,
+    #[serde(default)]
+    #[cfg_attr(feature = "tabled", tabled(skip))]
+    pub applications: Vec<OtpApplication>,
+}
+
+impl ClusterNode {
+    /// Returns the RabbitMQ version reported by this node, extracted from
+    /// the `rabbit` OTP application.
+    pub fn rabbitmq_version(&self) -> &str {
+        self.applications
+            .iter()
+            .find(|app| app.name == "rabbit")
+            .map(|app| app.version.as_str())
+            .expect("rabbit application must be present on a responding node")
+    }
 }
 
 #[derive(Debug, Deserialize, Clone)]

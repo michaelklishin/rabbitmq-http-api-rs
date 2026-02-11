@@ -1,8 +1,11 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.78.0 (in development)
+## v0.78.0 (Feb 10, 2026)
 
-(no changes yet)
+### Enhancements
+
+ * Introduce `ClusterNode#rabbitmq_version` that relies on the Erlang/OTP application version.
+   Yeah, the HTTP API could lend us a hand here but so far hasn't.
 
 
 ## v0.77.0 (Feb 5, 2026)

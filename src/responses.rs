@@ -110,7 +110,8 @@ pub mod cluster;
 pub use cluster::{
     AuthenticationAttemptStatistics, ChurnRates, ClusterIdentity, ClusterNode, ClusterTags,
     GarbageCollectionDetails, Listener, MessageStats, NodeList, NodeMemoryBreakdown,
-    NodeMemoryFootprint, NodeMemoryTotals, ObjectTotals, Overview, QueueTotals, Rate,
+    NodeMemoryFootprint, NodeMemoryTotals, ObjectTotals, OtpApplication, Overview, QueueTotals,
+    Rate,
 };
 
 pub mod permissions;

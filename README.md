@@ -23,20 +23,20 @@ All older series have [reached End of Life](https://www.rabbitmq.com/release-inf
 ### Async Client
 
 ```toml
-rabbitmq_http_client = { version = "0.77.0", features = ["core", "async"] }
+rabbitmq_http_client = { version = "0.78.0", features = ["core", "async"] }
 ```
 
 ### Blocking Client
 
 ```toml
-rabbitmq_http_client = { version = "0.77.0", features = ["core", "blocking"] }
+rabbitmq_http_client = { version = "0.78.0", features = ["core", "blocking"] }
 ```
 
 ### With Tabled Support
 
 ```toml
-rabbitmq_http_client = { version = "0.77.0", features = ["core", "async", "tabled"] }
-rabbitmq_http_client = { version = "0.77.0", features = ["core", "blocking", "tabled"] }
+rabbitmq_http_client = { version = "0.78.0", features = ["core", "async", "tabled"] }
+rabbitmq_http_client = { version = "0.78.0", features = ["core", "blocking", "tabled"] }
 ```
 
 
