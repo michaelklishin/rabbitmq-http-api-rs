@@ -287,6 +287,7 @@ impl HttpClientError {
                     || debug.contains("HandshakeFailure")
                     || debug.contains("InvalidCertificate")
                     || debug.contains("tls")
+                    || debug.contains("TLS")
                     || debug.contains("ssl")
                     || debug.contains("SSL")
             }
