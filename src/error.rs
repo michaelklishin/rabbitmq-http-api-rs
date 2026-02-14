@@ -251,6 +251,58 @@ impl HttpClientError {
         }
     }
 
+    /// Returns true if the error is a connection failure
+    /// that is NOT a TLS handshake error (a hostname resolution failure, TCP connection refused, etc).
+    pub fn is_connection_error(&self) -> bool {
+        matches!(
+            self,
+            HttpClientError::RequestError { error, .. }
+            if error.is_connect() && !self.is_tls_handshake_error()
+        )
+    }
+
+    /// Returns true if the error is a request timeout.
+    pub fn is_timeout(&self) -> bool {
+        matches!(
+            self,
+            HttpClientError::RequestError { error, .. }
+            if error.is_timeout()
+        )
+    }
+
+    /// Returns true if the error is likely a TLS/SSL handshake failure.
+    /// Uses a heuristic on the error chain since reqwest doesn't expose
+    /// a first-class TLS error type.
+    ///
+    /// The patterns below are tested against rustls debug output.
+    /// native-tls may produce different casing; most cases are still
+    /// caught because the error chain typically includes at least one
+    /// of the lowercase or variant-name matches.
+    pub fn is_tls_handshake_error(&self) -> bool {
+        match self {
+            HttpClientError::RequestError { error, .. } if error.is_connect() => {
+                let debug = format!("{error:?}");
+                debug.contains("certificate")
+                    || debug.contains("CertificateRequired")
+                    || debug.contains("HandshakeFailure")
+                    || debug.contains("InvalidCertificate")
+                    || debug.contains("tls")
+                    || debug.contains("TLS")
+                    || debug.contains("ssl")
+                    || debug.contains("SSL")
+            }
+            _ => false,
+        }
+    }
+
+    /// Returns the underlying `reqwest::Error` for transport-level errors.
+    pub fn as_reqwest_error(&self) -> Option<&reqwest::Error> {
+        match self {
+            HttpClientError::RequestError { error, .. } => Some(error),
+            _ => None,
+        }
+    }
+
     /// Returns a user-friendly error message, preferring API-provided details when available.
     pub fn user_message(&self) -> String {
         match self {

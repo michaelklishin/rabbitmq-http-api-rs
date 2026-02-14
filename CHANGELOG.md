@@ -2,7 +2,16 @@
 
 ## v0.80.0 (in development)
 
-(no changes yet)
+### Enhancements
+
+ * New `HttpClientError` helpers for "transport-level" connection error classification: `is_connection_error`, `is_timeout`,
+   `is_tls_handshake_error`, `as_reqwest_error`
+ * `Client#probe_reachability` tests whether the node is reachable and the configured credentials are accepted.
+   Returns a `ReachabilityProbeOutcome` enum rather than a `Result` because both outcomes are expected,
+   so using the `?` operator would be semantically wrong
+ * Improved `TagList` ergonomics with `can_access_http_api`, `is_administrator`, `can_access_monitoring_endpoints`
+ * `TagList` now implements `From<Vec<String>>`
+ * `ClientBuilder#with_connect_timeout` sets the TCP connection timeout independently of the overall request timeout
 
 
 ## v0.79.0 (Feb 11, 2026)

@@ -57,6 +57,7 @@ pub struct ClientBuilder<E = &'static str, U = &'static str, P = &'static str> {
     password: P,
     client: Option<HttpClient>,
     retry_settings: RetrySettings,
+    connect_timeout: Option<Duration>,
     request_timeout: Option<Duration>,
 }
 
@@ -81,6 +82,7 @@ impl ClientBuilder {
             password: "guest",
             client: None,
             retry_settings: RetrySettings::default(),
+            connect_timeout: None,
             request_timeout: None,
         }
     }
@@ -132,6 +134,7 @@ where
             password,
             client: self.client,
             retry_settings: self.retry_settings,
+            connect_timeout: self.connect_timeout,
             request_timeout: self.request_timeout,
         }
     }
@@ -150,6 +153,7 @@ where
             password: self.password,
             client: self.client,
             retry_settings: self.retry_settings,
+            connect_timeout: self.connect_timeout,
             request_timeout: self.request_timeout,
         }
     }
@@ -158,11 +162,26 @@ where
     ///
     /// Use a custom HTTP client to configure custom timeouts, proxy settings, TLS configuration.
     ///
-    /// Note: If you provide a custom client, the timeout set via [`with_request_timeout`]
+    /// Note: If you provide a custom client, timeouts set via builder methods
     /// will be ignored. Configure timeouts directly on your custom client instead.
     pub fn with_client(self, client: HttpClient) -> Self {
         ClientBuilder {
             client: Some(client),
+            ..self
+        }
+    }
+
+    /// Sets the TCP connection timeout.
+    ///
+    /// This timeout applies only to the connection establishment phase (TCP + TLS handshake),
+    /// not to the overall request. Useful for failing fast on unreachable hosts without
+    /// cutting off slow-but-valid responses.
+    ///
+    /// **Important**: this setting is ignored if a custom HTTP client is used via [`with_client`].
+    /// In that case, configure the timeout on the custom client instead.
+    pub fn with_connect_timeout(self, timeout: Duration) -> Self {
+        ClientBuilder {
+            connect_timeout: Some(timeout),
             ..self
         }
     }
@@ -212,6 +231,9 @@ where
             Some(c) => c,
             None => {
                 let mut builder = HttpClient::builder();
+                if let Some(timeout) = self.connect_timeout {
+                    builder = builder.connect_timeout(timeout);
+                }
                 if let Some(timeout) = self.request_timeout {
                     builder = builder.timeout(timeout);
                 }
