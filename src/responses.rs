@@ -128,6 +128,11 @@ pub use consumers::Consumer;
 pub mod users;
 pub use users::{CurrentUser, User, UserLimits};
 
+#[cfg(any(feature = "async", feature = "blocking"))]
+pub mod reachability;
+#[cfg(any(feature = "async", feature = "blocking"))]
+pub use reachability::{ReachabilityProbeDetails, ReachabilityProbeOutcome};
+
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
 pub struct TagList(pub Vec<String>);
 
@@ -150,6 +155,38 @@ impl TagList {
 
     pub fn iter_mut(&mut self) -> std::slice::IterMut<'_, String> {
         self.0.iter_mut()
+    }
+
+    /// Returns true if the user can access the HTTP API.
+    ///
+    /// RabbitMQ grants HTTP API access to users with any of
+    /// these tags: `management`, `monitoring`, `policymaker`, or `administrator`.
+    pub fn can_access_http_api(&self) -> bool {
+        self.0.iter().any(|t| {
+            matches!(
+                t.as_str(),
+                "management" | "monitoring" | "policymaker" | "administrator"
+            )
+        })
+    }
+
+    /// Returns true if the user has the `administrator` tag.
+    pub fn is_administrator(&self) -> bool {
+        self.contains("administrator")
+    }
+
+    /// Returns true if the user has monitoring-level access
+    /// (`monitoring` or `administrator`).
+    pub fn can_access_monitoring_endpoints(&self) -> bool {
+        self.0
+            .iter()
+            .any(|t| matches!(t.as_str(), "monitoring" | "administrator"))
+    }
+}
+
+impl From<Vec<String>> for TagList {
+    fn from(v: Vec<String>) -> Self {
+        TagList(v)
     }
 }
 

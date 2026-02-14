@@ -35,6 +35,7 @@ mod parameters;
 mod permissions;
 mod policies;
 mod queues_and_streams;
+mod reachability;
 mod rebalancing;
 mod shovels;
 mod tanzu;

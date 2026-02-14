@@ -602,6 +602,42 @@ mod error_helper_tests {
         let err = HttpClientError::MultipleMatchingBindings;
         assert_eq!(err.status_code(), None);
     }
+
+    #[test]
+    fn test_not_found_is_not_a_connection_error() {
+        let err = HttpClientError::NotFound;
+        assert!(!err.is_connection_error());
+        assert!(!err.is_timeout());
+        assert!(!err.is_tls_handshake_error());
+    }
+
+    #[test]
+    fn test_client_error_is_not_a_connection_error() {
+        let err = create_client_error(StatusCode::BAD_REQUEST);
+        assert!(!err.is_connection_error());
+        assert!(!err.is_timeout());
+        assert!(!err.is_tls_handshake_error());
+    }
+
+    #[test]
+    fn test_server_error_is_not_a_connection_error() {
+        let err = create_server_error(StatusCode::INTERNAL_SERVER_ERROR);
+        assert!(!err.is_connection_error());
+        assert!(!err.is_timeout());
+        assert!(!err.is_tls_handshake_error());
+    }
+
+    #[test]
+    fn test_as_reqwest_error_returns_none_for_non_request_errors() {
+        let err = HttpClientError::NotFound;
+        assert!(err.as_reqwest_error().is_none());
+
+        let err = create_client_error(StatusCode::BAD_REQUEST);
+        assert!(err.as_reqwest_error().is_none());
+
+        let err = create_server_error(StatusCode::INTERNAL_SERVER_ERROR);
+        assert!(err.as_reqwest_error().is_none());
+    }
 }
 
 mod client_builder_tests {
@@ -627,6 +663,37 @@ mod client_builder_tests {
         let _client = ClientBuilder::new()
             .with_recommended_defaults()
             .with_request_timeout(Duration::from_secs(120))
+            .build();
+    }
+
+    #[test]
+    fn test_with_connect_timeout() {
+        let _client = ClientBuilder::new()
+            .with_connect_timeout(Duration::from_secs(5))
+            .build();
+    }
+
+    #[test]
+    fn test_with_both_timeouts() {
+        let _client = ClientBuilder::new()
+            .with_connect_timeout(Duration::from_secs(5))
+            .with_request_timeout(Duration::from_secs(30))
+            .build();
+    }
+
+    #[test]
+    fn test_connect_timeout_preserved_across_with_endpoint() {
+        let _client = ClientBuilder::new()
+            .with_connect_timeout(Duration::from_secs(5))
+            .with_endpoint("http://localhost:15672/api")
+            .build();
+    }
+
+    #[test]
+    fn test_connect_timeout_preserved_across_with_credentials() {
+        let _client = ClientBuilder::new()
+            .with_connect_timeout(Duration::from_secs(5))
+            .with_basic_auth_credentials("user", "pass")
             .build();
     }
 }
