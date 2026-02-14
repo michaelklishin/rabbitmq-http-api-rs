@@ -27,6 +27,8 @@ pub struct ReachabilityProbeDetails {
 }
 
 /// Outcome of a reachability probe.
+///
+/// We do not derive `Clone` here because `HttpClientError` does not (via `reqwest::Error`).
 #[derive(Debug)]
 pub enum ReachabilityProbeOutcome {
     /// The node is reachable and the credentials were accepted.

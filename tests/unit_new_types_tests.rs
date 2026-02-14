@@ -603,6 +603,9 @@ mod error_helper_tests {
         assert_eq!(err.status_code(), None);
     }
 
+    // Happy path coverage (transport errors that return true) requires a real
+    // `reqwest::Error` and is therefore covered by integration tests.
+
     #[test]
     fn test_not_found_is_not_a_connection_error() {
         let err = HttpClientError::NotFound;

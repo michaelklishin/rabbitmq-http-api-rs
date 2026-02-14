@@ -273,6 +273,11 @@ impl HttpClientError {
     /// Returns true if the error is likely a TLS/SSL handshake failure.
     /// Uses a heuristic on the error chain since reqwest doesn't expose
     /// a first-class TLS error type.
+    ///
+    /// The patterns below are tested against rustls debug output.
+    /// native-tls may produce different casing; most cases are still
+    /// caught because the error chain typically includes at least one
+    /// of the lowercase or variant-name matches.
     pub fn is_tls_handshake_error(&self) -> bool {
         match self {
             HttpClientError::RequestError { error, .. } if error.is_connect() => {
