@@ -15,7 +15,22 @@
 use rabbitmq_http_client::api::Client;
 
 mod test_helpers;
-use crate::test_helpers::{PASSWORD, USERNAME, endpoint, generate_activity};
+use crate::test_helpers::{
+    PASSWORD, USERNAME, async_rabbitmq_version_is_at_least, endpoint, generate_activity,
+};
+
+#[tokio::test]
+async fn test_async_overview_crypto_lib_version() {
+    if !async_rabbitmq_version_is_at_least(4, 2, 4).await {
+        return;
+    }
+
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+    let ov = rc.overview().await.unwrap();
+
+    assert!(ov.crypto_lib_version.is_some());
+}
 
 #[tokio::test]
 async fn test_async_overview() {

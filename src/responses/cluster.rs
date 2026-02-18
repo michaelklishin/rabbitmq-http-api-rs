@@ -412,12 +412,31 @@ pub struct ClusterNode {
     #[serde(default)]
     #[cfg_attr(feature = "tabled", tabled(skip))]
     pub applications: Vec<OtpApplication>,
+
+    // available since RabbitMQ 4.2.4
+    #[serde(default)]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub rabbitmq_version: Option<String>,
+    #[serde(default)]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub erlang_version: Option<String>,
+    #[serde(default)]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub erlang_full_version: Option<String>,
+    #[serde(default)]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub crypto_lib_version: Option<String>,
 }
 
 impl ClusterNode {
-    /// Returns the RabbitMQ version reported by this node, extracted from
-    /// the `rabbit` OTP application.
+    /// Returns the RabbitMQ version reported by this node.
+    ///
+    /// On RabbitMQ 4.2.4+, uses the `rabbitmq_version` field from the API response.
+    /// On older versions, falls back to the `rabbit` OTP application version.
     pub fn rabbitmq_version(&self) -> &str {
+        if let Some(ref v) = self.rabbitmq_version {
+            return v;
+        }
         self.applications
             .iter()
             .find(|app| app.name == "rabbit")
@@ -576,6 +595,9 @@ pub struct Overview {
     pub erlang_full_version: String,
     pub erlang_version: String,
     pub rabbitmq_version: String,
+    // available since RabbitMQ 4.2.4
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub crypto_lib_version: Option<String>,
     pub product_name: String,
     pub product_version: String,
 

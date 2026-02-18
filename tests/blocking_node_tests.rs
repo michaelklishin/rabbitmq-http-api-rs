@@ -17,6 +17,42 @@ mod test_helpers;
 use crate::test_helpers::{PASSWORD, USERNAME, endpoint, rabbitmq_version_is_at_least};
 
 #[test]
+fn test_blocking_list_nodes_version_fields() {
+    if !rabbitmq_version_is_at_least(4, 2, 4) {
+        return;
+    }
+
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+    let nodes = rc.list_nodes().unwrap();
+
+    for node in &nodes {
+        assert!(node.rabbitmq_version.is_some());
+        assert!(node.erlang_version.is_some());
+        assert!(node.erlang_full_version.is_some());
+        assert!(node.crypto_lib_version.is_some());
+    }
+}
+
+#[test]
+fn test_blocking_get_node_info_version_fields() {
+    if !rabbitmq_version_is_at_least(4, 2, 4) {
+        return;
+    }
+
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+    let nodes = rc.list_nodes().unwrap();
+    let name = nodes.first().unwrap().name.clone();
+    let node = rc.get_node_info(&name).unwrap();
+
+    assert!(node.rabbitmq_version.is_some());
+    assert!(node.erlang_version.is_some());
+    assert!(node.erlang_full_version.is_some());
+    assert!(node.crypto_lib_version.is_some());
+}
+
+#[test]
 fn test_blocking_list_nodes() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);

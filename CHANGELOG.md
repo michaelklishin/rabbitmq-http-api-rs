@@ -2,7 +2,16 @@
 
 ## v0.81.0 (in development)
 
-(no changes yet)
+### Enhancements
+
+ * `ClusterNode#rabbitmq_version` now takes the version straight from the `GET /api/nodes`
+    or `GET /api/nodes/{name}` responses, if [available](https://github.com/rabbitmq/rabbitmq-server/pull/15454) (starting with RabbitMQ `4.2.4`).
+    The function falls back to the `rabbit` Erlang/OTP application version on older nodes
+ * `ClusterNode` gained a few new optional fields available since RabbitMQ `4.2.4`:
+   `erlang_version`, `erlang_full_version`, `crypto_lib_version`
+ * `Overview#crypto_lib_version` is a new field reporting the crypto library
+   (such as OpenSSL, LibreSSL) version used by the node's runtime.
+   Only provided by RabbitMQ `4.2.4` and later versions.
 
 
 ## v0.80.0 (Feb 13, 2026)

@@ -17,6 +17,42 @@ mod test_helpers;
 use crate::test_helpers::{PASSWORD, USERNAME, async_rabbitmq_version_is_at_least, endpoint};
 
 #[tokio::test]
+async fn test_async_list_nodes_version_fields() {
+    if !async_rabbitmq_version_is_at_least(4, 2, 4).await {
+        return;
+    }
+
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+    let nodes = rc.list_nodes().await.unwrap();
+
+    for node in &nodes {
+        assert!(node.rabbitmq_version.is_some());
+        assert!(node.erlang_version.is_some());
+        assert!(node.erlang_full_version.is_some());
+        assert!(node.crypto_lib_version.is_some());
+    }
+}
+
+#[tokio::test]
+async fn test_async_get_node_info_version_fields() {
+    if !async_rabbitmq_version_is_at_least(4, 2, 4).await {
+        return;
+    }
+
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+    let nodes = rc.list_nodes().await.unwrap();
+    let name = nodes.first().unwrap().name.clone();
+    let node = rc.get_node_info(&name).await.unwrap();
+
+    assert!(node.rabbitmq_version.is_some());
+    assert!(node.erlang_version.is_some());
+    assert!(node.erlang_full_version.is_some());
+    assert!(node.crypto_lib_version.is_some());
+}
+
+#[tokio::test]
 async fn test_async_list_nodes() {
     let endpoint = endpoint();
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);

@@ -14,7 +14,20 @@
 use rabbitmq_http_client::blocking_api::Client;
 
 mod test_helpers;
-use crate::test_helpers::{PASSWORD, USERNAME, endpoint};
+use crate::test_helpers::{PASSWORD, USERNAME, endpoint, rabbitmq_version_is_at_least};
+
+#[test]
+fn test_blocking_overview_crypto_lib_version() {
+    if !rabbitmq_version_is_at_least(4, 2, 4) {
+        return;
+    }
+
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+    let ov = rc.overview().unwrap();
+
+    assert!(ov.crypto_lib_version.is_some());
+}
 
 #[test]
 fn test_blocking_overview() {
