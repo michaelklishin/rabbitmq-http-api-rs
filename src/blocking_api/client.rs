@@ -15,13 +15,14 @@
 
 use crate::commons::RetrySettings;
 use crate::error::{
+    EndpointValidationError,
     Error::{ClientErrorResponse, NotFound, ServerErrorResponse},
     ErrorDetails,
 };
 use crate::responses;
 use backtrace::Backtrace;
 use log::trace;
-use reqwest::{StatusCode, blocking::Client as HttpClient, header::HeaderMap};
+use reqwest::{StatusCode, blocking::Client as HttpClient, header::HeaderMap, redirect};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 use std::fmt::Display;
@@ -43,7 +44,11 @@ pub type Result<T> = result::Result<T, HttpClientError>;
 /// let endpoint = "http://localhost:15672/api";
 /// let username = "username";
 /// let password = "password";
-/// let rc = ClientBuilder::new().with_endpoint(&endpoint).with_basic_auth_credentials(&username, &password).build();
+/// let rc = ClientBuilder::new()
+///     .with_endpoint(&endpoint)
+///     .with_basic_auth_credentials(&username, &password)
+///     .build()
+///     .unwrap();
 /// // list cluster nodes
 /// let _ = rc.list_nodes();
 /// // list user connections
@@ -59,6 +64,7 @@ pub struct ClientBuilder<E = &'static str, U = &'static str, P = &'static str> {
     retry_settings: RetrySettings,
     connect_timeout: Option<Duration>,
     request_timeout: Option<Duration>,
+    redirect_policy: Option<redirect::Policy>,
 }
 
 impl Default for ClientBuilder {
@@ -68,7 +74,7 @@ impl Default for ClientBuilder {
 }
 
 impl ClientBuilder {
-    /// Constructs a new `ClientBuilder`.
+    /// Constructs a new `ClientBuilder` with default settings.
     ///
     /// The default configuration uses `http://localhost:15672/api` as the endpoint
     /// and `guest/guest` as the credentials. This is the same as calling `Client::builder()`.
@@ -84,6 +90,7 @@ impl ClientBuilder {
             retry_settings: RetrySettings::default(),
             connect_timeout: None,
             request_timeout: None,
+            redirect_policy: None,
         }
     }
 }
@@ -95,7 +102,8 @@ where
     P: Display,
 {
     /// Applies recommended default settings: 60 second request timeout,
-    /// 3 retry attempts with 1 second delay between retries.
+    /// 3 retry attempts with 1 second delay between retries,
+    /// and no redirects (the RabbitMQ HTTP API does not use redirects).
     pub fn with_recommended_defaults(self) -> Self {
         Self {
             request_timeout: Some(Duration::from_secs(60)),
@@ -103,6 +111,7 @@ where
                 max_attempts: 3,
                 delay_ms: 1000,
             },
+            redirect_policy: Some(redirect::Policy::none()),
             ..self
         }
     }
@@ -136,6 +145,7 @@ where
             retry_settings: self.retry_settings,
             connect_timeout: self.connect_timeout,
             request_timeout: self.request_timeout,
+            redirect_policy: self.redirect_policy,
         }
     }
 
@@ -155,6 +165,7 @@ where
             retry_settings: self.retry_settings,
             connect_timeout: self.connect_timeout,
             request_timeout: self.request_timeout,
+            redirect_policy: self.redirect_policy,
         }
     }
 
@@ -204,7 +215,8 @@ where
     ///     .with_endpoint("http://localhost:15672/api")
     ///     .with_basic_auth_credentials("user", "password")
     ///     .with_request_timeout(Duration::from_secs(30))
-    ///     .build();
+    ///     .build()
+    ///     .unwrap();
     /// ```
     pub fn with_request_timeout(self, timeout: Duration) -> Self {
         ClientBuilder {
@@ -223,10 +235,34 @@ where
         }
     }
 
+    /// Sets the redirect policy for HTTP requests.
+    ///
+    /// By default, `reqwest` follows up to 10 redirects. Use
+    /// `reqwest::redirect::Policy::none()` to disable redirects entirely,
+    /// which is recommended when the endpoint comes from a potentially untrusted source.
+    ///
+    /// This setting is ignored if a custom HTTP client is used
+    /// via [`Self::with_client`].
+    pub fn with_redirect_policy(self, policy: redirect::Policy) -> Self {
+        ClientBuilder {
+            redirect_policy: Some(policy),
+            ..self
+        }
+    }
+
     /// Builds and returns a configured `Client`.
     ///
+    /// Returns an error if the endpoint scheme is not `http` or `https`.
+    ///
     /// This consumes the `ClientBuilder`.
-    pub fn build(self) -> Client<E, U, P> {
+    pub fn build(self) -> result::Result<Client<E, U, P>, EndpointValidationError> {
+        let endpoint_str = self.endpoint.to_string();
+        if !endpoint_str.starts_with("http://") && !endpoint_str.starts_with("https://") {
+            return Err(EndpointValidationError::UnsupportedScheme {
+                endpoint: endpoint_str,
+            });
+        }
+
         let client = match self.client {
             Some(c) => c,
             None => {
@@ -237,17 +273,22 @@ where
                 if let Some(timeout) = self.request_timeout {
                     builder = builder.timeout(timeout);
                 }
-                builder.build().unwrap()
+                if let Some(policy) = self.redirect_policy {
+                    builder = builder.redirect(policy);
+                }
+                builder
+                    .build()
+                    .map_err(|e| EndpointValidationError::ClientBuildError { source: e })?
             }
         };
 
-        Client::from_http_client_with_retry(
+        Ok(Client::from_http_client_with_retry(
             client,
             self.endpoint,
             self.username,
             self.password,
             self.retry_settings,
-        )
+        ))
     }
 }
 

@@ -649,7 +649,7 @@ mod client_builder_tests {
 
     #[test]
     fn test_default_builder() {
-        let _client = ClientBuilder::new().build();
+        let _client = ClientBuilder::new().build().unwrap();
     }
 
     #[test]
@@ -658,7 +658,8 @@ mod client_builder_tests {
             .with_endpoint("http://localhost:15672/api")
             .with_basic_auth_credentials("user", "pass")
             .with_recommended_defaults()
-            .build();
+            .build()
+            .unwrap();
     }
 
     #[test]
@@ -666,14 +667,16 @@ mod client_builder_tests {
         let _client = ClientBuilder::new()
             .with_recommended_defaults()
             .with_request_timeout(Duration::from_secs(120))
-            .build();
+            .build()
+            .unwrap();
     }
 
     #[test]
     fn test_with_connect_timeout() {
         let _client = ClientBuilder::new()
             .with_connect_timeout(Duration::from_secs(5))
-            .build();
+            .build()
+            .unwrap();
     }
 
     #[test]
@@ -681,7 +684,8 @@ mod client_builder_tests {
         let _client = ClientBuilder::new()
             .with_connect_timeout(Duration::from_secs(5))
             .with_request_timeout(Duration::from_secs(30))
-            .build();
+            .build()
+            .unwrap();
     }
 
     #[test]
@@ -689,7 +693,8 @@ mod client_builder_tests {
         let _client = ClientBuilder::new()
             .with_connect_timeout(Duration::from_secs(5))
             .with_endpoint("http://localhost:15672/api")
-            .build();
+            .build()
+            .unwrap();
     }
 
     #[test]
@@ -697,7 +702,8 @@ mod client_builder_tests {
         let _client = ClientBuilder::new()
             .with_connect_timeout(Duration::from_secs(5))
             .with_basic_auth_credentials("user", "pass")
-            .build();
+            .build()
+            .unwrap();
     }
 }
 

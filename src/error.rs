@@ -23,6 +23,20 @@ use reqwest::{
 use serde::Deserialize;
 
 #[derive(Error, Debug)]
+pub enum EndpointValidationError {
+    /// The endpoint URL uses a scheme other than `http` or `https`.
+    #[error("unsupported endpoint scheme (expected http:// or https://): {endpoint}")]
+    UnsupportedScheme { endpoint: String },
+
+    /// The underlying HTTP client could not be constructed.
+    #[error("failed to build HTTP client")]
+    ClientBuildError {
+        #[source]
+        source: reqwest::Error,
+    },
+}
+
+#[derive(Error, Debug)]
 pub enum ConversionError {
     #[error("Unsupported argument value for property (field) {property}")]
     UnsupportedPropertyValue { property: String },

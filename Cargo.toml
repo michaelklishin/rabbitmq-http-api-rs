@@ -63,7 +63,7 @@ blocking = [
 tabled = ["dep:tabled"]
 default-tls = ["reqwest?/default-tls"]
 native-tls = ["reqwest?/native-tls"]
-rustls-tls = ["reqwest?/rustls"]
+rustls = ["reqwest?/rustls"]
 hickory-dns = ["reqwest?/hickory-dns"]
 
 [profile.ci]

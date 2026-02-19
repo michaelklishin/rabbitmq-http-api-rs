@@ -3,6 +3,7 @@
 ## What is This Codebase?
 
 This is a Rust client for the [RabbitMQ HTTP API](https://www.rabbitmq.com/docs/http-api-reference).
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for test running instructions and development setup.
 
 ## Build System
 
@@ -45,7 +46,18 @@ They have very similar APIs except that all functions of the async client are, w
  * `tests/*proptests.rs` are property-based tests
  * `tests/test_helpers.rs` contains helper functions shared by multiple test modules
 
-Use `cargo nextest run --profile default --all-features '--' --exact [test module name]` to run
+### `nextest` Test Filters
+
+Key [`nextest` filterset predicates](https://nexte.st/docs/filtersets/reference/):
+
+ * `test(pattern)`: matches test names using a substring (e.g. `test(list_nodes)`)
+ * `binary(pattern)`: matches the test binary name (e.g. `binary(async_tls_tests)`)
+ * `package(name)`: matches by package (e.g. `package(rabbitmq_http_client)`)
+ * `test(=exact_name)`: an exact test name match
+ * `test(/regex/)`: like `test(pattern)` but uses regular expression matching
+ * Set operations: `expr1 + expr2` (union), `expr1 - expr2` (difference), `not expr` (negation)
+
+For example, use `cargo nextest run --all-features -E 'binary(=test_module_name)'` to run
 all tests in a specific module.
 
 ### Property-based Tests
@@ -53,7 +65,7 @@ all tests in a specific module.
 Property-based tests are written using [proptest](https://docs.rs/proptest/latest/proptest/) and
 use a naming convention: they begin with `prop_`.
 
-To run the property-based tests specifically, use `cargo nextest run --all-features 'prop_'`.
+To run the property-based tests specifically, use `cargo nextest run --all-features -E 'test(~prop_)'`.
 
 ## Source of Domain Knowledge
 

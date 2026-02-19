@@ -44,4 +44,6 @@ mod vhosts;
 
 // Re-export for backwards compatibility.
 pub use crate::commons::RetrySettings;
+pub use crate::error::EndpointValidationError;
 pub use client::{Client, ClientBuilder, HttpClientError, HttpClientResponse, Result};
+pub use reqwest::redirect::Policy as RedirectPolicy;

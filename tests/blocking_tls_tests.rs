@@ -42,6 +42,7 @@ fn build_tls_client()
         .with_basic_auth_credentials(USERNAME, PASSWORD)
         .with_client(http_client)
         .build()
+        .unwrap()
 }
 
 /// Build a blocking client with TLS configured using client certificate authentication.
@@ -67,6 +68,7 @@ fn build_tls_client_with_cert()
         .with_basic_auth_credentials(USERNAME, PASSWORD)
         .with_client(http_client)
         .build()
+        .unwrap()
 }
 
 /// Build a blocking client with TLS that skips certificate verification (insecure).
@@ -82,6 +84,7 @@ fn build_tls_client_insecure()
         .with_basic_auth_credentials(USERNAME, PASSWORD)
         .with_client(http_client)
         .build()
+        .unwrap()
 }
 
 #[test]

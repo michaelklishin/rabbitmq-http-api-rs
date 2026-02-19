@@ -2,7 +2,15 @@
 
 ## v0.82.0 (in development)
 
-(no changes yet)
+### Breaking Changes
+
+ * SSRF hardening: `ClientBuilder#build` now returns `Result<Client, EndpointValidationError>`
+   and rejects endpoints that do not use an `http` or `https` scheme
+### Enhancements
+
+ * `ClientBuilder#with_redirect_policy` controls the HTTP redirect policy.
+   `with_recommended_defaults` now also disables redirects
+ * `EndpointValidationError` and `RedirectPolicy` are re-exported from both `api` and `blocking_api`
 
 
 ## v0.81.0 (Feb 17, 2026)
