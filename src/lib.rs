@@ -54,3 +54,6 @@ pub mod transformers;
 /// Builder for the RabbitMQ-specific URIs
 pub mod uris;
 mod utils;
+
+#[cfg(feature = "zeroize")]
+pub use zeroize;

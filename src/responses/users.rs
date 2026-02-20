@@ -15,6 +15,8 @@
 use crate::commons::Username;
 use crate::responses::{TagList, vhosts::EnforcedLimits};
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "zeroize")]
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
 #[cfg(feature = "tabled")]
 use tabled::Tabled;
@@ -31,6 +33,7 @@ pub struct UserLimits {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
+#[cfg_attr(feature = "zeroize", derive(Zeroize, ZeroizeOnDrop))]
 #[allow(dead_code)]
 pub struct User {
     pub name: Username,

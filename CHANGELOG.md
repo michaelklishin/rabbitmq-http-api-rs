@@ -2,7 +2,10 @@
 
 ## v0.83.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * A new feature, `zeroize`, together with a new type, `Password`, that offers [zeroisation](https://en.wikipedia.org/wiki/Zeroisation)
+   for the most security-demanding use cases
 
 
 ## v0.82.0 (Feb 20, 2026)

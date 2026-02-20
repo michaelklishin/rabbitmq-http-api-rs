@@ -24,6 +24,8 @@ use serde::{
     de::{MapAccess, SeqAccess, Visitor, value::MapAccessDeserializer},
 };
 use serde_json::Map;
+#[cfg(feature = "zeroize")]
+use zeroize::Zeroize;
 
 #[cfg(feature = "tabled")]
 use tabled::Tabled;
@@ -134,6 +136,7 @@ pub mod reachability;
 pub use reachability::{ReachabilityProbeDetails, ReachabilityProbeOutcome};
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "zeroize", derive(Zeroize))]
 pub struct TagList(pub Vec<String>);
 
 impl TagList {

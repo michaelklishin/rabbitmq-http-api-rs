@@ -13,6 +13,8 @@
 // limitations under the License.
 
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "zeroize")]
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Properties of a [user](https://rabbitmq.com/docs/access-control/#user-management) to be created or updated.
 ///
@@ -95,6 +97,7 @@ impl<'a> UserParams<'a> {
 
 /// Owned version of [`UserParams`] for cases where owned strings are needed.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "zeroize", derive(Zeroize, ZeroizeOnDrop))]
 pub struct OwnedUserParams {
     pub name: String,
     pub password_hash: String,

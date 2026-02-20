@@ -16,6 +16,8 @@ use std::fmt::Display;
 use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "zeroize")]
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Configuration for HTTP request retry behavior.
 ///
@@ -138,6 +140,61 @@ pub type VirtualHostName = String;
 pub type PermissionPattern = String;
 
 pub type ChannelId = u32;
+
+/// A password wrapper that securely zeroizes its contents on drop.
+///
+/// Use this type as the password parameter when constructing a
+/// [`crate::api::Client`] or [`crate::blocking_api::Client`] to ensure
+/// that credentials are cleared from memory when no longer needed.
+///
+/// `Password` implements [`Display`] transparently, so it can be used
+/// anywhere a `Display` type is expected, including the client constructors.
+///
+/// ```rust
+/// use rabbitmq_http_client::commons::Password;
+///
+/// let password = Password::from("s3cret");
+/// assert_eq!(format!("{}", password), "s3cret");
+/// // password is zeroized when dropped
+/// ```
+#[cfg(feature = "zeroize")]
+#[derive(Clone, Zeroize, ZeroizeOnDrop)]
+pub struct Password(String);
+
+#[cfg(feature = "zeroize")]
+impl Password {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+}
+
+#[cfg(feature = "zeroize")]
+impl fmt::Debug for Password {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Password([REDACTED])")
+    }
+}
+
+#[cfg(feature = "zeroize")]
+impl Display for Password {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+#[cfg(feature = "zeroize")]
+impl From<String> for Password {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+#[cfg(feature = "zeroize")]
+impl From<&str> for Password {
+    fn from(value: &str) -> Self {
+        Self(value.to_owned())
+    }
+}
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone, Hash)]
 #[serde(rename_all(serialize = "lowercase", deserialize = "PascalCase"))]
