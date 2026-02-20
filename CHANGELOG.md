@@ -1,11 +1,12 @@
 # Rust Client for the RabbitMQ HTTP API Change Log
 
-## v0.82.0 (in development)
+## v0.82.0 (Feb 20, 2026)
 
 ### Breaking Changes
 
  * SSRF hardening: `ClientBuilder#build` now returns `Result<Client, EndpointValidationError>`
    and rejects endpoints that do not use an `http` or `https` scheme
+
 ### Enhancements
 
  * `ClientBuilder#with_redirect_policy` controls the HTTP redirect policy.
