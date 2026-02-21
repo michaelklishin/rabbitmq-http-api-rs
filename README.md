@@ -39,6 +39,15 @@ rabbitmq_http_client = { version = "0.83.0", features = ["core", "async", "table
 rabbitmq_http_client = { version = "0.83.0", features = ["core", "blocking", "tabled"] }
 ```
 
+### With Zeroize Support
+
+The `zeroize` feature provides a `Password` type that offers [zeroisation](https://en.wikipedia.org/wiki/Zeroisation)
+of credentials in memory for security-demanding use cases:
+
+```toml
+rabbitmq_http_client = { version = "0.83.0", features = ["core", "async", "zeroize"] }
+```
+
 
 ## Async Client
 
@@ -55,13 +64,16 @@ let rc = Client::new(&endpoint, "username", "password");
 
 ### Using ClientBuilder
 
+`ClientBuilder#build` validates the endpoint scheme (`http` or `https`)
+and returns a `Result`:
+
 ```rust
 use rabbitmq_http_client::api::ClientBuilder;
 
 let rc = ClientBuilder::new()
     .with_endpoint("http://localhost:15672/api")
     .with_basic_auth_credentials("username", "password")
-    .build();
+    .build()?;
 ```
 
 ### List Cluster Nodes
@@ -401,7 +413,7 @@ use rabbitmq_http_client::blocking_api::ClientBuilder;
 let rc = ClientBuilder::new()
     .with_endpoint("http://localhost:15672/api")
     .with_basic_auth_credentials("username", "password")
-    .build();
+    .build()?;
 ```
 
 ### List Cluster Nodes
@@ -625,7 +637,7 @@ let client = ClientBuilder::new()
     .with_endpoint(endpoint)
     .with_basic_auth_credentials("username", "password")
     .with_client(httpc)
-    .build();
+    .build()?;
 ```
 
 The user chooses the [certificate store](https://github.com/rustls/rustls-platform-verifier?tab=readme-ov-file#deployment-considerations) for x.509 peer verification and the minimum TLS version.
