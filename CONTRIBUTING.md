@@ -12,7 +12,7 @@ for running tests is [cargo-nextest](https://nexte.st/).
 Key [`nextest` filterset predicates](https://nexte.st/docs/filtersets/reference/):
 
 * `test(pattern)`: matches test names using a substring (e.g. `test(list_nodes)`)
-* `binary(pattern)`: matches the test binary name (e.g. `binary(async_tls_tests)`)
+* `binary(pattern)`: matches the test binary name (e.g. `binary(integration)`, `binary(unit)`, `binary(proptests)`)
 * `package(name)`: matches by package (e.g. `package(rabbitmq_http_client)`)
 * `test(=exact_name)`: an exact test name match
 * `test(/regex/)`: like `test(pattern)` but uses regular expression matching

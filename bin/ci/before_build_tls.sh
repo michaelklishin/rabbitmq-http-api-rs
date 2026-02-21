@@ -134,7 +134,7 @@ echo "Client Key: ${CERTS_DIR}/client_key.pem"
 echo "TLS Endpoint: https://localhost:15671/api"
 echo ""
 echo "To run TLS tests:"
-echo "  TLS_CERTS_DIR=${CERTS_DIR} cargo nextest run -E 'binary(async_tls_tests) | binary(blocking_tls_tests)' --run-ignored=only --all-features"
+echo "  TLS_CERTS_DIR=${CERTS_DIR} cargo nextest run -E 'test(async_tls_tests::) | test(blocking_tls_tests::)' --run-ignored=only --all-features"
 echo ""
 
 true
