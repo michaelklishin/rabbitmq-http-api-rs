@@ -1,0 +1,93 @@
+// Copyright (C) 2023-2025 RabbitMQ Core Team (teamrabbitmq@gmail.com)
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+use rabbitmq_http_client::{
+    api::Client,
+    commons::VirtualHostLimitTarget,
+    requests::{EnforcedLimitParams, VirtualHostParams},
+};
+
+use crate::test_helpers::{PASSWORD, USERNAME, async_rabbitmq_version_is_at_least, endpoint};
+
+#[tokio::test]
+async fn test_async_list_all_vhost_limits() {
+    // Virtual host limits require RabbitMQ 3.13+
+    if !async_rabbitmq_version_is_at_least(3, 13, 0).await {
+        return;
+    }
+
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let vh_params = VirtualHostParams::named("test_async_list_all_vhost_limits");
+    let result1 = rc.create_vhost(&vh_params).await;
+    assert!(result1.is_ok());
+
+    let limit = EnforcedLimitParams::new(VirtualHostLimitTarget::MaxQueues, 500);
+    let result2 = rc.set_vhost_limit(vh_params.name, limit).await;
+    assert!(result2.is_ok());
+
+    let result3 = rc.list_all_vhost_limits().await;
+    assert!(result3.is_ok());
+    let vec = result3.unwrap();
+    assert!(vec.iter().any(|it| it.vhost == vh_params.name));
+
+    let key1 = VirtualHostLimitTarget::MaxConnections;
+    assert!(
+        !vec.iter()
+            .any(|it| it.vhost == vh_params.name && it.limits.get(key1.as_ref()).is_some())
+    );
+    let key2 = VirtualHostLimitTarget::MaxQueues;
+    assert!(
+        vec.iter()
+            .any(|it| it.vhost == vh_params.name && it.limits.get(key2.as_ref()).is_some())
+    );
+
+    rc.delete_vhost(vh_params.name, false).await.unwrap();
+}
+
+#[tokio::test]
+async fn test_async_list_vhost_limits() {
+    // Virtual host limits require RabbitMQ 3.13+
+    if !async_rabbitmq_version_is_at_least(3, 13, 0).await {
+        return;
+    }
+
+    let endpoint = endpoint();
+    let rc = Client::new(&endpoint, USERNAME, PASSWORD);
+
+    let vh_params = VirtualHostParams::named("test_async_list_vhost_limits");
+    let result1 = rc.create_vhost(&vh_params).await;
+    assert!(result1.is_ok());
+
+    let limit = EnforcedLimitParams::new(VirtualHostLimitTarget::MaxConnections, 500);
+    let result2 = rc.set_vhost_limit(vh_params.name, limit).await;
+    assert!(result2.is_ok());
+
+    let result3 = rc.list_vhost_limits(vh_params.name).await;
+    assert!(result3.is_ok());
+    let vec = result3.unwrap();
+
+    let key1 = VirtualHostLimitTarget::MaxConnections;
+    assert!(
+        vec.iter()
+            .any(|it| it.vhost == vh_params.name && it.limits.get(key1.as_ref()).is_some())
+    );
+    let key2 = VirtualHostLimitTarget::MaxQueues;
+    assert!(
+        !vec.iter()
+            .any(|it| it.vhost == vh_params.name && it.limits.get(key2.as_ref()).is_some())
+    );
+
+    rc.delete_vhost(vh_params.name, false).await.unwrap();
+}

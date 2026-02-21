@@ -32,7 +32,7 @@ They have very similar APIs except that all functions of the async client are, w
 
  * Async client: `src/api/*.rs`
  * Blocking client: `src/blocking_api/*.rs`
- * Error types: `src/error.rs` 
+ * Error types: `src/error.rs`
  * HTTP API request types: `src/requests/*.rs`
  * HTTP API response types: `src/responses/*.rs`
  * Types shared between requests and responses: `src/commons.rs`
@@ -40,32 +40,37 @@ They have very similar APIs except that all functions of the async client are, w
 
 ## Test Suite Layout
 
- * `tests/async*.rs` test modules test the async client, use a Tokio runtime and `async` functions
- * `tests/blocking*.rs` test modules test the blocking client and regular (non-`async`) functions
- * `tests/unit*.rs` modules are for unit tests
- * `tests/*proptests.rs` are property-based tests
- * `tests/test_helpers.rs` contains helper functions shared by multiple test modules
+Tests are consolidated into three test binaries (plus the lib unit test binary) for faster compilation:
+
+ * `tests/integration/` — integration tests that require a locally running RabbitMQ node
+   * `async_*.rs` modules test the async client (Tokio runtime-based, uses `async` functions)
+   * `blocking_*.rs` modules test the blocking client (regular functions)
+   * `test_helpers.rs` contains helper functions shared by integration test modules
+ * `tests/unit/` — unit tests (`unit_*_tests.rs` modules, needs a locally running RabbitMQ node)
+ * `tests/proptests/` — property-based tests (of which `unit_*_proptests.rs` doesn't need a locally running RabbitMQ node)
+
+Each directory has a `main.rs` crate root that declares all modules.
 
 ### `nextest` Test Filters
 
 Key [`nextest` filterset predicates](https://nexte.st/docs/filtersets/reference/):
 
  * `test(pattern)`: matches test names using a substring (e.g. `test(list_nodes)`)
- * `binary(pattern)`: matches the test binary name (e.g. `binary(async_tls_tests)`)
+ * `binary(pattern)`: matches the test binary name (e.g. `binary(integration)`, `binary(unit)`, `binary(proptests)`)
  * `package(name)`: matches by package (e.g. `package(rabbitmq_http_client)`)
  * `test(=exact_name)`: an exact test name match
  * `test(/regex/)`: like `test(pattern)` but uses regular expression matching
  * Set operations: `expr1 + expr2` (union), `expr1 - expr2` (difference), `not expr` (negation)
 
-For example, use `cargo nextest run --all-features -E 'binary(=test_module_name)'` to run
-all tests in a specific module.
+To run all tests in a specific module, use `cargo nextest run --all-features -E 'test(async_queue_tests::)'`.
+To run only unit and property-based tests (no RabbitMQ needed): `cargo nextest run --all-features -E 'binary(unit) + binary(proptests)'`.
 
 ### Property-based Tests
 
 Property-based tests are written using [proptest](https://docs.rs/proptest/latest/proptest/) and
 use a naming convention: they begin with `prop_`.
 
-To run the property-based tests specifically, use `cargo nextest run --all-features -E 'test(~prop_)'`.
+To run the property-based tests specifically, use `cargo nextest run --all-features -E 'binary(proptests)'`.
 
 ## Source of Domain Knowledge
 
