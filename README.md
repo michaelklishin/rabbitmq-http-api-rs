@@ -2,8 +2,6 @@
 
 This is a Rust client for the [RabbitMQ HTTP API](https://www.rabbitmq.com/docs/management#http-api).
 
-See the [HTTP API reference](https://www.rabbitmq.com/docs/http-api-reference) for the complete list of supported endpoints.
-
 This is not an AMQP 0-9-1 client (see [amqprs](https://github.com/gftea/amqprs)), an AMQP 1.0 client (see [fe2o3-amqp](https://github.com/minghuaw/fe2o3-amqp)), or a [RabbitMQ Stream protocol](https://www.rabbitmq.com/docs/streams) client (see [rabbitmq-stream-rust-client](https://github.com/rabbitmq/rabbitmq-stream-rust-client)).
 
 ## Project Maturity
@@ -48,6 +46,17 @@ of credentials in memory for security-demanding use cases:
 rabbitmq_http_client = { version = "0.83.0", features = ["core", "async", "zeroize"] }
 ```
 
+### TLS Backend
+
+By default, this client uses [`native-tls`](https://crates.io/crates/native-tls).
+To use [`rustls`](https://crates.io/crates/rustls) instead:
+
+```toml
+rabbitmq_http_client = { version = "0.83.0", default-features = false, features = ["core", "async", "rustls"] }
+```
+
+Add `hickory-dns` to use the [Hickory DNS](https://github.com/hickory-dns/hickory-dns) resolver.
+
 
 ## Async Client
 
@@ -76,6 +85,72 @@ let rc = ClientBuilder::new()
     .build()?;
 ```
 
+### ClientBuilder: Production Defaults
+
+`with_recommended_defaults` sets a 60-second request timeout,
+3 retry attempts with a 1-second delay, and disables redirects:
+
+```rust
+use rabbitmq_http_client::api::ClientBuilder;
+
+let rc = ClientBuilder::new()
+    .with_endpoint("http://localhost:15672/api")
+    .with_basic_auth_credentials("username", "password")
+    .with_recommended_defaults()
+    .build()?;
+```
+
+### ClientBuilder: Timeouts, Retries, and Redirects
+
+These can be configured individually:
+
+```rust
+use std::time::Duration;
+use rabbitmq_http_client::api::{ClientBuilder, RetrySettings, RedirectPolicy};
+
+let rc = ClientBuilder::new()
+    .with_endpoint("http://localhost:15672/api")
+    .with_basic_auth_credentials("username", "password")
+    // TCP connection timeout (connection establishment + TLS handshake)
+    .with_connect_timeout(Duration::from_secs(10))
+    // overall request/response cycle timeout
+    .with_request_timeout(Duration::from_secs(30))
+    // retry up to 3 times with a 500 ms fixed delay
+    .with_retry_settings(RetrySettings {
+        max_attempts: 3,
+        delay_ms: 500,
+    })
+    // the RabbitMQ HTTP API does not use redirects;
+    // disabling them is an SSRF hardening measure
+    .with_redirect_policy(RedirectPolicy::none())
+    .build()?;
+```
+
+These settings have no effect when a custom HTTP client is passed
+via `ClientBuilder#with_client`; configure the custom client directly.
+
+### Reachability Probe
+
+`probe_reachability` checks whether the node is reachable and authentication, authorization
+steps succeed.
+It returns `ReachabilityProbeOutcome`, not `Result`, because both outcomes are expected:
+
+```rust
+use rabbitmq_http_client::api::Client;
+use rabbitmq_http_client::responses::ReachabilityProbeOutcome;
+
+let rc = Client::new("http://localhost:15672/api", "username", "password");
+
+match rc.probe_reachability().await {
+    ReachabilityProbeOutcome::Reached(details) => {
+        println!("Connected as {} in {:?}", details.current_user, details.duration);
+    }
+    ReachabilityProbeOutcome::Unreachable(error) => {
+        eprintln!("Unreachable: {}", error.user_message());
+    }
+}
+```
+
 ### List Cluster Nodes
 
 ```rust
@@ -88,9 +163,35 @@ let nodes = rc.list_nodes().await?;
 let name = rc.get_cluster_name().await?;
 ```
 
+### Cluster Tags
+
+[Cluster tags](https://www.rabbitmq.com/docs/parameters#cluster-tags) are arbitrary key-value
+pairs for the cluster:
+
+```rust
+use serde_json::{Map, Value, json};
+
+let tags = rc.get_cluster_tags().await?;
+
+let mut new_tags = Map::<String, Value>::new();
+new_tags.insert("environment".to_owned(), json!("production"));
+rc.set_cluster_tags(new_tags).await?;
+
+rc.clear_cluster_tags().await?;
+```
+
+### Node Memory Footprint
+
+```rust
+let footprint = rc.get_node_memory_footprint("rabbit@hostname").await?;
+```
+
+Returns a per-category [memory footprint breakdown](https://www.rabbitmq.com/docs/memory-use),
+in bytes and as percentages.
+
 ### Virtual Host Operations
 
-[Virtual hosts](https://www.rabbitmq.com/docs/vhosts) provide logical grouping and separation of resources.
+[Virtual hosts](https://www.rabbitmq.com/docs/vhosts) group and isolate resources.
 
 ```rust
 let vhosts = rc.list_vhosts().await?;
@@ -118,17 +219,16 @@ rc.create_vhost(&params).await?;
 rc.delete_vhost("my-vhost", false).await?;
 ```
 
-### User Operations
-
-See [Access Control](https://www.rabbitmq.com/docs/access-control) for authentication and authorization details.
+### [User](https://www.rabbitmq.com/docs/access-control) Operations
 
 ```rust
 let users = rc.list_users().await?;
+let user = rc.current_user().await?;
 ```
 
 ### Create User
 
-Uses [password hashing](https://www.rabbitmq.com/docs/passwords) with salted SHA-256.
+Uses [password hashing](https://www.rabbitmq.com/docs/passwords) with salted SHA-256:
 
 ```rust
 use rabbitmq_http_client::{password_hashing, requests::UserParams};
@@ -144,15 +244,25 @@ let params = UserParams {
 rc.create_user(&params).await?;
 ```
 
+SHA-512 is also supported:
+
+```rust
+use rabbitmq_http_client::password_hashing::{self, HashingAlgorithm};
+
+let salt = password_hashing::salt();
+let hash = password_hashing::base64_encoded_salted_password_hash_sha512(&salt, "s3kRe7");
+
+// or via the algorithm enum
+let hash = HashingAlgorithm::SHA512.salt_and_hash(&salt, "s3kRe7")?;
+```
+
 ### Delete User
 
 ```rust
 rc.delete_user("new-user", false).await?;
 ```
 
-### Connection Operations
-
-See [Connections](https://www.rabbitmq.com/docs/connections) for lifecycle and monitoring details.
+### [Connection](https://www.rabbitmq.com/docs/connections) Operations
 
 ```rust
 let connections = rc.list_connections().await?;
@@ -164,9 +274,7 @@ let connections = rc.list_connections().await?;
 rc.close_connection("connection-name", Some("closing for maintenance"), false).await?;
 ```
 
-### Queue Operations
-
-See [Queues](https://www.rabbitmq.com/docs/queues) for queue properties and behaviours.
+### [Queue](https://www.rabbitmq.com/docs/queues) Operations
 
 ```rust
 let queues = rc.list_queues().await?;
@@ -174,9 +282,15 @@ let queues_in_vhost = rc.list_queues_in("/").await?;
 let info = rc.get_queue_info("/", "my-queue").await?;
 ```
 
-### Declare a Classic Queue
+Queues can also be listed by type:
 
-See [Classic Queues](https://www.rabbitmq.com/docs/classic-queues).
+```rust
+let quorum_queues = rc.list_quorum_queues().await?;
+let classic_queues = rc.list_classic_queues_in("/").await?;
+let streams = rc.list_streams().await?;
+```
+
+### Declare a Classic Queue
 
 ```rust
 use rabbitmq_http_client::requests::QueueParams;
@@ -199,9 +313,40 @@ let params = QueueParams::new_quorum_queue("my-qq", Some(args));
 rc.declare_queue("/", &params).await?;
 ```
 
+### Type-Safe Queue Arguments with XArgumentsBuilder
+
+`XArgumentsBuilder` is a type-safe alternative to raw `Map<String, Value>` for
+[optional queue arguments](https://www.rabbitmq.com/docs/queues#optional-arguments):
+
+```rust
+use rabbitmq_http_client::requests::{QueueParams, XArgumentsBuilder, DeadLetterStrategy};
+
+let args = XArgumentsBuilder::new()
+    .max_length(10_000)
+    .dead_letter_exchange("my-dlx")
+    .dead_letter_strategy(DeadLetterStrategy::AtLeastOnce)
+    .delivery_limit(5)
+    .single_active_consumer(true)
+    .build();
+
+let params = QueueParams::new_quorum_queue("my-qq", args);
+rc.declare_queue("/", &params).await?;
+```
+
 ### Declare a Stream
 
 [Streams](https://www.rabbitmq.com/docs/streams) are persistent, replicated append-only logs with non-destructive consumer semantics.
+
+Using `StreamParams`:
+
+```rust
+use rabbitmq_http_client::requests::StreamParams;
+
+let params = StreamParams::with_expiration_and_length_limit("my-stream", "7D", 10_000_000_000);
+rc.declare_stream("/", &params).await?;
+```
+
+Or using `QueueParams`:
 
 ```rust
 use rabbitmq_http_client::requests::QueueParams;
@@ -225,9 +370,30 @@ rc.purge_queue("/", "my-queue").await?;
 rc.delete_queue("/", "my-queue", false).await?;
 ```
 
-### Exchange Operations
+### Batch Queue Deletion
 
-See [Exchanges](https://www.rabbitmq.com/docs/exchanges) to learn more about the exchange types and their routing semantics.
+```rust
+rc.delete_queues("/", &["queue-1", "queue-2", "queue-3"], false).await?;
+```
+
+### Pagination
+
+Some list operations support pagination:
+
+```rust
+use rabbitmq_http_client::commons::PaginationParams;
+
+let page = PaginationParams::first_page(100);
+let queues = rc.list_queues_paged(&page).await?;
+
+if let Some(next) = page.next_page() {
+    let more_queues = rc.list_queues_paged(&next).await?;
+}
+```
+
+Paginated variants: `list_queues_paged`, `list_queues_in_paged`, `list_connections_paged`.
+
+### [Exchange](https://www.rabbitmq.com/docs/exchanges) Operations
 
 ```rust
 let exchanges = rc.list_exchanges().await?;
@@ -274,8 +440,6 @@ rc.bind_queue("/", "my-queue", "my-exchange", Some("routing.key"), None).await?;
 
 ### Bind Exchange to Exchange
 
-See [Exchange-to-Exchange Bindings](https://www.rabbitmq.com/docs/e2e).
-
 ```rust
 rc.bind_exchange("/", "destination-exchange", "source-exchange", Some("routing.key"), None).await?;
 ```
@@ -286,19 +450,17 @@ rc.bind_exchange("/", "destination-exchange", "source-exchange", Some("routing.k
 use rabbitmq_http_client::{commons::BindingDestinationType, requests::BindingDeletionParams};
 
 let params = BindingDeletionParams {
-    vhost: "/",
+    virtual_host: "/",
     source: "my-exchange",
     destination: "my-queue",
     destination_type: BindingDestinationType::Queue,
     routing_key: "routing.key",
-    properties_key: "routing.key",
+    arguments: None,
 };
 rc.delete_binding(&params, false).await?;
 ```
 
-### Permission Operations
-
-See [Access Control](https://www.rabbitmq.com/docs/access-control) for permission patterns.
+### [Permission](https://www.rabbitmq.com/docs/access-control) Operations
 
 ```rust
 use rabbitmq_http_client::requests::Permissions;
@@ -348,6 +510,109 @@ rc.declare_policy(&params).await?;
 rc.delete_policy("/", "my-policy", false).await?;
 ```
 
+### Shovel Operations
+
+[Dynamic shovels](https://www.rabbitmq.com/docs/shovel-dynamic) move messages between queues, potentially across clusters.
+
+```rust
+use rabbitmq_http_client::commons::MessageTransferAcknowledgementMode;
+use rabbitmq_http_client::requests::{
+    Amqp091ShovelParams, Amqp091ShovelSourceParams, Amqp091ShovelDestinationParams,
+};
+
+let params = Amqp091ShovelParams {
+    vhost: "/",
+    name: "my-shovel",
+    acknowledgement_mode: MessageTransferAcknowledgementMode::WhenConfirmed,
+    reconnect_delay: Some(5),
+    source: Amqp091ShovelSourceParams::queue_source(
+        "amqp://source-host:5672", "source-queue",
+    ),
+    destination: Amqp091ShovelDestinationParams::queue_destination(
+        "amqp://dest-host:5672", "dest-queue",
+    ),
+};
+rc.declare_amqp091_shovel(params).await?;
+
+let shovels = rc.list_shovels().await?;
+let shovels_in_vhost = rc.list_shovels_in("/").await?;
+rc.delete_shovel("/", "my-shovel", false).await?;
+```
+
+AMQP 1.0 shovels use `declare_amqp10_shovel`.
+
+### Federation Operations
+
+[Federation](https://www.rabbitmq.com/docs/federation) replicates exchanges and queues across clusters.
+
+```rust
+use rabbitmq_http_client::requests::FederationUpstreamParams;
+
+let params = FederationUpstreamParams {
+    vhost: "/",
+    name: "upstream-cluster",
+    uri: "amqp://remote-host:5672",
+    ..Default::default()
+};
+rc.declare_federation_upstream(params).await?;
+
+let upstreams = rc.list_federation_upstreams().await?;
+let links = rc.list_federation_links().await?;
+rc.delete_federation_upstream("/", "upstream-cluster", false).await?;
+```
+
+### Runtime Parameters
+
+[Runtime parameters](https://www.rabbitmq.com/docs/parameters) store per-vhost plugin settings
+such as federation upstream and shovel configurations.
+
+```rust
+use rabbitmq_http_client::requests::RuntimeParameterDefinition;
+use serde_json::{Map, Value, json};
+
+// set a max-connections limit on a virtual host
+let mut value = Map::<String, Value>::new();
+value.insert("max-connections".to_owned(), json!(500));
+
+let param = RuntimeParameterDefinition {
+    component: "vhost-limits",
+    vhost: "/",
+    name: "limits",
+    value,
+};
+rc.upsert_runtime_parameter(&param).await?;
+
+let params = rc.list_runtime_parameters().await?;
+rc.clear_runtime_parameter("vhost-limits", "/", "limits", false).await?;
+```
+
+### Global Runtime Parameters
+
+Global [runtime parameters](https://www.rabbitmq.com/docs/parameters) are cluster-wide,
+not scoped to a virtual host.
+
+```rust
+use rabbitmq_http_client::requests::GlobalRuntimeParameterDefinition;
+use serde_json::{Map, Value, json};
+
+// tag the cluster with metadata
+let mut tags = Map::<String, Value>::new();
+tags.insert("region".to_owned(), json!("ca-central-1"));
+tags.insert("environment".to_owned(), json!("production"));
+
+let mut value = Map::<String, Value>::new();
+value.insert("cluster_tags".to_owned(), json!(tags));
+
+let param = GlobalRuntimeParameterDefinition {
+    name: "cluster_tags",
+    value,
+};
+rc.upsert_global_runtime_parameter(&param).await?;
+
+let params = rc.list_global_runtime_parameters().await?;
+rc.clear_global_runtime_parameter("cluster_tags").await?;
+```
+
 ### Definition Operations
 
 [Definitions](https://www.rabbitmq.com/docs/definitions) contain schema, topology, and user metadata for export and import.
@@ -360,27 +625,70 @@ let vhost_definitions = rc.export_vhost_definitions("/").await?;
 ### Import Definitions
 
 ```rust
-rc.import_definitions(&definitions).await?;
+let defs: serde_json::Value = serde_json::from_str(&definitions)?;
+rc.import_definitions(defs).await?;
 ```
 
-### Health Checks
+### Definition Transformers
 
-See [Monitoring](https://www.rabbitmq.com/docs/monitoring) for health check details.
+Exported definitions can be transformed before import, e.g. to migrate from
+[classic mirrored queues to quorum queues](https://www.rabbitmq.com/blog/2025/07/29/latest-benefits-of-rmq-and-migrating-to-qq-along-the-way):
+
+```rust
+use rabbitmq_http_client::transformers::{
+    TransformationChain, PrepareForQuorumQueueMigration, DropEmptyPolicies,
+};
+
+let mut defs = rc.export_cluster_wide_definitions_as_data().await?;
+
+let chain = TransformationChain::new(vec![
+    Box::new(PrepareForQuorumQueueMigration {}),
+    Box::new(DropEmptyPolicies {}),
+]);
+chain.apply(&mut defs);
+```
+
+Available transformers:
+
+| Transformer                           | Description                                                                 |
+|---------------------------------------|-----------------------------------------------------------------------------|
+| `PrepareForQuorumQueueMigration`      | Strips classic mirrored queue policy keys and incompatible x-arguments      |
+| `StripCmqKeysFromPolicies`            | Removes only the classic mirrored queue-related keys from policies          |
+| `DropEmptyPolicies`                   | Removes policies with empty definitions (use after stripping CMQ keys)      |
+| `ExcludeUsers`                        | Removes all users from the definition set                                   |
+| `ExcludePermissions`                  | Removes all permissions from the definition set                             |
+| `ExcludeRuntimeParameters`            | Removes all runtime parameters from the definition set                      |
+| `ExcludePolicies`                     | Removes all policies from the definition set                                |
+| `ObfuscateUsernames`                  | Replaces usernames and passwords with dummy values                          |
+
+Virtual host-level equivalents (`PrepareForQuorumQueueMigrationVhost`, `StripCmqKeysFromVhostPolicies`,
+`DropEmptyVhostPolicies`) use `VirtualHostTransformationChain`.
+
+### [Health Checks](https://www.rabbitmq.com/docs/monitoring)
 
 ```rust
 let alarms = rc.health_check_cluster_wide_alarms().await?;
 let quorum_critical = rc.health_check_if_node_is_quorum_critical().await?;
 let port_check = rc.health_check_port_listener(5672).await?;
+let protocol_check = rc.health_check_protocol_listener("amqp").await?;
 ```
 
 ### Feature Flags
 
-See [Feature Flags](https://www.rabbitmq.com/docs/feature-flags).
+[Feature flags](https://www.rabbitmq.com/docs/feature-flags) gate new functionality that requires
+cluster-wide coordination.
 
 ```rust
 let flags = rc.list_feature_flags().await?;
 rc.enable_feature_flag("feature_name").await?;
 rc.enable_all_stable_feature_flags().await?;
+```
+
+### Deprecated Features
+
+```rust
+let all = rc.list_all_deprecated_features().await?;
+let in_use = rc.list_deprecated_features_in_use().await?;
 ```
 
 ### Rebalance Queue Leaders
@@ -389,6 +697,75 @@ Redistributes quorum queue and stream leaders across cluster nodes.
 
 ```rust
 rc.rebalance_queue_leaders().await?;
+```
+
+### Idempotent Deletes
+
+All `delete_*` and `clear_*` functions accept an `idempotently: bool` argument.
+When `true`, `404 Not Found` responses are silently ignored:
+
+```rust
+// will not fail if the queue does not exist
+rc.delete_queue("/", "my-queue", true).await?;
+```
+
+### Error Classification
+
+`HttpClientError` has methods for classifying errors:
+
+```rust
+match rc.delete_queue("/", "my-queue", false).await {
+    Ok(()) => {}
+    Err(e) if e.is_not_found() => eprintln!("Queue not found"),
+    Err(e) if e.is_unauthorized() => eprintln!("Bad credentials"),
+    Err(e) if e.is_connection_error() => eprintln!("Cannot reach node"),
+    Err(e) if e.is_timeout() => eprintln!("Request timed out"),
+    Err(e) => eprintln!("Error: {}", e.user_message()),
+}
+```
+
+Predicates: `is_not_found`, `is_already_exists`, `is_unauthorized`, `is_forbidden`,
+`is_client_error`, `is_server_error`, `is_connection_error`, `is_timeout`, `is_tls_handshake_error`.
+
+For further detail: `status_code`, `url`, `error_details`.
+
+### URI Builder for Federation and Shovel URIs
+
+`UriBuilder` builds AMQP URIs with [TLS parameters](https://www.rabbitmq.com/docs/ssl)
+for [federation](https://www.rabbitmq.com/docs/federation) and [shovel](https://www.rabbitmq.com/docs/shovel) connections:
+
+```rust
+use rabbitmq_http_client::uris::{UriBuilder, TlsClientSettings};
+use rabbitmq_http_client::commons::TlsPeerVerificationMode;
+
+let uri = UriBuilder::new("amqps://user:pass@remote-host:5671/vhost")
+    .unwrap()
+    .with_tls_peer_verification(TlsPeerVerificationMode::Enabled)
+    .with_ca_cert_file("/path/to/ca_bundle.pem")
+    .build()
+    .unwrap();
+
+// group TLS settings for reuse across multiple URIs
+let tls = TlsClientSettings::with_verification()
+    .ca_cert_file("/path/to/ca_bundle.pem")
+    .client_cert_file("/path/to/client_cert.pem")
+    .client_key_file("/path/to/client_key.pem");
+
+let uri = UriBuilder::new("amqps://user:pass@remote-host:5671/vhost")
+    .unwrap()
+    .replace(tls)
+    .build()
+    .unwrap();
+```
+
+### Tanzu RabbitMQ: Schema Definition Sync and Warm Standby Replication
+
+Tanzu RabbitMQ [Schema Definition Sync](https://www.rabbitmq.com/docs/definitions#import-on-boot-schema-definition-sync) (SDS)
+and Warm Standby Replication (WSR):
+
+```rust
+rc.enable_schema_definition_sync_on_node(Some("rabbit@hostname")).await?;
+rc.disable_schema_definition_sync_on_node(Some("rabbit@hostname")).await?;
 ```
 
 
@@ -640,7 +1017,7 @@ let client = ClientBuilder::new()
     .build()?;
 ```
 
-The user chooses the [certificate store](https://github.com/rustls/rustls-platform-verifier?tab=readme-ov-file#deployment-considerations) for x.509 peer verification and the minimum TLS version.
+Choose the [certificate store](https://github.com/rustls/rustls-platform-verifier?tab=readme-ov-file#deployment-considerations) for x.509 peer verification and the minimum TLS version.
 
 ### Defaults
 
@@ -701,7 +1078,7 @@ async fn setup_environment(rc: &Client) -> Result<(), Box<dyn std::error::Error>
 ### 2. Blue-Green Deployment Migration
 
 Set up [queue federation](https://www.rabbitmq.com/docs/federated-queues) for migrating from an old cluster to a new one.
-See this [RabbitMQ blog post](https://www.rabbitmq.com/blog/2025/07/29/latest-benefits-of-rmq-and-migrating-to-qq-along-the-way) for context.
+This [RabbitMQ blog post](https://www.rabbitmq.com/blog/2025/07/29/latest-benefits-of-rmq-and-migrating-to-qq-along-the-way) covers the approach in detail.
 
 ```rust
 use rabbitmq_http_client::{api::Client, commons::PolicyTarget, requests::PolicyParams};
@@ -715,11 +1092,11 @@ async fn setup_federation_for_migration(
     vhost: &str,
 ) -> Result<(), Box<dyn std::error::Error>> {
     // 1. Create federation upstream pointing to old cluster
-    let upstream_params = rabbitmq_http_client::requests::EnforcedFederationUpstreamParams {
+    let upstream_params = rabbitmq_http_client::requests::FederationUpstreamParams {
         vhost,
         name: "blue-cluster",
         uri: blue_uri,
-        ack_mode: Some(rabbitmq_http_client::commons::MessageTransferAcknowledgementMode::WhenConfirmed),
+        ack_mode: rabbitmq_http_client::commons::MessageTransferAcknowledgementMode::WhenConfirmed,
         ..Default::default()
     };
     green.declare_federation_upstream(upstream_params).await?;
@@ -741,7 +1118,7 @@ async fn setup_federation_for_migration(
     // 3. Verify federation links are running
     let links = green.list_federation_links().await?;
     for link in links {
-        println!("Federation link: {} -> {} ({})", link.upstream, link.queue, link.status);
+        println!("Federation link: {} ({}, {})", link.upstream, link.typ, link.status);
     }
 
     Ok(())
@@ -772,8 +1149,8 @@ async fn check_health(rc: &Client) -> Result<(), Box<dyn std::error::Error>> {
 
     // Report queue depths
     for q in rc.list_queues().await? {
-        if q.messages.unwrap_or(0) > 10_000 {
-            println!("{}: {} messages", q.name, q.messages.unwrap_or(0));
+        if q.message_count > 10_000 {
+            println!("{}: {} messages", q.name, q.message_count);
         }
     }
 
@@ -792,12 +1169,12 @@ async fn backup_and_restore(source: &Client, dest: &Client) -> Result<(), Box<dy
     println!("Backing up {} vhosts, {} queues, {} exchanges",
         defs.virtual_hosts.len(), defs.queues.len(), defs.exchanges.len());
 
-    dest.import_definitions(&serde_json::to_string(&defs)?).await?;
+    dest.import_definitions(serde_json::to_value(&defs)?).await?;
     Ok(())
 }
 ```
 
-### 5. Event-Driven Architecture Topology
+### 5. Event Topology with Dead-Lettering
 
 Set up a fan-out pattern with dead-lettering for failed messages:
 
@@ -852,7 +1229,7 @@ async fn setup_event_topology(rc: &Client, vhost: &str) -> Result<(), Box<dyn st
 
 ### 6. Pre-Upgrade Health Verification
 
-Run comprehensive checks before a [rolling upgrade](https://www.rabbitmq.com/docs/upgrade):
+Before a [rolling upgrade](https://www.rabbitmq.com/docs/upgrade):
 
 ```rust
 use rabbitmq_http_client::api::Client;
@@ -866,11 +1243,11 @@ async fn pre_upgrade_checks(rc: &Client) -> Result<bool, Box<dyn std::error::Err
         ready = false;
     }
 
-    // 2. All nodes running
+    // 2. No nodes being drained
     let nodes = rc.list_nodes().await?;
     for node in &nodes {
-        if !node.running {
-            eprintln!("BLOCKED: Node {} is not running", node.name);
+        if node.being_drained {
+            eprintln!("BLOCKED: Node {} is being drained", node.name);
             ready = false;
         }
     }
@@ -881,9 +1258,10 @@ async fn pre_upgrade_checks(rc: &Client) -> Result<bool, Box<dyn std::error::Err
     }
 
     // 4. Feature flags enabled
+    use rabbitmq_http_client::responses::{FeatureFlagState, FeatureFlagStability};
     let flags = rc.list_feature_flags().await?;
     let disabled: Vec<_> = flags.iter()
-        .filter(|f| f.state != "enabled" && f.stability == "stable")
+        .filter(|f| f.state != FeatureFlagState::Enabled && f.stability == FeatureFlagStability::Stable)
         .collect();
     if !disabled.is_empty() {
         eprintln!("WARNING: {} stable feature flags are not enabled", disabled.len());
@@ -898,7 +1276,7 @@ async fn pre_upgrade_checks(rc: &Client) -> Result<bool, Box<dyn std::error::Err
         }
     }
 
-    // 6. Check protocol listeners
+    // 6. Check port listeners
     for port in [5672, 15672, 5552] {
         if rc.health_check_port_listener(port).await.is_err() {
             eprintln!("WARNING: Port {} is not listening", port);
@@ -911,8 +1289,6 @@ async fn pre_upgrade_checks(rc: &Client) -> Result<bool, Box<dyn std::error::Err
 
 ### 7. Connection and Channel Audit
 
-Monitor connection health and detect issues:
-
 ```rust
 use rabbitmq_http_client::api::Client;
 
@@ -922,7 +1298,7 @@ async fn audit_connections(rc: &Client) -> Result<(), Box<dyn std::error::Error>
     // Group by user
     let mut by_user: std::collections::HashMap<String, Vec<_>> = std::collections::HashMap::new();
     for conn in &connections {
-        by_user.entry(conn.user.clone()).or_default().push(conn);
+        by_user.entry(conn.username.clone()).or_default().push(conn);
     }
 
     println!("Connection summary ({} total):", connections.len());
@@ -931,22 +1307,22 @@ async fn audit_connections(rc: &Client) -> Result<(), Box<dyn std::error::Error>
     }
 
     // Find connections with high channel count
-    for conn in connections.iter().filter(|c| c.channels.unwrap_or(0) > 100) {
+    for conn in connections.iter().filter(|c| c.channel_count > 100) {
         println!("WARNING: {} has {} channels (user: {})",
-            conn.name, conn.channels.unwrap_or(0), conn.user);
+            conn.name, conn.channel_count, conn.username);
     }
 
-    // Find idle channels
+    // Find channels with many unacknowledged messages
     let channels = rc.list_channels().await?;
-    for ch in channels.iter().filter(|c| c.idle_since.is_some()) {
-        println!("Idle channel: {} on {}", ch.name, ch.connection_name);
+    for ch in channels.iter().filter(|c| c.messages_unacknowledged > 1000) {
+        println!("WARNING: {} has {} unacked messages", ch.name, ch.messages_unacknowledged);
     }
 
     Ok(())
 }
 ```
 
-### 8. Multi-Tenant Topology Setup
+### 8. Multi-Tenant Setup
 
 Provision isolated environments for multiple tenants:
 
