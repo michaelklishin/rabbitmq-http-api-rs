@@ -2,6 +2,7 @@
 name = "rabbitmq_http_client"
 version = "0.84.0"
 edition = "2024"
+rust-version = "1.94"
 
 description = "RabbitMQ HTTP API client"
 license = "MIT OR Apache-2.0"
