@@ -105,6 +105,12 @@ The tag push triggers `.github/workflows/release.yml`, which publishes the crate
 via Trusted Publishing (OIDC) and creates a GitHub Release with changelog notes. No manual
 `cargo publish` needed.
 
+### GitHub Actions
+
+The release workflow uses [`michaelklishin/rust-build-package-release-action`](https://github.com/michaelklishin/rust-build-package-release-action).
+
+For verifying YAML file syntax, use `yq`, Ruby or Python YAML modules (whichever is available).
+
 ## Git Commits
 
  * Do not commit changes automatically without an explicit permission to do so
