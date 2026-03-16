@@ -3,6 +3,7 @@
 name: Release
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+*'
@@ -15,8 +16,24 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: michaelklishin/rust-build-package-release-action@v2
+        with:
+          command: validate-changelog
+
+      - uses: michaelklishin/rust-build-package-release-action@v2
+        with:
+          command: validate-version
+          validate-cargo-toml: 'true'
+
   publish:
     name: Publish to crates.io
+    needs: [validate]
     runs-on: ubuntu-24.04
     environment: release
     timeout-minutes: 15
@@ -25,11 +42,6 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
 
-      - uses: michaelklishin/rust-build-package-release-action@v2
-        with:
-          command: validate-version
-          validate-cargo-toml: 'true'
-
       - name: Authenticate with crates.io
         id: auth
         uses: rust-lang/crates-io-auth-action@v1
@@ -37,12 +49,12 @@ jobs:
       - uses: michaelklishin/rust-build-package-release-action@v2
         with:
           command: publish-crate
-          locked: 'true'
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
 
   github-release:
     name: Create GitHub Release
+    needs: [validate]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
