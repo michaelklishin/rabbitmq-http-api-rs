@@ -147,6 +147,86 @@ fn test_user_message_other() {
 }
 
 #[test]
+fn test_display_request_error_includes_underlying_error() {
+    let err = reqwest::blocking::get("not-a-valid-url").unwrap_err();
+    let error = HttpClientError::RequestError {
+        error: err,
+        backtrace: Backtrace::new(),
+    };
+    let msg = error.to_string();
+    assert!(
+        msg.starts_with("encountered an error when performing an HTTP request:"),
+        "unexpected message: {}",
+        msg
+    );
+    assert!(
+        msg.len() > "encountered an error when performing an HTTP request:".len(),
+        "underlying error detail missing: {}",
+        msg
+    );
+}
+
+#[test]
+fn test_display_invalid_header_value_includes_underlying_error() {
+    use reqwest::header::HeaderValue;
+    let err = HeaderValue::from_bytes(&[0x01]).unwrap_err();
+    let error = HttpClientError::InvalidHeaderValue { error: err };
+    let msg = error.to_string();
+    assert!(
+        msg.starts_with("could not convert provided value into an HTTP header value:"),
+        "unexpected message: {}",
+        msg
+    );
+    assert!(
+        msg.len() > "could not convert provided value into an HTTP header value:".len(),
+        "underlying error detail missing: {}",
+        msg
+    );
+}
+
+#[test]
+fn test_display_incompatible_body_includes_underlying_error() {
+    use rabbitmq_http_client::error::ConversionError;
+    let error = HttpClientError::IncompatibleBody {
+        error: ConversionError::ParsingError {
+            message: "unexpected token".to_owned(),
+        },
+        backtrace: Backtrace::new(),
+    };
+    let msg = error.to_string();
+    assert!(
+        msg.contains("unexpected token"),
+        "underlying error detail missing: {}",
+        msg
+    );
+}
+
+#[test]
+fn test_display_endpoint_validation_client_build_error_includes_source() {
+    use rabbitmq_http_client::error::EndpointValidationError;
+    // An invalid PEM certificate forces reqwest::ClientBuilder::build() to fail
+    let bad_cert = reqwest::Certificate::from_pem(b"not a valid certificate");
+    if let Err(source) = bad_cert {
+        let error = EndpointValidationError::ClientBuildError { source };
+        let msg = error.to_string();
+        assert!(
+            msg.starts_with("failed to build HTTP client:"),
+            "unexpected message: {}",
+            msg
+        );
+        assert!(
+            msg.len() > "failed to build HTTP client:".len(),
+            "underlying error detail missing: {}",
+            msg
+        );
+    } else {
+        // If we can't construct the error, at least verify the message format compiles
+        // by checking the variant's Display output directly via the error type
+        panic!("expected certificate parsing to fail");
+    }
+}
+
+#[test]
 fn test_error_details_from_json() {
     let json = r#"{"error": "bad_request", "reason": "Invalid queue name"}"#;
     let details = ErrorDetails::from_json(json);
