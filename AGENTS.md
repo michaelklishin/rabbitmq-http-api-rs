@@ -11,8 +11,8 @@ All the standard Cargo commands apply but with one important detail: make sure t
 both the async and blocking client are built, tested, linted, and so on.
 
  * `cargo build --all-features` to build
- * `cargo nextest run --all-features` to run tests
- * `cargo clippy --all-features` to lint
+ * `RUSTFLAGS="-D warnings" cargo nextest run --all-features` to run tests
+ * `RUSTFLAGS="-D warnings" cargo clippy --all-features` to lint
  * `cargo fmt` to reformat
  * `cargo publish` to publish the crate
 
@@ -50,6 +50,8 @@ Tests are consolidated into three test binaries (plus the lib unit test binary) 
  * `tests/proptests/` — property-based tests (of which `unit_*_proptests.rs` doesn't need a locally running RabbitMQ node)
 
 Each directory has a `main.rs` crate root that declares all modules.
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for step-by-step Docker setup instructions for the local test environment.
 
 ### `nextest` Test Filters
 
