@@ -2,7 +2,10 @@
 
 ## v0.86.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * `HttpClientError` `Display` messages now include the underlying error details for
+   `RequestError`, `InvalidHeaderValue`, `IncompatibleBody`, and `EndpointValidationError::ClientBuildError`
 
 
 ## v0.85.0 (Mar 16, 2026)

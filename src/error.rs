@@ -29,7 +29,7 @@ pub enum EndpointValidationError {
     UnsupportedScheme { endpoint: String },
 
     /// The underlying HTTP client could not be constructed.
-    #[error("failed to build HTTP client")]
+    #[error("failed to build HTTP client: {source}")]
     ClientBuildError {
         #[source]
         source: reqwest::Error,
@@ -100,20 +100,20 @@ pub enum Error<U, S, E, BT> {
         "Cannot delete a binding: multiple matching bindings were found, provide additional properties"
     )]
     MultipleMatchingBindings,
-    #[error("could not convert provided value into an HTTP header value")]
+    #[error("could not convert provided value into an HTTP header value: {error}")]
     InvalidHeaderValue { error: InvalidHeaderValue },
     #[error("Unsupported argument value for property (field) {property}")]
     UnsupportedArgumentValue { property: String },
     #[error("Missing required argument")]
     MissingProperty { argument: String },
-    #[error("Response is incompatible with the target data type")]
+    #[error("Response is incompatible with the target data type: {error}")]
     IncompatibleBody {
         error: ConversionError,
         backtrace: BT,
     },
     #[error("Could not parse a value: {message}")]
     ParsingError { message: String },
-    #[error("encountered an error when performing an HTTP request")]
+    #[error("encountered an error when performing an HTTP request: {error}")]
     RequestError { error: E, backtrace: BT },
     #[error("an unspecified error")]
     Other,
