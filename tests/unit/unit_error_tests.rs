@@ -16,8 +16,8 @@ use backtrace::Backtrace;
 use rabbitmq_http_client::error::{
     ConversionError, EndpointValidationError, ErrorDetails, HttpClientError,
 };
-use reqwest::header::HeaderValue;
 use reqwest::StatusCode;
+use reqwest::header::HeaderValue;
 
 #[test]
 fn test_user_message_client_error_with_details() {
