@@ -13,7 +13,10 @@
 // limitations under the License.
 
 use backtrace::Backtrace;
-use rabbitmq_http_client::error::{ErrorDetails, HttpClientError};
+use rabbitmq_http_client::error::{
+    ConversionError, EndpointValidationError, ErrorDetails, HttpClientError,
+};
+use reqwest::header::HeaderValue;
 use reqwest::StatusCode;
 
 #[test]
@@ -168,7 +171,6 @@ fn test_display_request_error_includes_underlying_error() {
 
 #[test]
 fn test_display_invalid_header_value_includes_underlying_error() {
-    use reqwest::header::HeaderValue;
     let err = HeaderValue::from_bytes(&[0x01]).unwrap_err();
     let error = HttpClientError::InvalidHeaderValue { error: err };
     let msg = error.to_string();
@@ -186,7 +188,6 @@ fn test_display_invalid_header_value_includes_underlying_error() {
 
 #[test]
 fn test_display_incompatible_body_includes_underlying_error() {
-    use rabbitmq_http_client::error::ConversionError;
     let error = HttpClientError::IncompatibleBody {
         error: ConversionError::ParsingError {
             message: "unexpected token".to_owned(),
@@ -203,7 +204,6 @@ fn test_display_incompatible_body_includes_underlying_error() {
 
 #[test]
 fn test_display_endpoint_validation_client_build_error_includes_source() {
-    use rabbitmq_http_client::error::EndpointValidationError;
     // An invalid PEM certificate forces reqwest::ClientBuilder::build() to fail
     let bad_cert = reqwest::Certificate::from_pem(b"not a valid certificate");
     if let Err(source) = bad_cert {
