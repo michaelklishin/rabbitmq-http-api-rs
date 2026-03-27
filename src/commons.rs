@@ -406,7 +406,7 @@ pub enum ExchangeType {
     /// Consistent hashing (consistent hash) exchange
     #[serde(rename = "x-consistent-hash")]
     ConsistentHashing,
-    /// Modulus hash, ships with the 'rabbitmq-sharding' plugin
+    /// Modulus hash exchange, included with RabbitMQ core since 4.3.0
     #[serde(rename = "x-modulus-hash")]
     ModulusHash,
     /// Random exchange
