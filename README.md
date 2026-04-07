@@ -21,20 +21,20 @@ All older series have [reached End of Life](https://www.rabbitmq.com/release-inf
 ### Async Client
 
 ```toml
-rabbitmq_http_client = { version = "0.83.0", features = ["core", "async"] }
+rabbitmq_http_client = { version = "0.87.0", features = ["core", "async"] }
 ```
 
 ### Blocking Client
 
 ```toml
-rabbitmq_http_client = { version = "0.83.0", features = ["core", "blocking"] }
+rabbitmq_http_client = { version = "0.87.0", features = ["core", "blocking"] }
 ```
 
 ### With Tabled Support
 
 ```toml
-rabbitmq_http_client = { version = "0.83.0", features = ["core", "async", "tabled"] }
-rabbitmq_http_client = { version = "0.83.0", features = ["core", "blocking", "tabled"] }
+rabbitmq_http_client = { version = "0.87.0", features = ["core", "async", "tabled"] }
+rabbitmq_http_client = { version = "0.87.0", features = ["core", "blocking", "tabled"] }
 ```
 
 ### With Zeroize Support
@@ -43,7 +43,7 @@ The `zeroize` feature provides a `Password` type that offers [zeroisation](https
 of credentials in memory for security-demanding use cases:
 
 ```toml
-rabbitmq_http_client = { version = "0.83.0", features = ["core", "async", "zeroize"] }
+rabbitmq_http_client = { version = "0.87.0", features = ["core", "async", "zeroize"] }
 ```
 
 ### TLS Backend
@@ -52,7 +52,7 @@ By default, this client uses [`native-tls`](https://crates.io/crates/native-tls)
 To use [`rustls`](https://crates.io/crates/rustls) instead:
 
 ```toml
-rabbitmq_http_client = { version = "0.83.0", default-features = false, features = ["core", "async", "rustls"] }
+rabbitmq_http_client = { version = "0.87.0", default-features = false, features = ["core", "async", "rustls"] }
 ```
 
 Add `hickory-dns` to use the [Hickory DNS](https://github.com/hickory-dns/hickory-dns) resolver.
