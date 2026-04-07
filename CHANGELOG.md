@@ -2,7 +2,14 @@
 
 ## v0.87.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * `ExchangeType` now covers the non-standard exchange types shipped with RabbitMQ core or Tanzu RabbitMQ:
+   `ConsistentHashing`, `ModulusHash`, `Random`, `LocalRandom`,
+   `JmsTopic`, `RecentHistory`, `DelayedMessage`, `MessageDeduplication`, plus a `Plugin(String)`
+   catch-all for arbitrary plugin exchange types
+ * `ExchangeType::ModulusHash` is a new value for the `x-modulus-hash` exchange,
+   which is included into RabbitMQ core as of `4.3.0` (previously it was a part of the `rabbitmq-sharding` plugin)
 
 
 ## v0.86.0 (Mar 20, 2026)
