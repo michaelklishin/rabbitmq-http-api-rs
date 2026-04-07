@@ -96,12 +96,13 @@ a `## v0.N.0 (in development)` section at the top.
 To produce a new release:
 
  1. Update the changelog: replace `(in development)` with today's date, e.g. `(Feb 20, 2026)`. Make sure all notable changes since the previous release are listed
- 2. Commit with the message `0.N.0` (just the version number, nothing else)
- 3. Tag the commit: `git tag v0.N.0`
- 4. Bump the dev version: back on `main`, set `Cargo.toml` version to `0.(N+1).0`
- 5. Add a new `## v0.(N+1).0 (in development)` section to `CHANGELOG.md` with `No changes yet.` underneath
- 6. Commit with the message `Bump dev version`
- 7. Push: `git push && git push --tags`
+ 2. Update the version references in `README.md` to `0.N.0`. This must be done *before* the release commit is made and the release is tagged, so that the published version matches what users see in the README
+ 3. Commit with the message `0.N.0` (just the version number, nothing else)
+ 4. Tag the commit: `git tag v0.N.0`
+ 5. Bump the dev version: back on `main`, set `Cargo.toml` version to `0.(N+1).0`
+ 6. Add a new `## v0.(N+1).0 (in development)` section to `CHANGELOG.md` with `No changes yet.` underneath
+ 7. Commit with the message `Bump dev version`
+ 8. Push: `git push && git push --tags`
 
 The tag push triggers `.github/workflows/release.yml`, which publishes the crate to crates.io
 via Trusted Publishing (OIDC) and creates a GitHub Release with changelog notes. No manual
