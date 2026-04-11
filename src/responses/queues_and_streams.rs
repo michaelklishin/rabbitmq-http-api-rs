@@ -21,7 +21,7 @@ use crate::responses::{
     ConnectionDetails, NodeList, Rate,
     cluster::GarbageCollectionDetails,
     definitions::{NamedPolicyTargetObject, QueueOps, XArguments},
-    policies::Policy,
+    policies::{Policy, PolicyDefinition},
 };
 use serde::Deserialize;
 
@@ -111,6 +111,11 @@ pub struct QueueInfo {
 
     #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub policy: Option<String>,
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub operator_policy: Option<String>,
+    #[serde(default)]
+    #[cfg_attr(feature = "tabled", tabled(skip))]
+    pub effective_policy_definition: Option<PolicyDefinition>,
 
     #[serde(default)]
     pub message_bytes: u64,
@@ -183,6 +188,11 @@ pub struct DetailedQueueInfo {
 
     #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub policy: Option<String>,
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub operator_policy: Option<String>,
+    #[serde(default)]
+    #[cfg_attr(feature = "tabled", tabled(skip))]
+    pub effective_policy_definition: Option<PolicyDefinition>,
 
     #[serde(default)]
     pub message_bytes: u64,
