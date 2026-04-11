@@ -2,7 +2,10 @@
 
 ## v0.88.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * `QueueInfo#operator_policy` and `QueueInfo#effective_policy_definition` are new functions
+   that expose a couple of new-ish queue metrics to this client
 
 
 ## v0.87.0 (Apr 7, 2026)
