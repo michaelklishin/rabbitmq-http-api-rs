@@ -2,6 +2,14 @@
 
 ## v0.88.0 (in development)
 
+### Breaking Changes
+
+ * `responses::OAuthConfiguration` and `Client#oauth_configuration` were removed
+   because the endpoint they were relying on is no longer available in RabbitMQ `4.3.0`.
+
+   In earlier versions the endpoint hasn't been used by RabbitMQ's management UI
+   since `3.11.0`.
+
 ### Enhancements
 
  * `QueueInfo#operator_policy` and `QueueInfo#effective_policy_definition` are new functions

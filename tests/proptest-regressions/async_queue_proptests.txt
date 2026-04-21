@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 30cb4676fd29d1ce7e64526e54c659d405e51e79f08984e7e94cf2bed7d626bf # shrinks to (name, durable, auto_delete, optional_args) = ("rust.tests.proptest.0AAaAAAA", false, false, Some({"x-max-length": Number(360994), "x-message-ttl": Number(89082)}))

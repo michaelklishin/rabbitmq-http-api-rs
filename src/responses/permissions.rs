@@ -14,7 +14,6 @@
 
 use crate::commons::{Username, VirtualHostName};
 #[cfg(feature = "tabled")]
-use crate::formatting::display_option;
 use serde::{Deserialize, Serialize};
 use serde_json::Map;
 
@@ -64,16 +63,6 @@ impl Permissions {
             write: &self.write,
         }
     }
-}
-
-#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
-#[cfg_attr(feature = "tabled", derive(Tabled))]
-pub struct OAuthConfiguration {
-    pub oauth_enabled: bool,
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub oauth_client_id: Option<String>,
-    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
-    pub oauth_provider_url: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq, Default)]

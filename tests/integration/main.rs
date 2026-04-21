@@ -1,7 +1,6 @@
 mod test_helpers;
 
 mod async_auth_attempts_tests;
-mod async_auth_configuration_tests;
 mod async_binding_tests;
 mod async_channel_tests;
 mod async_cluster_metadata_tests;
@@ -37,7 +36,6 @@ mod async_whoami_tests;
 mod async_zeroize_tests;
 
 mod blocking_auth_attempts_tests;
-mod blocking_auth_configuration_tests;
 mod blocking_binding_tests;
 mod blocking_channel_tests;
 mod blocking_cluster_metadata_tests;

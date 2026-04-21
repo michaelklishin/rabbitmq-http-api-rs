@@ -117,7 +117,7 @@ pub use cluster::{
 };
 
 pub mod permissions;
-pub use permissions::{OAuthConfiguration, Permissions, TagMap, TopicPermission};
+pub use permissions::{Permissions, TagMap, TopicPermission};
 
 pub mod queues_and_streams;
 pub use queues_and_streams::{
