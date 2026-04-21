@@ -23,7 +23,6 @@ where
     U: Display,
     P: Display,
 {
-
     /// Returns authentication attempt statistics for a given node.
     ///
     /// Requires the `monitoring` user tag. Does not modify state.
