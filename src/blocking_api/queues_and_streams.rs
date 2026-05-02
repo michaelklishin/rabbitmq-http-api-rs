@@ -16,7 +16,7 @@ use crate::{
     commons::{PaginationParams, QueueType},
     path,
     requests::{QueueParams, StreamParams},
-    responses::{self, QueueOps},
+    responses::{self, QueueOps, XArguments},
 };
 use serde_json::{Map, Value, json};
 
@@ -130,13 +130,19 @@ where
         };
 
         if !params.expiration.is_empty() {
-            m.insert("x-max-age".to_owned(), json!(params.expiration));
+            m.insert(
+                XArguments::X_MAX_AGE_KEY.to_owned(),
+                json!(params.expiration),
+            );
         }
         if let Some(val) = params.max_length_bytes {
-            m.insert("x-max-length-bytes".to_owned(), json!(val));
+            m.insert(XArguments::X_MAX_LENGTH_BYTES_KEY.to_owned(), json!(val));
         }
         if let Some(val) = params.max_segment_length_bytes {
-            m.insert("x-stream-max-segment-size-bytes".to_owned(), json!(val));
+            m.insert(
+                XArguments::X_STREAM_MAX_SEGMENT_SIZE_BYTES_KEY.to_owned(),
+                json!(val),
+            );
         }
 
         let q_params = QueueParams::new_stream(params.name, Some(m));

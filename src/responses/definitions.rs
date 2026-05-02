@@ -109,6 +109,8 @@ impl XArguments {
     pub const X_MESSAGE_TTL_KEY: &'static str = "x-message-ttl";
     pub const X_MAX_LENGTH_KEY: &'static str = "x-max-length";
     pub const X_MAX_LENGTH_BYTES_KEY: &'static str = "x-max-length-bytes";
+    pub const X_MAX_AGE_KEY: &'static str = "x-max-age";
+    pub const X_STREAM_MAX_SEGMENT_SIZE_BYTES_KEY: &'static str = "x-stream-max-segment-size-bytes";
 
     pub fn get(&self, key: &str) -> Option<&serde_json::Value> {
         self.0.get(key)

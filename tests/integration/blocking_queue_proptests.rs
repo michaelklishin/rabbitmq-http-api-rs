@@ -191,6 +191,11 @@ proptest! {
         name in arb_queue_name(),
         optional_args in arb_optional_args()
     ) {
+        // transient non-exclusive queues are denied by default as of RabbitMQ 4.3.0
+        if rabbitmq_version_is_at_least(4, 3, 0) {
+            return Ok(());
+        }
+
         let endpoint = endpoint();
         let client = Client::new(&endpoint, USERNAME, PASSWORD);
         let vhost = "/";
