@@ -5,15 +5,22 @@
 ### Breaking Changes
 
  * `responses::OAuthConfiguration` and `Client#oauth_configuration` were removed
-   because the endpoint they were relying on is no longer available in RabbitMQ `4.3.0`.
+   because the endpoint they were relying on is no longer available in RabbitMQ `4.3.0`
 
    In earlier versions the endpoint hasn't been used by RabbitMQ's management UI
-   since `3.11.0`.
+   since `3.11.0`
 
 ### Enhancements
 
  * `QueueInfo#operator_policy` and `QueueInfo#effective_policy_definition` are new functions
    that expose a couple of new-ish queue metrics to this client
+
+### Bug Fixes
+
+ * Fixes propagation of `x-max-age`, `x-max-length-bytes`, `x-stream-max-segment-size-bytes`
+   arguments upon stream declaration
+
+ * Compilation with default feature set was broken due to a feature-conditional `use`
 
 
 ## v0.87.0 (Apr 7, 2026)
