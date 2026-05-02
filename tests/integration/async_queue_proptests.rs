@@ -91,6 +91,11 @@ proptest! {
     ) {
         let rt = Runtime::new().unwrap();
         rt.block_on(async {
+            // transient non-exclusive queues are denied by default as of RabbitMQ 4.3.0
+            if !durable && async_rabbitmq_version_is_at_least(4, 3, 0).await {
+                return Ok(());
+            }
+
             let endpoint = endpoint();
             let client = Client::new(&endpoint, USERNAME, PASSWORD);
             let vhost = "/";

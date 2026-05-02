@@ -54,6 +54,11 @@ async fn test_async_list_deprecated_features_in_use() {
         return;
     }
 
+    // transient non-exclusive queues are denied by default as of RabbitMQ 4.3.0
+    if async_rabbitmq_version_is_at_least(4, 3, 0).await {
+        return;
+    }
+
     let vh = "/";
     let queue_name = "test_async_list_deprecated_features_in_use";
 
