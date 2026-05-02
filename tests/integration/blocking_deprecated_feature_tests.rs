@@ -54,6 +54,11 @@ fn test_blocking_list_deprecated_features_in_use() {
         return;
     }
 
+    // transient non-exclusive queues are denied by default as of RabbitMQ 4.3.0
+    if rabbitmq_version_is_at_least(4, 3, 0) {
+        return;
+    }
+
     let vh = "/";
     let q = "test_list_deprecated_features_in_use";
 

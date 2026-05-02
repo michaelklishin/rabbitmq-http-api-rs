@@ -88,6 +88,11 @@ proptest! {
     fn prop_blocking_durable_client_named_classic_queue(
         (name, durable, auto_delete, optional_args) in arb_classic_queue_params()
     ) {
+        // transient non-exclusive queues are denied by default as of RabbitMQ 4.3.0
+        if !durable && rabbitmq_version_is_at_least(4, 3, 0) {
+            return Ok(());
+        }
+
         let endpoint = endpoint();
         let client = Client::new(&endpoint, USERNAME, PASSWORD);
         let vhost = "/";
@@ -191,6 +196,11 @@ proptest! {
         name in arb_queue_name(),
         optional_args in arb_optional_args()
     ) {
+        // transient non-exclusive queues are denied by default as of RabbitMQ 4.3.0
+        if rabbitmq_version_is_at_least(4, 3, 0) {
+            return Ok(());
+        }
+
         let endpoint = endpoint();
         let client = Client::new(&endpoint, USERNAME, PASSWORD);
         let vhost = "/";
