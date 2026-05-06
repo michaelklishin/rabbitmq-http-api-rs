@@ -2,7 +2,9 @@
 
 ## v0.89.0 (unreleased)
 
-No changes yet.
+### Dependencies
+
+ * `reqwest` upgraded to `0.13.3`
 
 
 ## v0.88.0 (May 1, 2026)
