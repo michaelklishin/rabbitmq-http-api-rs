@@ -252,6 +252,9 @@ jobs:
       - uses: rustsec/audit-check@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          # 2026-0118/0119: hickory-proto via reqwest (no semver-compatible upgrade)
+          # 2025-0119: number_prefix unmaintained, via cargo-nextest dev-dep
+          ignore: RUSTSEC-2026-0118,RUSTSEC-2026-0119,RUSTSEC-2025-0119
 
   dependabot:
     needs: [lint, build, tls-tests]
