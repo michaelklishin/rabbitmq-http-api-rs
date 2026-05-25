@@ -4,7 +4,7 @@
 
 ### Dependencies
 
- * `reqwest` upgraded to `0.13.3`
+ * `reqwest` upgraded to `0.13.4`
 
 
 ## v0.88.0 (May 1, 2026)
