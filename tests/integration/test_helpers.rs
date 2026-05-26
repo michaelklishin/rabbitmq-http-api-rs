@@ -246,6 +246,24 @@ pub async fn async_await_queue_metric_emission() {
     await_metric_emission(delay.parse::<u64>().unwrap());
 }
 
+pub async fn async_await_condition<F, Fut>(timeout: Duration, mut predicate: F) -> bool
+where
+    F: FnMut() -> Fut,
+    Fut: std::future::Future<Output = bool>,
+{
+    let interval = Duration::from_millis(100);
+    let deadline = std::time::Instant::now() + timeout;
+    loop {
+        if predicate().await {
+            return true;
+        }
+        if std::time::Instant::now() >= deadline {
+            return false;
+        }
+        time::sleep(interval).await;
+    }
+}
+
 pub async fn generate_activity() {
     let args = OpenConnectionArguments::new(&hostname(), 5672, USERNAME, PASSWORD);
     let conn = Connection::open(&args).await.unwrap();

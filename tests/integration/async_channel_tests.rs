@@ -18,7 +18,7 @@ use amqprs::{
 use rabbitmq_http_client::api::Client;
 use std::time::Duration;
 
-use crate::test_helpers::{PASSWORD, USERNAME, endpoint, hostname};
+use crate::test_helpers::{PASSWORD, USERNAME, async_await_condition, endpoint, hostname};
 
 #[tokio::test]
 async fn test_async_list_channels() {
@@ -73,11 +73,27 @@ async fn test_async_list_channels_on_connection() {
     let ch = conn.open_channel(None).await.unwrap();
     assert!(ch.is_open());
 
-    tokio::time::sleep(Duration::from_millis(1000)).await;
+    let appeared = async_await_condition(Duration::from_secs(30), || async {
+        rc.list_connections()
+            .await
+            .map(|cs| !cs.is_empty())
+            .unwrap_or(false)
+    })
+    .await;
+    assert!(appeared, "the HTTP API listed no connections in the given time interval");
 
     let connections = rc.list_connections().await.unwrap();
     // Find our connection by selecting the most recently opened one
     let our_conn = connections.iter().max_by_key(|c| c.connected_at).unwrap();
+
+    let channels_appeared = async_await_condition(Duration::from_secs(30), || async {
+        rc.list_channels_on(&our_conn.name)
+            .await
+            .map(|chs| !chs.is_empty())
+            .unwrap_or(false)
+    })
+    .await;
+    assert!(channels_appeared, "the HTTP API listed no channels on the connection in the given time interval");
 
     let result1 = rc.list_channels_on(&our_conn.name).await;
     assert!(result1.is_ok(), "list_channels_on returned {result1:?}");
@@ -106,7 +122,14 @@ async fn test_async_get_channel_info() {
     assert!(ch.is_open());
     let _ = ch.confirm_select(ConfirmSelectArguments::default()).await;
 
-    tokio::time::sleep(Duration::from_millis(1000)).await;
+    let appeared = async_await_condition(Duration::from_secs(30), || async {
+        rc.list_channels()
+            .await
+            .map(|chs| !chs.is_empty())
+            .unwrap_or(false)
+    })
+    .await;
+    assert!(appeared, "the HTTP API listed no channels in the given time interval");
 
     let channels = rc.list_channels().await.unwrap();
     assert!(!channels.is_empty(), "Expected at least one channel");
