@@ -5,7 +5,7 @@
 ### Dependencies
 
  * `reqwest` upgraded to `0.13.4`
-
+ * `tabled` upgraded to `0.21.0`
 
 ## v0.88.0 (May 1, 2026)
 

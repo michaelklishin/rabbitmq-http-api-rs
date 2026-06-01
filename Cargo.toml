@@ -25,7 +25,7 @@ rand = "0.10"
 ring = "0.17"
 rbase64 = "2.0"
 percent-encoding = { version = "2.3", optional = true }
-tabled = { version = "0.20", features = ["derive", "macros"], optional = true }
+tabled = { version = "0.21.0", features = ["derive", "macros"], optional = true }
 regex = { version = "1.12", features = ["std"] }
 url = "2.5"
 urlencoding = "2.1"
