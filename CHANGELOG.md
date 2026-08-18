@@ -2,7 +2,15 @@
 
 ## v0.90.0 (in development)
 
-No changes yet.
+### Bug Fixes
+
+ * `responses::ClusterNode` failed to deserialize `GET /api/nodes` responses when
+   `management_agent.disable_metrics_collector` is set to `true`, since most of its fields
+   (uptime, memory and file descriptor usage, the OTP application list, and so on) are then
+   omitted by the HTTP API
+
+   `ClusterNode#rabbitmq_version` now returns `"unknown"` instead of panicking when
+   neither the `rabbitmq_version` field nor the `rabbit` Erlang/OTP application entry are present
 
 ## v0.89.0 (Jun 1, 2026)
 

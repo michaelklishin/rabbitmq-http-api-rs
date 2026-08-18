@@ -390,23 +390,30 @@ pub struct OtpApplication {
 #[allow(dead_code)]
 pub struct ClusterNode {
     pub name: String,
+    // Absent when management_agent.disable_metrics_collector is set to true.
+    #[serde(default)]
     pub uptime: u32,
+    #[serde(default)]
     pub run_queue: u32,
+    #[serde(default)]
     pub processors: u32,
-    #[serde(deserialize_with = "deserialize_number_from_string")]
+    #[serde(default, deserialize_with = "deserialize_number_from_string")]
     pub os_pid: u32,
+    #[serde(default)]
     pub fd_total: u32,
-    #[serde(rename(deserialize = "proc_total"))]
+    #[serde(default, rename(deserialize = "proc_total"))]
     pub total_erlang_processes: u32,
-    #[serde(rename(deserialize = "mem_limit"))]
+    #[serde(default, rename(deserialize = "mem_limit"))]
     pub memory_high_watermark: u64,
-    #[serde(rename(deserialize = "mem_alarm"))]
+    #[serde(default, rename(deserialize = "mem_alarm"))]
     pub has_memory_alarm_in_effect: bool,
-    #[serde(rename(deserialize = "disk_free_limit"))]
+    #[serde(default, rename(deserialize = "disk_free_limit"))]
     pub free_disk_space_low_watermark: u64,
-    #[serde(rename(deserialize = "disk_free_alarm"))]
+    #[serde(default, rename(deserialize = "disk_free_alarm"))]
     pub has_free_disk_space_alarm_in_effect: bool,
+    #[serde(default)]
     pub rates_mode: String,
+    #[serde(default)]
     pub enabled_plugins: PluginList,
     pub being_drained: bool,
     #[serde(default)]
@@ -433,6 +440,9 @@ impl ClusterNode {
     ///
     /// On RabbitMQ 4.2.4+, uses the `rabbitmq_version` field from the API response.
     /// On older versions, falls back to the `rabbit` OTP application version.
+    ///
+    /// Returns "unknown" when neither is available, as is the case when
+    /// `management_agent.disable_metrics_collector` is set to true.
     pub fn rabbitmq_version(&self) -> &str {
         if let Some(ref v) = self.rabbitmq_version {
             return v;
@@ -441,7 +451,7 @@ impl ClusterNode {
             .iter()
             .find(|app| app.name == "rabbit")
             .map(|app| app.version.as_str())
-            .expect("rabbit application must be present on a responding node")
+            .unwrap_or("unknown")
     }
 }
 

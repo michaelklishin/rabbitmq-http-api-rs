@@ -129,3 +129,24 @@ fn test_unit_cluster_node_rabbitmq_version_falls_back_to_otp_app() {
     assert!(node.rabbitmq_version.is_none());
     assert_eq!(node.rabbitmq_version(), "4.2.4");
 }
+
+// With `management_agent.disable_metrics_collector` set to `true`, `GET /api/nodes`
+// only returns a handful of fields.
+#[test]
+fn test_unit_cluster_node_with_metrics_collector_disabled() {
+    let json = json!({
+        "name": "rabbit@hostname",
+        "type": "disc",
+        "running": true,
+        "being_drained": false
+    });
+
+    let node: ClusterNode = from_value(json).unwrap();
+    assert_eq!(node.name, "rabbit@hostname");
+    assert!(!node.being_drained);
+    assert_eq!(node.uptime, 0);
+    assert_eq!(node.rates_mode, "");
+    assert!(node.enabled_plugins.is_empty());
+    assert!(node.applications.is_empty());
+    assert_eq!(node.rabbitmq_version(), "unknown");
+}

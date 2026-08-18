@@ -219,7 +219,7 @@ impl IntoIterator for TagList {
 /// A set of RabbitMQ plugin names.
 ///
 /// When constructed (deserialized), all values are sorted alphabetically.
-#[derive(Debug, Serialize, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Default, Serialize, Clone, PartialEq, Eq, Hash)]
 pub struct PluginList(pub Vec<String>);
 
 impl PluginList {

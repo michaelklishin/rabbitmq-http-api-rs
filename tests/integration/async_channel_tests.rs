@@ -80,7 +80,10 @@ async fn test_async_list_channels_on_connection() {
             .unwrap_or(false)
     })
     .await;
-    assert!(appeared, "the HTTP API listed no connections in the given time interval");
+    assert!(
+        appeared,
+        "the HTTP API listed no connections in the given time interval"
+    );
 
     let connections = rc.list_connections().await.unwrap();
     // Find our connection by selecting the most recently opened one
@@ -93,7 +96,10 @@ async fn test_async_list_channels_on_connection() {
             .unwrap_or(false)
     })
     .await;
-    assert!(channels_appeared, "the HTTP API listed no channels on the connection in the given time interval");
+    assert!(
+        channels_appeared,
+        "the HTTP API listed no channels on the connection in the given time interval"
+    );
 
     let result1 = rc.list_channels_on(&our_conn.name).await;
     assert!(result1.is_ok(), "list_channels_on returned {result1:?}");
@@ -129,7 +135,10 @@ async fn test_async_get_channel_info() {
             .unwrap_or(false)
     })
     .await;
-    assert!(appeared, "the HTTP API listed no channels in the given time interval");
+    assert!(
+        appeared,
+        "the HTTP API listed no channels in the given time interval"
+    );
 
     let channels = rc.list_channels().await.unwrap();
     assert!(!channels.is_empty(), "Expected at least one channel");
