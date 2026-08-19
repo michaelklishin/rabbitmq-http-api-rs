@@ -23,5 +23,6 @@ mod unit_shovel_conversion_tests;
 mod unit_tag_list_tests;
 mod unit_uri_builder_tests;
 mod unit_vhost_definition_set_transformations_tests;
+mod unit_vhost_metadata_tests;
 #[cfg(feature = "zeroize")]
 mod unit_zeroize_tests;

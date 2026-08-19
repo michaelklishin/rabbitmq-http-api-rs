@@ -35,6 +35,8 @@ pub struct VirtualHostMetadata {
     /// Default queue type used in this virtual host when clients
     /// do not explicitly specify one
     pub default_queue_type: Option<String>,
+    /// Whether this virtual host is protected from deletion
+    pub protected_from_deletion: Option<bool>,
 }
 
 /// Represents a [RabbitMQ virtual host](https://rabbitmq.com/docs/vhosts/).
@@ -54,6 +56,9 @@ pub struct VirtualHost {
     /// do not explicitly specify one
     #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
     pub default_queue_type: Option<String>,
+    /// Whether this virtual host is protected from deletion
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub protected_from_deletion: Option<bool>,
     /// All virtual host metadata combined
     #[cfg_attr(feature = "tabled", tabled(skip))]
     pub metadata: Option<VirtualHostMetadata>,
