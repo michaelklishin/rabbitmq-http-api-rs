@@ -22,6 +22,7 @@ fn create_test_vhost(name: &str) -> VirtualHost {
         tags: Some(TagList(vec!["production".to_string()])),
         description: Some(format!("Virtual host {}", name)),
         default_queue_type: Some("quorum".to_string()),
+        protected_from_deletion: None,
         metadata: None,
     }
 }
