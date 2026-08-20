@@ -43,7 +43,6 @@ zeroize = { version = "1.8", features = ["zeroize_derive"], optional = true }
 
 [dev-dependencies]
 amqprs = { version = "2.1" }
-cargo-nextest = "0.9"
 proptest = "1.9"
 fern = "0.7"
 zeroize = { version = "1.8", features = ["zeroize_derive"] }
