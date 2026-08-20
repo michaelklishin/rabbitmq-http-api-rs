@@ -2,7 +2,9 @@
 
 ## v0.91.0 (in development)
 
-No changes yet.
+### Enhancements
+
+ * Virtual hosts now have a [deletion protection](https://www.rabbitmq.com/docs/vhosts#deletion-protection) state field.
 
 ## v0.90.0 (Aug 17, 2026)
 
