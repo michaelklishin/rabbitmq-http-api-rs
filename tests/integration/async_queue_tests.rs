@@ -193,7 +193,7 @@ async fn test_async_list_queues_with_details() {
     // Verify basic queue properties are present
     assert_eq!(queue.name, params.name);
     assert_eq!(queue.vhost, vh_name);
-    assert_eq!(queue.durable, true);
+    assert!(queue.durable);
 
     // More fields
     if let Some(gc) = &queue.garbage_collection {

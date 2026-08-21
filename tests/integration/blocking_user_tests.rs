@@ -86,7 +86,7 @@ fn test_blocking_user_creation_using_default_hashing_algorithm() {
     let result = rc.create_user(&params);
     assert!(result.is_ok());
 
-    rc.delete_user(&params.name, true)
+    rc.delete_user(params.name, true)
         .expect("failed to delete a user");
 }
 
@@ -107,7 +107,7 @@ fn test_blocking_user_creation_using_sha512() {
     let result = rc.create_user(&params);
     assert!(result.is_ok());
 
-    rc.delete_user(&params.name, true)
+    rc.delete_user(params.name, true)
         .expect("failed to delete a user");
 }
 

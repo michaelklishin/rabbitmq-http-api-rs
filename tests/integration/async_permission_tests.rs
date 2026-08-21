@@ -216,7 +216,7 @@ async fn test_async_list_topic_permissions() {
         auto_delete: false,
         arguments: None,
     };
-    let result2 = rc.declare_exchange(&vh_params.name, &tx_params).await;
+    let result2 = rc.declare_exchange(vh_params.name, &tx_params).await;
     assert!(result2.is_ok());
 
     let params = requests::TopicPermissions {
@@ -258,7 +258,7 @@ async fn test_async_list_topic_permissions_in_vhost() {
         auto_delete: false,
         arguments: None,
     };
-    let result2 = rc.declare_exchange(&vh_params.name, &tx_params).await;
+    let result2 = rc.declare_exchange(vh_params.name, &tx_params).await;
     assert!(result2.is_ok());
 
     let topic_permissions_grant_params = requests::TopicPermissions {
@@ -302,7 +302,7 @@ async fn test_async_get_topic_permissions() {
         auto_delete: false,
         arguments: None,
     };
-    let result2 = rc.declare_exchange(&vh_params.name, &tx_params).await;
+    let result2 = rc.declare_exchange(vh_params.name, &tx_params).await;
     assert!(result2.is_ok());
 
     let params = requests::TopicPermissions {

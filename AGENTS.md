@@ -12,7 +12,7 @@ both the async and blocking client are built, tested, linted, and so on.
 
  * `cargo build --all-features` to build
  * `RUSTFLAGS="-D warnings" cargo nextest run --all-features` to run tests
- * `RUSTFLAGS="-D warnings" cargo clippy --all-features` to lint
+ * `RUSTFLAGS="-D warnings" cargo clippy --all-features --all-targets` to lint
  * `cargo fmt` to reformat
  * `cargo publish` to publish the crate
 

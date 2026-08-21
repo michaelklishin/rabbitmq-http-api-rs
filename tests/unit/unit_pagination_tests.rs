@@ -109,6 +109,8 @@ fn test_to_query_string_none() {
 }
 
 #[test]
+// exercises Clone specifically, so the redundant clone is the point
+#[allow(clippy::clone_on_copy)]
 fn test_clone() {
     let params = PaginationParams::new(2, 50);
     let cloned = params.clone();

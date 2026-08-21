@@ -49,7 +49,7 @@ fn test_blocking_create_vhost() {
     let result1 = rc.get_vhost(name);
     assert!(result1.is_err());
 
-    let desc = format!("{} description", &name);
+    let desc = format!("{} description", name);
     let params = VirtualHostParams {
         name,
         description: Some(&desc),
@@ -79,7 +79,7 @@ fn test_blocking_create_vhost_without_dqt() {
     let result1 = rc.get_vhost(name);
     assert!(result1.is_err());
 
-    let desc = format!("{} description", &name);
+    let desc = format!("{} description", name);
     let params = VirtualHostParams {
         name,
         description: Some(&desc),
@@ -109,7 +109,7 @@ fn test_blocking_update_vhost() {
     let result1 = rc.get_vhost(name);
     assert!(result1.is_err());
 
-    let desc = format!("{} description", &name);
+    let desc = format!("{} description", name);
     let params1 = VirtualHostParams {
         name,
         description: Some(&desc),
@@ -142,7 +142,7 @@ fn test_blocking_delete_vhost() {
     let rc = Client::new(&endpoint, USERNAME, PASSWORD);
     let name = "rust_test_delete_vhost";
 
-    let desc = format!("{} description", &name);
+    let desc = format!("{} description", name);
     let params = VirtualHostParams {
         name,
         description: Some(&desc),

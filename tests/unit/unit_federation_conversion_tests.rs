@@ -186,7 +186,7 @@ fn test_federation_upstream_to_params_conversion_queue_federation() {
         owned_params.ack_mode,
         MessageTransferAcknowledgementMode::WhenPublished
     );
-    assert_eq!(owned_params.trust_user_id, false);
+    assert!(!owned_params.trust_user_id);
     assert_eq!(owned_params.reconnect_delay, 10);
     assert_eq!(owned_params.prefetch_count, 500);
 
@@ -245,7 +245,7 @@ fn test_federation_upstream_to_params_conversion_exchange_federation() {
         owned_params.ack_mode,
         MessageTransferAcknowledgementMode::WhenConfirmed
     );
-    assert_eq!(owned_params.trust_user_id, true);
+    assert!(owned_params.trust_user_id);
     assert_eq!(owned_params.reconnect_delay, 15);
 
     // Check exchange federation params
@@ -318,7 +318,7 @@ fn test_federation_upstream_roundtrip_conversion() {
     assert_eq!(consumer_tag_value.as_str().unwrap(), "my-consumer");
 
     let trust_user_id_value = runtime_def.value.get("trust-user-id").unwrap();
-    assert_eq!(trust_user_id_value.as_bool().unwrap(), true);
+    assert!(trust_user_id_value.as_bool().unwrap());
 
     let reconnect_delay_value = runtime_def.value.get("reconnect-delay").unwrap();
     assert_eq!(reconnect_delay_value.as_u64().unwrap(), 5);
@@ -377,7 +377,7 @@ fn test_federation_upstream_update_scenario() {
         updated_params.ack_mode,
         MessageTransferAcknowledgementMode::WhenConfirmed
     );
-    assert_eq!(updated_params.trust_user_id, true);
+    assert!(updated_params.trust_user_id);
     assert_eq!(updated_params.reconnect_delay, 10);
 
     // Check updated queue federation

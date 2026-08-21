@@ -60,8 +60,8 @@ fn test_unit_deserialize_shovel_runtime_parameter_amqp091() {
         shovel_params.acknowledgement_mode
     );
     assert_eq!(5, shovel_params.reconnect_delay.unwrap());
-    assert_eq!(false, shovel_params.source_predeclared.unwrap());
-    assert_eq!(false, shovel_params.destination_predeclared.unwrap());
+    assert!(!shovel_params.source_predeclared.unwrap());
+    assert!(!shovel_params.destination_predeclared.unwrap());
 }
 
 #[test]
@@ -238,10 +238,10 @@ fn test_shovel_params_roundtrip_conversion() {
     assert_eq!(reconnect_delay_value.as_u64().unwrap(), 15);
 
     let src_predeclared_value = runtime_def.value.get("src-predeclared").unwrap();
-    assert_eq!(src_predeclared_value.as_bool().unwrap(), true);
+    assert!(src_predeclared_value.as_bool().unwrap());
 
     let dest_predeclared_value = runtime_def.value.get("dest-predeclared").unwrap();
-    assert_eq!(dest_predeclared_value.as_bool().unwrap(), false);
+    assert!(!dest_predeclared_value.as_bool().unwrap());
 }
 
 #[test]

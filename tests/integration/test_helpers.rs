@@ -147,7 +147,7 @@ pub fn testing_against_version(series: &str) -> bool {
     let endpoint = endpoint();
     let rc = BlockingClient::new(&endpoint, USERNAME, PASSWORD);
 
-    &rc.server_version().unwrap() == series
+    rc.server_version().unwrap() == series
 }
 
 pub fn await_metric_emission(ms: u64) {
@@ -234,7 +234,7 @@ pub async fn async_testing_against_version(series: &str) -> bool {
     let endpoint = endpoint();
     let rc = AsyncClient::new(&endpoint, USERNAME, PASSWORD);
 
-    &rc.server_version().await.unwrap() == series
+    rc.server_version().await.unwrap() == series
 }
 
 pub async fn async_await_metric_emission(ms: u64) {

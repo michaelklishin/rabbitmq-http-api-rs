@@ -181,7 +181,7 @@ fn test_blocking_delete_exchanges_bulk() {
         rc.declare_exchange(vhost, &params).unwrap();
     }
 
-    let name_refs: Vec<&str> = names.iter().map(|s| *s).collect();
+    let name_refs: Vec<&str> = names.to_vec();
     let result = rc.delete_exchanges(vhost, &name_refs, false);
     assert!(result.is_ok(), "delete_exchanges returned {result:?}");
 

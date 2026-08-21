@@ -195,7 +195,7 @@ pub fn test_blocking_list_queues_with_details() {
     let queue = test_queue.unwrap();
     assert_eq!(queue.name, params.name);
     assert_eq!(queue.vhost, vh_name);
-    assert_eq!(queue.durable, true);
+    assert!(queue.durable);
     if let Some(gc) = &queue.garbage_collection {
         assert!(gc.fullsweep_after > 1000);
     }

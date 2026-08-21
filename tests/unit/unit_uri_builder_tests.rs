@@ -24,9 +24,7 @@ fn get_query_params(uri_str: &str) -> HashMap<String, String> {
 
 fn has_query_param(uri_str: &str, key: &str, expected_value: &str) -> bool {
     let params = get_query_params(uri_str);
-    params
-        .get(key)
-        .map_or(false, |value| value == expected_value)
+    params.get(key).is_some_and(|value| value == expected_value)
 }
 
 fn has_query_param_key(uri_str: &str, key: &str) -> bool {
@@ -1341,14 +1339,14 @@ fn test_integration_case15() {
             .with_ca_cert_file(ca_cert)
             .with_client_cert_file(client_cert)
             .with_client_key_file(client_key)
-            .with_server_name_indication(&format!("{}.megacorp.local", env_type))
+            .with_server_name_indication(format!("{}.megacorp.local", env_type))
             .build()
             .unwrap();
 
         assert!(has_query_param(&result, "heartbeat", "10"));
         assert!(has_query_param(&result, "verify", "verify_none"));
         assert!(has_query_param(&result, "env", env_type));
-        assert!(result.contains(&format!("app-")));
+        assert!(result.contains("app-"));
 
         // Verify environment-specific TLS configuration
         assert!(has_query_param(&result, "cacertfile", ca_cert));

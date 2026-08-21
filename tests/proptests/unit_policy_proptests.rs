@@ -50,12 +50,12 @@ proptest! {
 
     #[test]
     fn prop_policy_target_does_apply_to_reflexive(target in arb_policy_target()) {
-        prop_assert!(target.does_apply_to(target.clone()));
+        prop_assert!(target.does_apply_to(target));
     }
 
     #[test]
     fn prop_policy_target_all_applies_to_everything(target in arb_policy_target()) {
-        prop_assert!(PolicyTarget::All.does_apply_to(target.clone()));
+        prop_assert!(PolicyTarget::All.does_apply_to(target));
         prop_assert!(target.does_apply_to(PolicyTarget::All));
     }
 
