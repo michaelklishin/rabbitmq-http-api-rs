@@ -76,3 +76,13 @@ strip = true
 
 [lints.clippy]
 uninlined_format_args = "allow"
+
+[profile.dev]
+debug = "line-tables-only"
+split-debuginfo = "unpacked"
+lto = "off"
+
+[profile.test]
+debug = "line-tables-only"
+split-debuginfo = "unpacked"
+lto = "off"
