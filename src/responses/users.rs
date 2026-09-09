@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::commons::Username;
+use crate::commons::{PasswordHash, Username};
+#[cfg(feature = "tabled")]
+use crate::formatting::display_option;
 use crate::responses::{TagList, vhosts::EnforcedLimits};
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "zeroize")]
@@ -38,7 +40,11 @@ pub struct UserLimits {
 pub struct User {
     pub name: Username,
     pub tags: TagList,
-    pub password_hash: String,
+    /// `None` when the HTTP API omits this key, which is the case
+    /// with RabbitMQ `4.4.0` in certain cases.
+    #[serde(default)]
+    #[cfg_attr(feature = "tabled", tabled(display = "display_option"))]
+    pub password_hash: Option<PasswordHash>,
 }
 
 impl User {
@@ -58,11 +64,11 @@ impl User {
         }
     }
 
-    pub fn with_password_hash(&self, password_hash: String) -> Self {
+    pub fn with_password_hash(&self, password_hash: impl Into<PasswordHash>) -> Self {
         Self {
             name: self.name.clone(),
             tags: self.tags.clone(),
-            password_hash,
+            password_hash: Some(password_hash.into()),
         }
     }
 }

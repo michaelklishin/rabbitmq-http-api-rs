@@ -196,6 +196,54 @@ impl From<&str> for Password {
     }
 }
 
+/// A salted password hash.
+///
+/// Note that starting with RabbitMQ `4.4.0`, the HTTP API will exclude
+/// this field for non-administrative user requests.
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "zeroize", derive(Zeroize, ZeroizeOnDrop))]
+pub struct PasswordHash(String);
+
+impl PasswordHash {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl fmt::Debug for PasswordHash {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("PasswordHash([REDACTED])")
+    }
+}
+
+impl Display for PasswordHash {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl From<String> for PasswordHash {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for PasswordHash {
+    fn from(value: &str) -> Self {
+        Self(value.to_owned())
+    }
+}
+
+impl AsRef<str> for PasswordHash {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone, Hash)]
 #[serde(rename_all(serialize = "lowercase", deserialize = "PascalCase"))]
 pub enum SupportedProtocol {

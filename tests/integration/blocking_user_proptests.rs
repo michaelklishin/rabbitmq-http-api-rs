@@ -15,7 +15,9 @@
 use crate::test_helpers::{PASSWORD, USERNAME, endpoint};
 use proptest::prelude::*;
 use proptest::test_runner::Config as ProptestConfig;
-use rabbitmq_http_client::{blocking_api::Client, password_hashing, requests::UserParams};
+use rabbitmq_http_client::{
+    blocking_api::Client, commons::PasswordHash, password_hashing, requests::UserParams,
+};
 
 fn arb_username() -> impl Strategy<Value = String> {
     prop::string::string_regex(r"rust\.tests\.blocking\.proptest\.users\.[a-zA-Z0-9_-]{8,20}")
@@ -76,14 +78,14 @@ proptest! {
 
         let user = found_user.unwrap();
         prop_assert_eq!(&user.name, &username);
-        prop_assert_eq!(&user.password_hash, &password_hash);
+        prop_assert_eq!(&user.password_hash, &Some(PasswordHash::new(password_hash.clone())));
 
         let result3 = client.get_user(&username);
         prop_assert!(result3.is_ok(), "Failed to get user info: {result3:?}");
 
         let user_info = result3.unwrap();
         prop_assert_eq!(&user_info.name, &username);
-        prop_assert_eq!(&user_info.password_hash, &password_hash);
+        prop_assert_eq!(&user_info.password_hash, &Some(PasswordHash::new(password_hash)));
 
         let result4 = client.delete_user(&username, false);
         prop_assert!(result4.is_ok(), "Failed to delete user: {result4:?}");

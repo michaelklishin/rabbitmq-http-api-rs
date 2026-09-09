@@ -1,4 +1,4 @@
-use rabbitmq_http_client::commons::{BindingDestinationType, PolicyTarget};
+use rabbitmq_http_client::commons::{BindingDestinationType, PasswordHash, PolicyTarget};
 use rabbitmq_http_client::responses::definitions::{
     BindingDefinition, ClusterDefinitionSet, ExchangeDefinition, QueueDefinition, XArguments,
 };
@@ -12,7 +12,7 @@ fn create_test_user(name: &str, tags: &str) -> User {
     User {
         name: name.to_string(),
         tags: TagList(vec![tags.to_string()]),
-        password_hash: format!("$2b$12${}", name),
+        password_hash: Some(PasswordHash::new(format!("$2b$12${}", name))),
     }
 }
 
