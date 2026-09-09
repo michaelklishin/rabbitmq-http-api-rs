@@ -2,7 +2,9 @@
 
 ## v0.92.0 (in development)
 
-No changes yet.
+### Breaking Changes
+
+ * `responses::User#password_hash` typoe has changed to `Option<commons::PasswordHash>` for forward-compatibility with RabbitMQ `4.4.0` ([`rabbitmq/rabbitmq-server#17316`](https://github.com/rabbitmq/rabbitmq-server/pull/17316))
 
 ## v0.91.0 (Aug 19, 2026)
 

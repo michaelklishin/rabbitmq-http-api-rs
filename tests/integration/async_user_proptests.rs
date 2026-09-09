@@ -15,7 +15,9 @@
 use crate::test_helpers::{PASSWORD, USERNAME, endpoint};
 use proptest::prelude::*;
 use proptest::test_runner::Config as ProptestConfig;
-use rabbitmq_http_client::{api::Client, password_hashing, requests::UserParams};
+use rabbitmq_http_client::{
+    api::Client, commons::PasswordHash, password_hashing, requests::UserParams,
+};
 use tokio::runtime::Runtime;
 
 fn arb_username() -> impl Strategy<Value = String> {
@@ -78,14 +80,14 @@ proptest! {
 
             let user = found_user.unwrap();
             prop_assert_eq!(&user.name, &username);
-            prop_assert_eq!(&user.password_hash, &password_hash);
+            prop_assert_eq!(&user.password_hash, &Some(PasswordHash::new(password_hash.clone())));
 
             let result3 = client.get_user(&username).await;
             prop_assert!(result3.is_ok(), "Failed to get user info: {result3:?}");
 
             let user_info = result3.unwrap();
             prop_assert_eq!(&user_info.name, &username);
-            prop_assert_eq!(&user_info.password_hash, &password_hash);
+            prop_assert_eq!(&user_info.password_hash, &Some(PasswordHash::new(password_hash)));
 
             let result4 = client.delete_user(&username, false).await;
             prop_assert!(result4.is_ok(), "Failed to delete user: {result4:?}");

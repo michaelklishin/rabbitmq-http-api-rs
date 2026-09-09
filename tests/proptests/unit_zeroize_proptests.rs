@@ -14,7 +14,7 @@
 
 use proptest::prelude::*;
 use proptest::test_runner::Config as ProptestConfig;
-use rabbitmq_http_client::commons::Password;
+use rabbitmq_http_client::commons::{Password, PasswordHash};
 use rabbitmq_http_client::requests::users::OwnedUserParams;
 use rabbitmq_http_client::requests::users::UserParams;
 use rabbitmq_http_client::responses::TagList;
@@ -74,16 +74,16 @@ proptest! {
         let mut user = User {
             name: name.clone(),
             tags: TagList(tags.clone()),
-            password_hash: hash.clone(),
+            password_hash: Some(PasswordHash::new(hash.clone())),
         };
 
         prop_assert_eq!(&user.name, &name);
-        prop_assert_eq!(&user.password_hash, &hash);
+        prop_assert_eq!(&user.password_hash, &Some(PasswordHash::new(hash)));
 
         user.zeroize();
 
         prop_assert!(user.name.is_empty());
-        prop_assert!(user.password_hash.is_empty());
+        prop_assert!(user.password_hash.is_none());
         prop_assert!(user.tags.is_empty());
     }
 
@@ -118,13 +118,13 @@ proptest! {
         let mut user = User {
             name,
             tags: TagList(tags),
-            password_hash: hash,
+            password_hash: Some(PasswordHash::new(hash)),
         };
         user.zeroize();
         user.zeroize();
 
         prop_assert!(user.name.is_empty());
-        prop_assert!(user.password_hash.is_empty());
+        prop_assert!(user.password_hash.is_none());
         prop_assert!(user.tags.is_empty());
     }
 
@@ -155,16 +155,16 @@ proptest! {
         let mut original = User {
             name: name.clone(),
             tags: TagList(tags.clone()),
-            password_hash: hash.clone(),
+            password_hash: Some(PasswordHash::new(hash.clone())),
         };
         let cloned = original.clone();
 
         original.zeroize();
 
         prop_assert!(original.name.is_empty());
-        prop_assert!(original.password_hash.is_empty());
+        prop_assert!(original.password_hash.is_none());
         prop_assert_eq!(&cloned.name, &name);
-        prop_assert_eq!(&cloned.password_hash, &hash);
+        prop_assert_eq!(&cloned.password_hash, &Some(PasswordHash::new(hash)));
     }
 
     #[test]

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use rabbitmq_http_client::commons::Password;
+use rabbitmq_http_client::commons::{Password, PasswordHash};
 use rabbitmq_http_client::requests::users::OwnedUserParams;
 use rabbitmq_http_client::requests::users::UserParams;
 use rabbitmq_http_client::responses::TagList;
@@ -94,12 +94,12 @@ fn test_user_response_zeroize_clears_all_fields() {
     let mut user = User {
         name: "admin".to_owned(),
         tags: TagList(vec!["administrator".to_owned()]),
-        password_hash: "salted_hash_value".to_owned(),
+        password_hash: Some(PasswordHash::new("salted_hash_value")),
     };
     user.zeroize();
 
     assert!(user.name.is_empty());
-    assert!(user.password_hash.is_empty());
+    assert!(user.password_hash.is_none());
     assert!(user.tags.is_empty());
 }
 
@@ -112,12 +112,12 @@ fn test_user_response_zeroize_with_multiple_tags() {
             "monitoring".to_owned(),
             "management".to_owned(),
         ]),
-        password_hash: "complex_hash".to_owned(),
+        password_hash: Some(PasswordHash::new("complex_hash")),
     };
     user.zeroize();
 
     assert!(user.name.is_empty());
-    assert!(user.password_hash.is_empty());
+    assert!(user.password_hash.is_none());
     assert!(user.tags.is_empty());
 }
 
@@ -126,12 +126,12 @@ fn test_user_response_zeroize_with_empty_tags() {
     let mut user = User {
         name: "notags".to_owned(),
         tags: TagList(vec![]),
-        password_hash: "some_hash".to_owned(),
+        password_hash: Some(PasswordHash::new("some_hash")),
     };
     user.zeroize();
 
     assert!(user.name.is_empty());
-    assert!(user.password_hash.is_empty());
+    assert!(user.password_hash.is_none());
     assert!(user.tags.is_empty());
 }
 
@@ -167,13 +167,13 @@ fn test_zeroize_is_idempotent_on_user() {
     let mut user = User {
         name: "user".to_owned(),
         tags: TagList(vec!["admin".to_owned()]),
-        password_hash: "hash".to_owned(),
+        password_hash: Some(PasswordHash::new("hash")),
     };
     user.zeroize();
     user.zeroize();
 
     assert!(user.name.is_empty());
-    assert!(user.password_hash.is_empty());
+    assert!(user.password_hash.is_none());
     assert!(user.tags.is_empty());
 }
 
@@ -195,16 +195,16 @@ fn test_user_clone_then_zeroize_original() {
     let mut original = User {
         name: "user".to_owned(),
         tags: TagList(vec!["admin".to_owned()]),
-        password_hash: "secret_hash".to_owned(),
+        password_hash: Some(PasswordHash::new("secret_hash")),
     };
     let cloned = original.clone();
 
     original.zeroize();
 
     assert!(original.name.is_empty());
-    assert!(original.password_hash.is_empty());
+    assert!(original.password_hash.is_none());
     assert_eq!(cloned.name, "user");
-    assert_eq!(cloned.password_hash, "secret_hash");
+    assert_eq!(cloned.password_hash, Some(PasswordHash::new("secret_hash")));
 }
 
 #[test]
@@ -248,12 +248,12 @@ fn test_user_zeroize_with_unicode() {
     let mut user = User {
         name: "管理者".to_owned(),
         tags: TagList(vec!["管理員".to_owned()]),
-        password_hash: "密码哈希".to_owned(),
+        password_hash: Some(PasswordHash::new("密码哈希")),
     };
     user.zeroize();
 
     assert!(user.name.is_empty());
-    assert!(user.password_hash.is_empty());
+    assert!(user.password_hash.is_none());
     assert!(user.tags.is_empty());
 }
 
