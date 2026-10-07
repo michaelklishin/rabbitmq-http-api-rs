@@ -2,7 +2,9 @@
 
 ## v0.93.0 (in development)
 
-No changes yet.
+### Bug Fixes
+
+ * `warm_standby_replication_status` used a non-existent `/api/replication/status` endpoint. It now uses `/api/tanzu/osr/standby/status`, as documented for Tanzu RabbitMQ `4.3`
 
 ## v0.92.0 (Sep 8, 2026)
 
