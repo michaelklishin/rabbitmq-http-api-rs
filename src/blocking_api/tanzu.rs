@@ -103,7 +103,7 @@ where
     ///
     /// Requires the `administrator` user tag. Does not modify state.
     pub fn warm_standby_replication_status(&self) -> Result<WarmStandbyReplicationStatus> {
-        let response = self.http_get("replication/status", None, None)?;
+        let response = self.http_get("tanzu/osr/standby/status", None, None)?;
         let response = response.json()?;
         Ok(response)
     }
