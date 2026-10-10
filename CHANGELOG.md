@@ -6,6 +6,10 @@
 
  * `warm_standby_replication_status` used a non-existent `/api/replication/status` endpoint. It now uses `/api/tanzu/osr/standby/status`, as documented for Tanzu RabbitMQ `4.3`
 
+### Dependencies
+
+ * `tabled` upgraded to `0.22.0`, getting rid of the transient (for us) `proc-macro-error2` dependency
+
 ## v0.92.0 (Sep 8, 2026)
 
 ### Breaking Changes
